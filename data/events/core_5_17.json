@@ -17,7 +17,7 @@
  {"t":"Atam öyrətsin","fx":{"fitness":3,"happy":6,"rel":{"ata":8}},"r":"Atan arxadan tutdu, sonra gizlicə buraxdı. Sən artıq tək sürürsən!"},
  {"t":"Özüm öyrənərəm","odds":[{"p":0.5,"fx":{"fitness":4,"happy":5},"r":"Bir neçə yıxılmadan sonra öyrəndin!"},{"p":0.5,"fx":{"health":-6,"happy":-2},"r":"Bordürə dəydin, qolun sıyrıldı. Yaşıl məlhəm vaxtıdır."}],"trait":{"independence":2}}]},
 {"id":"sinif_dava","cat":"school","tone":"everyday","age":[7,11],"icon":"🥊","t":"Sinif yoldaşın teneffüsdə səni hər gün ələ salır.","ch":[
- {"t":"Müəllimə de","fx":{"happy":2,"rel":{"müəllim":4}},"r":"{müəllim} müəllim onunla danışdı, ələ salmaq dayandı."},
+ {"t":"Müəllimə de","cond":{"has":["müəllim"]},"fx":{"happy":2,"rel":{"müəllim":4}},"r":"{müəllim} müəllim onunla danışdı, ələ salmaq dayandı."},
  {"t":"Dava et","odds":[{"p":{"of":"st.fitness","div":120},"fx":{"happy":6,"fitness":1},"r":"Bir daha sənə toxunmadı. Amma valideynlərin məktəbə çağırıldı."},{"p":0.5,"fx":{"happy":-6,"health":-5},"r":"Davada uduzdun, gözünün altı göyərdi."}],"trait":{"courage":3}},
  {"t":"Məhəl qoyma","fx":{"happy":-3,"smarts":1},"r":"Bir müddət sonra sənə məhəl qoymayanda o da bezdi."},
  {"t":"Zarafatla cavab ver","odds":[{"p":0.55,"fx":{"happy":5,"tal":{"social":3}},"r":"Bütün sinif güldü, o özü utandı. İndi dostsunuz."},{"p":0.45,"fx":{"happy":-3},"r":"Zarafatın alınmadı, daha çox güldülər."}]}]},
@@ -35,8 +35,11 @@
  {"t":"Musiqi məktəbinə get","fx":{"happy":3,"tal":{"music":8},"flag":"musiqiMekteb"},"r":"Hər axşam pianino… Barmaqların artıq özü çalır.","trait":{"discipline":2}},
  {"t":"Vaxtım yoxdur","fx":{"happy":1},"r":"Musiqi hobbi olaraq qaldı."}]},
 {"id":"xeyal_10","cat":"life","tone":"everyday","age":[10,10],"force":true,"icon":"💭","t":"Müəllim sinifdə soruşur: “Böyüyəndə kim olmaq istəyirsən?” Sən 5 yaşında {xəyal} demişdin.","choices_gen":"dream_change"},
-{"id":"pul_tapdi","cat":"life","tone":"everyday","age":[7,14],"icon":"💵","t":"Yolda yerə düşmüş 20 manat tapdın.","ch":[
- {"t":"Özümə saxlayım","fx":{"money":20,"happy":4},"r":"Dondurma və saqqız aldın. Vicdanın bir az narahatdır.","trait":{"honesty":-2}},
+{"id":"qepik","cat":"life","tone":"everyday","age":[5,17],"once":false,"cool":1,"w":2,"icon":"🪙","t":"Yolda, səkinin kənarında nəsə parıldayır…","ch":[
+ {"t":"Əyil, götür","odds":[{"p":0.85,"do":[{"money_rand_q":[10,200]}],"fx":{"happy":1},"r":"Qəpik-quruş: {amount}. Cibinə qoydun, cingildəyir."},{"p":0.15,"fx":{"happy":-1},"r":"Şüşə qapağı imiş 😅"}]},
+ {"t":"Fikir vermə, yoluna davam et","r":"Kim bilir, bəlkə də xəzinə idi."}]},
+{"id":"pul_tapdi","cat":"life","tone":"rare","age":[7,17],"w":0.4,"icon":"💵","t":"Yolda yerə düşmüş əzilmiş pul əskinasları tapdın.","ch":[
+ {"t":"Özümə saxlayım","do":[{"money_rand":[20,30]}],"fx":{"happy":4},"r":"{amount}! Dondurma və saqqız aldın. Vicdanın bir az narahatdır.","trait":{"honesty":-2}},
  {"t":"Sahibini axtar","odds":[{"p":0.5,"fx":{"happy":6},"r":"Pulu itirən qoca qadın tapıldı, sənə dua etdi."},{"p":0.5,"fx":{"happy":2},"r":"Sahibi tapılmadı, pulu məscidin ianə qutusuna saldın."}],"trait":{"honesty":3}}]},
 {"id":"nenegil","cat":"family","tone":"everyday","age":[5,12],"icon":"🏡","t":"Yay tətilində kənddə nənəgildəsən. Nənən deyir: “Get, toyuqlara dən ver.”","ch":[
  {"t":"Gedirəm","fx":{"happy":4,"health":2},"r":"Xoruz səni qovdu, amma yumurtaları topladın! 🐓","trait":{"family":1}},
@@ -62,7 +65,7 @@
  {"t":"Sınağa get","odds":[{"p":{"of":"tal.acting","div":110},"fx":{"happy":8,"looks":2,"tal":{"acting":6},"flag":"tamasa"},"r":"Baş rolu aldın! Tamaşadan sonra hamı səni təbrik etdi."},{"p":0.4,"fx":{"happy":-3},"r":"Ağac rolunu aldın 🌳 Amma çox gözəl ağac idin."}]},
  {"t":"Getmirəm","r":"Tamaşaya tamaşaçı kimi baxdın."}]},
 {"id":"pisik_oldu","cat":"family","tone":"dramatic","age":[9,18],"icon":"🐾","cond":{"flag_since_gte":{"pisik":4}},"t":"Pişiyin Mestan qocalıb, çox xəstədir.","ch":[
- {"t":"Baytara apar","fx":{"money":-40,"happy":-6},"r":"Baytar əlindən gələni etdi. Mestan sakitcə yuxuya getdi. Onu həyətdə basdırdın."},
+ {"t":"Baytara apar","fx":{"happy":-6,"rel":{"ana":3}},"r":"Anan baytarın pulunu ödədi. Baytar əlindən gələni etdi. Mestan sakitcə yuxuya getdi. Onu həyətdə basdırdın."},
  {"t":"Yanında otur","fx":{"happy":-8},"r":"Son gecəsini qucağında keçirdi.","trait":{"empathy":2}}]},
 {"id":"telefon","cat":"social","tone":"everyday","age":[12,13],"force":true,"icon":"📱","t":"Valideynlərin sənə ilk smartfonunu aldı! Bütün sinif “Pıçıltı” sosial şəbəkəsindədir.","ch":[
  {"t":"Pıçıltı-da hesab aç","fx":{"happy":8},"do":[{"open_social":true}],"r":"Hesabın hazırdır: {handle}. Artıq paylaşım edə bilərsən (Fəaliyyət → Pıçıltı)."},
@@ -79,7 +82,7 @@
 {"id":"skaut","cat":"career","tone":"rare","age":[13,18],"w":3,"icon":"🔭","cond":{"tal_gt":{"sport":62},"stat_gt":{"fitness":50},"no_flag":"akademiya"},"t":"Məhəllə turnirində oynayırdın. Matçdan sonra bir nəfər yaxınlaşdı: “Mən klub skautuyam. Akademiyamıza gəl.”","ch":[
  {"t":"Razıyam! Futbol mənim həyatımdır","fx":{"happy":12,"fitness":5,"tal":{"sport":5},"flag":"akademiya"},"do":[{"add_person":{"role":"məşqçi","g":"k","age_abs":[38,58],"unless_has":true}}],"r":"Futbol akademiyasına qəbul olundun!{dream_twist}"},
  {"t":"Dərsə mane olar, yox","fx":{"smarts":2},"r":"Skaut vizit kartını qoyub getdi. Bəlkə də səhv edirsən…"}]},
-{"id":"akademiya_mac","cat":"career","tone":"everyday","age":[14,18],"once":false,"cool":2,"icon":"⚽","cond":{"flag":"akademiya","job":false},"t":"Akademiyada vacib matçdır. Məşqçi {məşqçi} sənə güvənir.","ch":[
+{"id":"akademiya_mac","cat":"career","tone":"everyday","age":[14,18],"once":false,"cool":2,"icon":"⚽","cond":{"flag":"akademiya","job":false,"has":["məşqçi"]},"t":"Akademiyada vacib matçdır. Məşqçi {məşqçi} sənə güvənir.","ch":[
  {"t":"Bütün gücünlə oyna","odds":[{"p":{"of":"st.fitness","div":110},"fx":{"fitness":3,"happy":8,"fame":1},"do":[{"flag_inc":"akademiyaQol"}],"r":"İki qol vurdun! Kluba xəbər çatdı."},{"p":0.35,"fx":{"health":-10},"r":"Zədə aldın, bir ay oynamayacaqsan."}]},
  {"t":"Komanda üçün oyna, ötürmə ver","fx":{"happy":4,"rel":{"məşqçi":8}},"r":"Üç məhsuldar ötürmə! Məşqçi səni ayrıca təriflədi."}]},
 {"id":"futbol_muqavile","cat":"career","tone":"rare","age":[17,21],"force":true,"icon":"✍️","cond":{"flag":"akademiya","job":false,"stat_gt":{"fitness":55}},"t":"Klub səninlə ilk peşəkar müqaviləni imzalamaq istəyir!","ch":[

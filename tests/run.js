@@ -24,13 +24,14 @@ function sandbox() {
     // a bot that plays one year with seeded decisions (so a seed reproduces a whole life)
     globalThis.playYear = function (log) {
       for (let i = 0; i < 3; i++) {
-        const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !a.special && (!a.cost || P.money >= a.cost));
-        const a = pick(list); if (a) { apply(a.fx ? a.fx() : {}); if (a.cost) P.money -= a.cost; if (a.after) a.after(); }
+        const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !a.special && (!a.cost || P.age < 18 || P.money >= a.cost));
+        const a = pick(list); if (a) { apply(a.fx ? a.fx() : {}); if (a.cost && P.age >= 18) P.money -= a.cost; if (a.after) a.after(); }
       }
       if (P.soc && chance(.5)) { const ts = POST_TYPES.filter(t => P.age >= t.min && (!t.need || t.need())); makePost(pick(ts).id); }
       if (P.age >= 17 && !P.job && !["uni", "magistr"].includes(P.edu.stage) && !(P.army && !P.army.done) && chance(.5)) { const o = jobOptions(); if (o.length) { const x = pick(o); if (chance(x.odds)) startJob(x.id); } }
-      const before = P.day;
+      const before = P.day, m0 = P.money, a0 = P.age;
       ageUp();
+      if (a0 + 1 < 16 && P.money > m0) throw new Error("16 yaşdan əvvəl avtomatik pul gəldi: " + m0 + " → " + P.money);
       if (P.day < before) throw new Error("zaman geri getdi (ageUp)");
       for (const ev of P.yearEvents.splice(0)) {
         const e = Interp.byId(ev.id); if (!e) throw new Error("naməlum hadisə " + ev.id);
@@ -41,7 +42,9 @@ function sandbox() {
         const i = Math.floor(R() * ch.length);
         if (log) log(e, text, ch[i]);
         P.seen[e.id] = P.age;
+        const mBefore = P.money;
         const res = Interp.choose(e, ch[i]);
+        if (P.age < 16 && P.money - mBefore > 30) throw new Error(e.id + ": 16 yaşdan kiçik uşağa " + (P.money - mBefore) + " ₼ gəldi");
         recordChoice(e.id, i, res.outcome, res.text);
         for (const s of [text, res.text, ...ch.map(c => Interp.text(c.t))]) if (/\\{[^}]+\\}|undefined|NaN|(^|\\s)\\?(\\s|$)/.test(s)) throw new Error("pis mətn [" + e.id + "]: " + s);
       }
@@ -50,7 +53,7 @@ function sandbox() {
     };
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
-    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person;
+    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney;
     globalThis.playLife = function (name, g, dream, seed, maxAge, log) { newLife(name, g, "Bakı", dream, seed); while (P.alive && P.age < (maxAge || 130)) playYear(log); return P; };
   `, ctx);
   return ctx;
@@ -145,6 +148,13 @@ test("hərbi xidmət qaydaları (rules.json)", () => {
   ok(fail18 > 0, "universitetsiz 18 aylıq xidmət heç görünmədi");
   ok(bach12 > 0, "bakalavrdan sonra 12 aylıq xidmət heç görünmədi");
   console.log(`      (18 ay: ${fail18}, bakalavrdan sonra 12 ay: ${bach12}, magistrdən sonra 12 ay: ${mast12})`);
+});
+
+test("18 yaşa qədər pul: avtomatik xərclik yoxdur, tapılan pul ≤ 30 ₼", () => {
+  let maxAt15 = 0;
+  for (let s = 1; s <= 150; s++) { S.newLife("Uşaq", s % 2 ? "k" : "q", "Bakı", "polis", 7000 + s); while (S.P.alive && S.P.age < 15) S.playYear(); maxAt15 = Math.max(maxAt15, S.P.money); }
+  ok(maxAt15 <= 120, "15 yaşında çox pul: " + maxAt15);
+  console.log(`      (150 uşaqdan 15 yaşda ən çox pul: ${S.fmtMoney(maxAt15)})`);
 });
 
 test("köhnə (V0.1) yaddaş yeni formata köçür və oyun davam edir", () => {

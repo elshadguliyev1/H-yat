@@ -87,6 +87,9 @@ const Interp = (() => {
     social_quiet() { socOpen(); P.soc.followers = 3; },
     dream_set(id) { P.dream = id; },
     money_rand(r, ctx) { const m = rnd(r[0], r[1]); P.money += m; ctx.vars.amount = fmtMoney(m); ctx.changes.push(["money", m]); },
+    // money in qəpik (e.g. coins found on the street)
+    money_rand_q(r, ctx) { const q = rnd(r[0], r[1]); const m = q / 100; P.money = Math.round((P.money + m) * 100) / 100; ctx.vars.amount = fmtMoney(m); ctx.changes.push(["money", m]); },
+    npc_job(o) { const p = person(o.role); if (p) p.job = o.job; },
     money_mul(f) { P.money = Math.round(P.money * f); },
     followers_rand(r, ctx) { if (!P.soc) return; const n = rnd(r[0], r[1]); P.soc.followers += n; P.stats.maxFollowers = Math.max(P.stats.maxFollowers, P.soc.followers); ctx.changes.push(["followers", n]); },
     add_asset(o) { P.assets.push({ type: o.type, t: o.t, value: o.value, since: P.age }); },
@@ -203,8 +206,14 @@ const Interp = (() => {
     const vCond = (c, where) => { if (!c) return; for (const [k, v] of Object.entries(c)) { if (!C[k]) errs.push(`${where}: naməlum şərt "${k}"`); if (k === "any") v.forEach((x, i) => vCond(x, where + ".any" + i)); if (k === "not") vCond(v, where + ".not"); } };
     const vFx = (fx, where) => { if (!fx) return; for (const k of Object.keys(fx)) if (!FX_KEYS.has(k)) errs.push(`${where}: naməlum effekt "${k}"`); };
     const vDo = (list, where) => { for (const step of list || []) for (const [k, v] of Object.entries(step)) { if (!A[k]) errs.push(`${where}: naməlum əməliyyat "${k}"`); if (k === "schedule" && !known.has(v.event)) errs.push(`${where}: planlanan hadisə tapılmadı "${v.event}"`); if (k === "start_job" && !CAREERS[v.id]) errs.push(`${where}: naməlum peşə "${v.id}"`); } };
+    // a text that names a person ({dost}, {müəllim}…) must be guarded by a "has" condition for that role
+    const ROLE_PH = { "{dost}": "dost", "{sevgili}": "sevgili", "{yoldaş}": "həyat yoldaşı", "{müəllim}": "müəllim", "{məşqçi}": "məşqçi", "{ana}": "ana", "{ata}": "ata" };
+    const guarded = (cond, role) => !!cond && ([].concat(cond.has || []).includes(role) || (cond.rel_gt && cond.rel_gt[role] != null));
+    const vRoles = (t, conds, where) => { for (const [ph, role] of Object.entries(ROLE_PH)) if (String(t || "").includes(ph) && !conds.some(c => guarded(c, role))) errs.push(`${where}: "${ph}" işlənir, amma şərtdə "has":["${role}"] yoxdur`); };
     for (const e of all) {
       const w = e.id || "(id yoxdur)";
+      vRoles(e.t, [e.cond], w);
+      (e.ch || []).forEach((c, i) => { vRoles(c.t, [e.cond, c.cond], `${w}.ch${i}`); vRoles(c.r, [e.cond, c.cond], `${w}.ch${i}`); (c.odds || []).forEach((o, j) => vRoles(o.r, [e.cond, c.cond], `${w}.ch${i}.odds${j}`)); });
       if (!e.id) errs.push("id olmayan hadisə");
       if (ids.has(e.id)) errs.push(`${w}: təkrar id`); ids.add(e.id);
       for (const k of Object.keys(e)) if (!EVENT_KEYS.has(k)) errs.push(`${w}: naməlum sahə "${k}"`);

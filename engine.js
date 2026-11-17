@@ -8,7 +8,8 @@ const rnd = (a, b) => a + Math.floor(R() * (b - a + 1));
 const pick = a => a[Math.floor(R() * a.length)];
 const clamp = (v, a = 0, b = 100) => Math.max(a, Math.min(b, v));
 const chance = p => R() < p;
-const fmtMoney = v => (v < 0 ? "−" : "") + Math.round(Math.abs(v)).toLocaleString("az").replace(/,/g, " ") + " ₼";
+// whole manats normally; small sums keep their qəpik (e.g. "1,40 ₼")
+const fmtMoney = v => { const a = Math.abs(v); const s = a < 100 && Math.round(a * 100) % 100 ? a.toFixed(2).replace(".", ",") : Math.round(a).toLocaleString("az").replace(/,/g, " "); return (v < 0 ? "−" : "") + s + " ₼"; };
 const ord = n => n + ([1,2,5,7,8].includes(n % 10) || n % 100 === 11 || n % 100 === 12 ? "-ci" : [3,4].includes(n % 10) || n % 100 === 100 ? "-cü" : n % 10 === 6 ? "-cı" : "-cu");
 const fmtNum = v => v >= 1e6 ? (v / 1e6).toFixed(v >= 1e7 ? 0 : 1).replace(".", ",") + " mln" : v >= 1e4 ? Math.round(v / 1e3) + " min" : String(Math.round(v));
 
@@ -57,7 +58,7 @@ const FACULTIES = {
 // ---------- state ----------
 let P = null;
 let RULES = null; // data/rules.json (military, education)
-const LIFE_VERSION = 3;
+const LIFE_VERSION = 4;
 const TRAITS = { empathy: "Empatiya", honesty: "Dürüstlük", courage: "Cəsarət", discipline: "İntizam", independence: "Müstəqillik", family: "Ailəyə bağlılıq", social: "Ünsiyyətcillik" };
 
 function newPerson(role, gender, age, extra = {}) {
@@ -84,11 +85,12 @@ function newLife(name, gender, city, dream, seed) {
     stats: { posts: 0, maxFollowers: 0, kids: 0, jobsHad: 0, countries: 0, crimes: 0 }
   };
   const famBase = fam;
-  P.people.push(newPerson("ana", "q", rnd(25, 36), { last: surname(famBase, "q") }));
-  P.people.push(newPerson("ata", "k", rnd(27, 40), { last: surname(famBase, "k") }));
+  const ana = newPerson("ana", "q", rnd(25, 36), { last: surname(famBase, "q"), job: pick(PARENT_JOBS.q) }); P.people.push(ana);
+  const ata = newPerson("ata", "k", rnd(27, 40), { last: surname(famBase, "k"), job: pick(PARENT_JOBS.k) }); P.people.push(ata);
+  addGrandparents();
   const sib = rnd(0, 2);
   for (let i = 0; i < sib; i++) { const g = pick(["k", "q"]); P.people.push(newPerson(g === "k" ? "qardaş" : "bacı", g, rnd(1, 12))); }
-  log(`${name} ${city} şəhərində doğuldu. Ailəsi: anası ${who("ana")}, atası ${who("ata")}.`, 0);
+  log(`${name} ${city} şəhərində doğuldu. Anası ${who("ana")} (${person("ana").job.toLowerCase()}), atası ${who("ata")} (${person("ata").job.toLowerCase()}).`, 0);
   log(`İndi ${name} 5 yaşındadır və bağçaya gedir. Böyüyəndə ${dreamName()} olmaq istəyir.`);
   save();
 }
@@ -154,8 +156,24 @@ function salaryMonthly() {
   if (!P.job) return 0;
   const c = CAREERS[P.job.id];
   if (P.job.id === "biznes") return P.job.income || 0;
-  return c.sal[Math.min(P.job.lv, c.sal.length - 1)];
+  const full = c.sal[Math.min(P.job.lv, c.sal.length - 1)];
+  return P.age < 18 ? Math.round(full / 2) : full; // under 18: part-time only
 }
+// parents' professions (NPCs) and the family's means: affects how often they can give pocket money
+const PARENT_JOBS = {
+  k: ["Mühəndis", "Sürücü", "Tikinti ustası", "Həkim", "Müəllim", "Polis", "Mühasib", "Bazarda satıcı", "Neftçi", "Elektrik ustası", "Kiçik dükan sahibi", "Proqramçı"],
+  q: ["Müəllim", "Tibb bacısı", "Həkim", "Mühasib", "Bərbər", "Tikişçi", "Bank işçisi", "Evdar qadın", "Satıcı", "Bağça tərbiyəçisi", "Aptek işçisi", "Dərzi"]
+};
+const JOB_MEANS = { "Həkim": 3, "Proqramçı": 3, "Neftçi": 3, "Bank işçisi": 2, "Mühəndis": 2, "Kiçik dükan sahibi": 2, "Polis": 2, "Mühasib": 2, "Müəllim": 1, "Tibb bacısı": 1, "Sürücü": 1, "Tikinti ustası": 1, "Elektrik ustası": 1, "Bazarda satıcı": 1, "Satıcı": 1, "Bərbər": 1, "Tikişçi": 1, "Dərzi": 1, "Bağça tərbiyəçisi": 1, "Aptek işçisi": 1, "Evdar qadın": 0, "İşsiz": 0, "Təqaüdçü": 1 };
+function familyMeans() { return ["ana", "ata"].map(r => person(r)).filter(Boolean).reduce((a, p) => a + (JOB_MEANS[p.job] ?? 1), 0); } // 0..6
+function addGrandparents() {
+  const ana = P.people.find(p => p.role === "ana"), base = ana ? ana.age : 30;
+  for (const [role, g, a] of [["nənə", "q", base + rnd(22, 30)], ["baba", "k", base + rnd(24, 33)]])
+    P.people.push(newPerson(role, g, a, { job: a >= 60 ? "Təqaüdçü" : pick(PARENT_JOBS[g].filter(j => j !== "Evdar qadın")) }));
+  for (const p of P.people) if ((p.role === "nənə" || p.role === "baba") && p.age > 84) { p.alive = false; p.died = 0; }
+}
+// pocket money: under 18 the only money sources are family, things found on the street, and (16+) part-time work
+const POCKET_MAX = { ana: 10, ata: 10, "nənə": 15, baba: 15 };
 // what jobs can the player apply to right now
 function jobOptions() {
   const o = [];
@@ -293,7 +311,7 @@ function eduTick() {
   const e = P.edu;
   if (e.stage === "bagca" && P.age >= 6) { e.stage = "mekteb"; e.grade = 1; log("🎒 Birinci sinfə getdi! İlk müəllimi: " + addPerson("müəllim", pick(["q", "q", "k"]), rnd(28, 55)).name + " müəllim."); return; }
   if (e.stage === "mekteb") {
-    const study = P.flags["oxudu" + (P.age - 1)] ? 6 : 0;
+    const study = (P.flags["oxudu" + (P.age - 1)] ? 6 : 0) - (P.job ? 6 : 0); // working while at school costs grades
     e.gpa = clamp(Math.round(e.gpa * 0.6 + (P.st.smarts * 0.8 + rnd(-10, 15) + study) * 0.4));
     if (e.grade >= 11) { e.stage = "mezun"; log(`🎓 Orta məktəbi bitirdi. Orta qiyməti: ${(2 + e.gpa / 33.4).toFixed(1)} / 5.`); return; }
     e.grade++;
@@ -317,9 +335,8 @@ function eduTick() {
 }
 function moneyTick() {
   const sal = salaryMonthly() * 12;
-  // children: no own money before 10; a small pocket allowance (mostly spent) from 10 to 15
-  if (P.age < 10) return;
-  if (P.age < 16) { P.money += rnd(10, 40); return; }
+  // under 18: no automatic allowance (money only from family, finds, part-time work)
+  if (P.age < 16) return;
   if (P.job) P.money += sal;
   if (P.edu.stage === "uni" && P.flags.odenisli) P.money -= 2500;
   if (P.age >= 18 && !(["uni", "magistr"].includes(P.edu.stage) && P.age < 26) && !(P.army && !P.army.done)) {
@@ -348,11 +365,14 @@ function jobTick() {
 function peopleTick() {
   for (const p of P.people) {
     if (!p.alive) continue;
+    if ((p.role === "ana" || p.role === "ata") && p.job === "İşsiz" && p.age < 60 && chance(0.35)) { p.job = pick(PARENT_JOBS[p.g].filter(j => j !== "Evdar qadın")); log(`💼 ${p.role === "ana" ? "Anan" : "Atan"} yenidən işə düzəldi: ${p.job.toLowerCase()}.`); }
+    if (["ana", "ata", "nənə", "baba"].includes(p.role) && p.age >= 63 && p.job && !["Təqaüdçü", "Evdar qadın"].includes(p.job)) { p.job = "Təqaüdçü"; log(`🏖️ ${{ ana: "Anan", ata: "Atan", "nənə": "Nənən", baba: "Baban" }[p.role]} təqaüdə çıxdı.`); }
     const risk = p.age > 60 ? ((p.age - 60) / 35) ** 2 * 0.5 : 0.001;
     if (chance(risk)) {
       p.alive = false; p.died = P.age;
       if (!p.role.startsWith("keçmiş")) {
         const close = ["ana", "ata", "həyat yoldaşı", "uşaq", "qardaş", "bacı", "nənə", "baba"].includes(p.role);
+        if (p.role === "nənə" || p.role === "baba") log(`💐 Hər yay getdiyin o həyət artıq səssizdir.`);
         log(`🕯️ ${p.role[0].toUpperCase() + p.role.slice(1)} ${p.name} ${p.age} yaşında dünyasını dəyişdi.`);
         if (close) apply({ happy: -20, health: -3 });
       }
@@ -434,6 +454,13 @@ function migrateLife(L) {
     // v3: children no longer get a yearly family allowance; trim what the old rule had piled up
     if (L.age < 16) L.money = Math.min(L.money, Math.max(0, L.age - 9) * 25);
     L.v = 3;
+  }
+  if (L.v < 4) {
+    // v4: parents get professions, grandparents exist, under-18 money only from family/finds/part-time work
+    for (const p of L.people) if ((p.role === "ana" || p.role === "ata") && !p.job) p.job = pick(PARENT_JOBS[p.g]);
+    if (!L.people.some(p => p.role === "nənə" || p.role === "baba")) { const keep = P; P = L; addGrandparents(); P = keep; }
+    if (L.age < 18) L.money = Math.min(L.money, 30);
+    L.v = 4;
   }
   return L;
 }

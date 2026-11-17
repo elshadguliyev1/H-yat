@@ -77,7 +77,12 @@ h1, h2, h3 { font-family: var(--f-display); font-weight: 800; margin: 0; letter-
 
 /* ---- game ---- */
 #game { padding-bottom: calc(96px + env(safe-area-inset-bottom)) }
-.top { padding-top: calc(12px + env(safe-area-inset-top)); padding-bottom: 8px; display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 12px; align-items: center }
+.top { padding-top: calc(12px + env(safe-area-inset-top)); padding-bottom: 8px; display: grid; grid-template-columns: auto minmax(0,1fr) auto auto; gap: 10px; align-items: center }
+.help { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface); font-weight: 800; font-size: 16px; display: grid; place-items: center; padding: 0 }
+.legend { display: grid; gap: 8px; margin: 0 0 14px }
+.legend div { display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: center; font-size: 14px }
+.legend b { display: block } .legend span.e { font-size: 22px; text-align: center }
+.legend small { color: var(--muted); font-weight: 600 }
 .ava { width: 58px; height: 58px; border-radius: 18px; background: var(--surface); border: 2px solid var(--line); display: grid; place-items: center; font-size: 34px; box-shadow: var(--shadow) }
 .who h2 { font-size: 20px; line-height: 1.15 }
 .who .sub { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
@@ -192,7 +197,7 @@ function avatar(p = P) {
   if (p.age < 3) return "👶"; if (p.age < 13) return k ? "👦" : "👧"; if (p.age < 18) return k ? "🧑" : "👧";
   if (p.age < 40) return k ? "👨" : "👩"; if (p.age < 65) return k ? "🧔" : "👩‍🦱"; return k ? "👴" : "👵";
 }
-const ROLE_ICON = { ana: "👩", ata: "👨", "qardaş": "👦", "bacı": "👧", dost: "🤝", sevgili: "💕", "həyat yoldaşı": "💍", "uşaq": "🧒", "müəllim": "🧑‍🏫", "məşqçi": "🧢", "nəvə": "👶", "tanış": "🙂" };
+const ROLE_ICON = { "nənə": "👵", baba: "👴", ana: "👩", ata: "👨", "qardaş": "👦", "bacı": "👧", dost: "🤝", sevgili: "💕", "həyat yoldaşı": "💍", "uşaq": "🧒", "müəllim": "🧑‍🏫", "məşqçi": "🧢", "nəvə": "👶", "tanış": "🙂" };
 
 // ---------- start ----------
 const MAX_SLOTS = 5;
@@ -242,7 +247,7 @@ const STAT_COLORS = { health: "var(--bad)", happy: "var(--gold)", smarts: "var(-
 function statusLine() {
   if (!P.alive) return "Həyatını başa vurdu";
   if (P.army && !P.army.done) return "Hərbi xidmətdə";
-  if (P.job) return jobTitle();
+  if (P.job) return jobTitle() + (P.age < 18 ? " (yarımştat)" : "");
   const e = P.edu;
   if (e.stage === "bagca") return "Bağça";
   if (e.stage === "mekteb") return ord(e.grade) + " sinif şagirdi";
@@ -257,7 +262,8 @@ function renderGame() {
   app.innerHTML = `<div id="game">
     <header class="wrap top"><div class="ava" aria-hidden="true">${avatar()}</div>
       <div class="who"><h2>${esc(P.name)}, ${P.age}</h2><div class="sub">${esc(statusLine())} · ${esc(P.city)}</div></div>
-      <div class="money">${P.age >= 10 || P.money ? fmtMoney(P.money) : ""}<small>${P.fame ? "⭐ " + P.fame : ""}${P.soc ? " · 👥 " + fmtNum(P.soc.followers) : ""}</small></div></header>
+      <div class="money">${P.age >= 10 || P.money ? fmtMoney(P.money) : ""}<small>${P.fame ? "⭐ " + P.fame : ""}${P.soc ? " · 👥 " + fmtNum(P.soc.followers) : ""}</small></div>
+      <button class="help" id="helpBtn" aria-label="İkonların izahı">?</button></header>
     <div class="wrap stats">${STAT_KEYS.map(k => `<div class="stat"><span aria-hidden="true">${STAT_ICONS[k]}</span><div class="bar" role="meter" aria-label="${STAT_NAMES[k]}" aria-valuenow="${P.st[k]}" aria-valuemin="0" aria-valuemax="100"><i style="width:${P.st[k]}%;background:${STAT_COLORS[k]}"></i></div><span class="n">${P.st[k]}</span></div>`).join("")}
       <div class="stat"><span aria-hidden="true">⭐</span><div class="bar"><i style="width:${P.fame}%;background:var(--accent)"></i></div><span class="n">${P.fame}</span></div></div>
     <nav class="tabs"><div class="wrap" role="tablist">${[["life", "Həyat"], ["act", "Fəaliyyət"], ["soc", "Pıçıltı"], ["ppl", "İnsanlar"], ["me", "Mən"]].map(([id, t]) => `<button role="tab" data-t="${id}" aria-selected="${tab === id}">${t}</button>`).join("")}</div></nav>
@@ -265,6 +271,8 @@ function renderGame() {
     <div class="agebar"><div class="wrap"><div class="energy" title="Bu il qalan fəaliyyət">${[0, 1, 2].map(i => `<i class="${i < P.acts ? "" : "off"}"></i>`).join("")}</div><button class="btn" id="ageBtn">+1 yaş →</button></div></div></div>`;
   app.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { tab = b.dataset.t; renderGame(); window.scrollTo({ top: 0 }); });
   $("#ageBtn").onclick = nextYear;
+  $("#helpBtn").onclick = showLegend;
+  app.querySelectorAll(".stat").forEach((el, i) => { el.onclick = () => toast(i < STAT_KEYS.length ? `${STAT_ICONS[STAT_KEYS[i]]} ${STAT_NAMES[STAT_KEYS[i]]}` : "⭐ Şöhrət", 1400); });
   ({ life: panelLife, act: panelAct, soc: panelSoc, ppl: panelPpl, me: panelMe })[tab]();
   if (P.yearEvents && P.yearEvents.length && !$(".modal")) showNextEvent();
 }
@@ -311,12 +319,19 @@ function showNextEvent() {
   });
 }
 
+// ---------- legend ----------
+function showLegend() {
+  const rows = [["❤️", "Sağlamlıq", "0-a düşsə, həyat bitə bilər."], ["😊", "Xoşbəxtlik", "Ruh halın: seçimlər, ailə və uğurlar təsir edir."], ["🧠", "Ağıl", "Dərs, imtahan, peşə uğuru."], ["💪", "İdman", "Fiziki forma: idman, polis, ordu."], ["✨", "Görünüş", "Sevgi, səhnə və sosial şəbəkə üçün."], ["⭐", "Şöhrət", "Nə qədər tanınırsan."], ["₼", "Pul", "18 yaşa qədər yalnız ailədən, tapılan puldan və 16 yaşdan yarımştat işdən."], ["👥", "İzləyici", "Pıçıltı sosial şəbəkəsində."], ["<span style='color:var(--accent)'>●</span>", "Fəaliyyət nöqtələri", "Hər il 3 fəaliyyət seçə bilərsən. Bitəndə +1 yaş bas."], ["<span style='color:var(--pink)'>▬</span>", "Çəhrayı zolaq", "İnsanlar bölməsində münasibətin səviyyəsi."], ["<span style='color:var(--gold)'>★</span>", "Ulduzlar", "Mən bölməsində istedadların."]];
+  const s = sheet(`<h3 style="margin-bottom:12px">İkonlar nə deməkdir?</h3><div class="legend">${rows.map(([e, t, d]) => `<div><span class="e">${e}</span><span><b>${t}</b><small>${d}</small></span></div>`).join("")}</div><button class="btn close">Aydındır</button>`);
+  s.el.querySelector(".close").onclick = s.close;
+}
+
 // ---------- activities ----------
 function useAct() { if (P.acts <= 0) { toast("Bu il üçün vaxtın bitdi. +1 yaş bas."); return false; } P.acts--; return true; }
 function panelAct() {
   const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !(a.id === "post" && !P.soc) && !(P.army && !P.army.done && !["idman", "meditasiya", "aile"].includes(a.id)));
   $("#panel").innerHTML = `<p class="small muted" style="margin:0 0 10px">Hər il 3 fəaliyyət seçə bilərsən (aşağıdakı nöqtələr). Sonra <b>+1 yaş</b> bas.</p>
-    <div class="acts">${list.map(a => `<button class="act" data-id="${a.id}" ${P.acts <= 0 || (a.cost && P.money < a.cost) ? "disabled" : ""}><span class="i" aria-hidden="true">${a.icon}</span><span>${a.t}${a.cost ? `<small>${fmtMoney(a.cost)}</small>` : ""}</span></button>`).join("")}</div>`;
+    <div class="acts">${list.map(a => `<button class="act" data-id="${a.id}" ${P.acts <= 0 || (a.cost && P.age >= 18 && P.money < a.cost) ? "disabled" : ""}><span class="i" aria-hidden="true">${a.icon}</span><span>${a.t}${a.cost ? `<small>${P.age >= 18 ? fmtMoney(a.cost) : "valideynlər ödəyir"}</small>` : ""}</span></button>`).join("")}</div>`;
   $("#panel").querySelectorAll(".act").forEach(b => b.onclick = () => doAction(ACTIONS.find(a => a.id === b.dataset.id)));
 }
 function doAction(a) {
@@ -326,7 +341,7 @@ function doAction(a) {
   if (a.special === "love") return findLove();
   if (!useAct()) return;
   const changes = apply(a.fx ? a.fx() : {});
-  if (a.cost) { P.money -= a.cost; changes.push(["money", -a.cost]); }
+  if (a.cost && P.age >= 18) { P.money -= a.cost; changes.push(["money", -a.cost]); } // children: parents pay
   const text = typeof a.r === "function" ? a.r() : a.r;
   if (a.after) a.after();
   log(`${a.icon} ${text}`);
@@ -417,7 +432,7 @@ const ORDER = ["həyat yoldaşı", "sevgili", "uşaq", "nəvə", "ana", "ata", "
 function panelPpl() {
   const live = P.people.filter(p => !p.role.startsWith("keçmiş")).sort((a, b) => (ORDER.indexOf(a.role) + 99 * !a.alive) - (ORDER.indexOf(b.role) + 99 * !b.alive));
   const past = P.people.filter(p => p.role.startsWith("keçmiş") && p.alive && ["keçmiş sevgili", "keçmiş dost"].includes(p.role));
-  const row = p => `<button class="pp ${p.alive ? "" : "dead"}" data-id="${p.id}"><span class="e" aria-hidden="true">${p.alive ? (ROLE_ICON[p.role] || avatar(p)) : "🕯️"}</span><span><div class="nm">${esc(p.name)}</div><div class="rl">${esc(p.role)} · ${p.alive ? p.age + " yaş" : "rəhmətə gedib"}</div></span>${p.alive ? `<span class="relbar" title="Münasibət ${p.rel}%"><i style="width:${p.rel}%"></i></span>` : ""}</button>`;
+  const row = p => `<button class="pp ${p.alive ? "" : "dead"}" data-id="${p.id}"><span class="e" aria-hidden="true">${p.alive ? (ROLE_ICON[p.role] || avatar(p)) : "🕯️"}</span><span><div class="nm">${esc(p.name)}</div><div class="rl">${esc(p.role)} · ${p.alive ? p.age + " yaş" : "rəhmətə gedib"}${p.job ? " · " + esc(p.job) : ""}</div></span>${p.alive ? `<span class="relbar" title="Münasibət ${p.rel}%"><i style="width:${p.rel}%"></i></span>` : ""}</button>`;
   $("#panel").innerHTML = `<div class="ppl">${live.map(row).join("")}</div>${past.length ? `<p class="sec-h">Keçmiş</p><div class="ppl">${past.map(row).join("")}</div>` : ""}`;
   $("#panel").querySelectorAll(".pp").forEach(b => b.onclick = () => personSheet(P.people.find(p => p.id === b.dataset.id)));
 }
@@ -427,7 +442,7 @@ function personSheet(p) {
   if (p.role === "sevgili" && P.age >= 18 && p.rel >= 60) opts.push({ id: "propose", t: "💍 Evlilik təklif et" });
   if (p.role === "sevgili") opts.push({ id: "breakup", t: "💔 Ayrıl" });
   if (p.role === "həyat yoldaşı") opts.push({ id: "divorce", t: "📄 Boşan" });
-  if (["ana", "ata"].includes(p.role) && P.age < 18) opts.push({ id: "money", t: "🙏 Cib xərcliyi istə" });
+  if (POCKET_MAX[p.role] && P.age < 18) opts.push({ id: "money", t: `🙏 Cib xərcliyi istə (ən çox ${POCKET_MAX[p.role]} ₼)` });
   if (p.role === "həyat yoldaşı" && people("uşaq").length < 4 && P.age < 48) opts.push({ id: "baby", t: "👶 Uşaq istəyirik" });
   const s = sheet(`<div class="big">${ROLE_ICON[p.role] || avatar(p)}</div><p class="q">${esc(p.name)} <span class="muted">· ${esc(p.role)}, ${p.age} yaş</span><br><span class="small muted">Münasibət: ${p.rel}%</span></p><div class="choices">${opts.map(o => `<button data-id="${o.id}" ${o.cost && P.money < o.cost ? "disabled style='opacity:.45'" : ""}>${o.t}</button>`).join("")}</div><button class="btn ghost close">Bağla</button>`);
   s.el.querySelector(".close").onclick = s.close;
@@ -440,7 +455,13 @@ function personSheet(p) {
     if (id === "propose") { if (chance(p.rel / 110)) { p.role = "həyat yoldaşı"; P.flags.evli = P.age; P.money -= 5000; ch = [["money", -5000], ...apply({ happy: 18 })]; text = `“Hə!” dedi! 💍 Toy edildi, ${p.name} artıq həyat yoldaşındır.`; } else { p.rel = clamp(p.rel - 15); ch = apply({ happy: -12 }); text = `${p.name} “hələ hazır deyiləm” dedi…`; } }
     if (id === "breakup") { p.role = "keçmiş sevgili"; ch = apply({ happy: -6 }); text = `${p.name} ilə ayrıldınız.`; }
     if (id === "divorce") { p.role = "keçmiş həyat yoldaşı"; const half = Math.max(0, Math.round(P.money / 2)); P.money -= half; ch = [["money", -half], ...apply({ happy: -15 })]; text = `Boşandınız. Əmlak bölündü.`; }
-    if (id === "money") { if (chance(p.rel / 120)) { const m = rnd(5, 30); P.money += m; ch = [["money", m]]; text = `${p.name} sənə ${m} ₼ verdi. “Bax ha, dondurmaya xərcləmə!”`; } else { text = `${p.name}: “Pul ağacda bitmir!”`; } }
+    if (id === "money") {
+      // family means (parents' jobs) + relationship decide; grandparents are a bit more generous
+      const max = POCKET_MAX[p.role], means = familyMeans();
+      const ok = chance(clamp(p.rel / 140 + means / 15 + (max > 10 ? 0.15 : 0), 0.1, 0.92));
+      if (ok) { const m = Math.max(1, Math.min(max, Math.round(rnd(1, max) * (0.6 + means / 10)))); P.money += m; ch = [["money", m]]; text = max > 10 ? `${p.name} gizlicə cibinə ${m} ₼ qoydu: “Anana demə.”` : `${p.name} sənə ${m} ₼ verdi. “Bax ha, dondurmaya xərcləmə!”`; }
+      else { text = max > 10 ? `${p.name} başını sığalladı: “Pensiyam gələndə, bala. Get, sənə çay süzüm.”` : means <= 1 ? `${p.name} köks ötürdü: “Bu ay pul çox azdır, bala.”` : `${p.name}: “Pul ağacda bitmir!”`; }
+    }
     if (id === "baby") { if (chance(.6)) { const g = pick(["k", "q"]); const k = addPerson("uşaq", g, 0); P.stats.kids++; ch = apply({ happy: 15, money: -1500 }); text = `${g === "k" ? "Oğlunuz" : "Qızınız"} oldu! Adını ${k.name} qoydunuz 🍼`; } else { text = "Bu il alınmadı. Səbr…"; } }
     log("💬 " + text); save();
     s.el.innerHTML = `<div class="big">${ROLE_ICON[p.role] || "🙂"}</div><p class="q">${esc(text)}</p><div class="fx">${fxChips(ch)}</div><button class="btn close">Yaxşı</button>`;
