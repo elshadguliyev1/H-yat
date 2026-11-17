@@ -22,6 +22,12 @@ Vəziyyət: son işlək versiya `fddf1f6`, 18/18 test keçir. Aşağıdakılar h
    - Biznes avtomatik bağlanmamalıdır. Seçim olmalıdır: davam et, övlada təhvil ver, sat.
    - Miras: ölümdən sonra əmlak, biznes və pul kimə qalır. Bu, epiloqda faktlarla göstərilməlidir.
 
+5. **Övladların toyu və nəvələr:**
+   - **Nəvələr:** nəvə çıxmır. Övladlar evlənəndən sonra nəvə olmalıdır və o, konkret həmin övladın uşağı olmalıdır.
+   - **Qızın toyu:** cehiz hazırlamaq (mebel, məişət əşyaları, qızıl), toy xərcləri, el adətlərinə uyğun səhnələr.
+   - **Oğulun toyu:** ev (mənzil) və maşın almaq, toy xərcləri; imkan çatmasa, kredit və ya ailədən borc.
+   - **Valideynin seçimi:** kömək etmək, qismən kömək etmək və ya imtina. Bu, övladla münasibətə və ailə büdcəsinə təsir etməlidir.
+
 ## B. KRİTİK: dramaturgiya (növbəti işin əsası)
 
 **Niyə hazırkı mühərrik maraqlı hekayə yaratmır (qısa diaqnoz):**
