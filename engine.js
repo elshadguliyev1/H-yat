@@ -58,7 +58,7 @@ const FACULTIES = {
 // ---------- state ----------
 let P = null;
 let RULES = null; // data/rules.json (military, education)
-const LIFE_VERSION = 4;
+const LIFE_VERSION = 5;
 const TRAITS = { empathy: "Empatiya", honesty: "Dürüstlük", courage: "Cəsarət", discipline: "İntizam", independence: "Müstəqillik", family: "Ailəyə bağlılıq", social: "Ünsiyyətcillik" };
 
 function newPerson(role, gender, age, extra = {}) {
@@ -282,7 +282,8 @@ function ageUp() {
   // education
   eduTick(msgs);
   // army
-  if (P.army && !P.army.done) { if (P.day >= P.army.end) { P.army.done = true; log("🎖️ Hərbi xidməti bitirib evə qayıtdı."); apply({ fitness: 8, happy: 10, rel: { ana: 8 } }); } }
+  // discharge when the service period is over (service starts on a birthday: 12 months = one year, 18 months = two)
+  if (P.army && !P.army.done) { if (P.army.end <= P.day + 31) { P.army.done = true; log(`🏠 Hərbi xidmət (${P.army.months} ay) başa çatdı. Evə qayıtdı.`); log("🎖️ Hərbi xidməti bitirib evə qayıtdı."); apply({ fitness: 8, happy: 10, rel: { ana: 8 } }); } }
   // money: allowance, salary, costs
   moneyTick(msgs);
   // job performance
@@ -423,6 +424,12 @@ const ACTIONS = [
     r: () => ({ futbolcu: "Hamı gedəndən sonra da meydanda qaldın, cərimə zərbələri vurdun. Məşqçi gördü.", mugenni: "Səhərə qədər studiyada yeni mahnı yazdın.", hekim: "İki növbə ardıcıl. Yorğunsan, amma xəstələr səni tanıyır." }[P.job.id] || "Gec saatlara qədər işlədin. Rəhbər bunu gördü."), after: () => { P.job.perf = clamp(P.job.perf + rnd(8, 15)); } },
   { id: "seyahet", t: "Səyahətə çıx", icon: "✈️", min: 18, cost: 1500, fx: () => ({ happy: rnd(8, 14) }), r: () => { const c = pick(["Türkiyəyə", "Gürcüstana", "Dubaya", "İtaliyaya", "Misirə", "Fransaya", "Qəbələyə", "Şəkiyə"]); P.stats.countries++; return `${c} səyahət etdin, möhtəşəm idi!`; } },
   { id: "al", t: "Maşın / ev al", icon: "🔑", min: 18, special: "shop" },
+  // during military service only these are available
+  { id: "a_telim", army: true, t: "Ağır təlim keç", icon: "🪖", min: 18, fx: () => ({ fitness: rnd(4, 7), health: 1, happy: -1 }), r: () => pick(["Tam döyüş sursatı ilə 10 km yürüş. Ayaqların qan içində, amma bitirdin.", "Atıcılıq təlimində hədəfi vurdun. Komandir başını tərpətdi.", "Səngər qazdınız, yağış altında. Bu günü heç vaxt unutmayacaqsan."]) },
+  { id: "a_mektub", army: true, t: "Evə məktub yaz", icon: "✉️", min: 18, fx: () => ({ happy: 3 }), r: () => person("ana") ? `Anana məktub yazdın: “Hər şey yaxşıdır, narahat olma.” Cavabında yazdı ki, hər gecə sənin üçün dua edir.` : "Evə məktub yazdın. Cavab gələndə çadırda üç dəfə oxudun.", after: () => { relAdd("ana", 5); relAdd("ata", 4); relAdd("sevgili", 6); relAdd("həyat yoldaşı", 6); } },
+  { id: "a_yoldas", army: true, t: "Əsgər yoldaşları ilə vaxt keçir", icon: "🫡", min: 18, fx: () => ({ happy: rnd(3, 6) }), r: () => pick(["Gecə növbəsindən sonra çay, zarafat, evdən danışmaq.", "Bölükdə nərd turniri keçirdiniz, sən ikinci oldun.", "Bakılı, gəncəli, lənkəranlı — hamı bir süfrə arxasında."]), after: () => { if (!P.npcFlags.army_friend && chance(0.4)) { const d = addPerson("dost", P.g, P.age + rnd(-1, 1)); P.npcFlags.army_friend = d.id; log(`🫡 ${d.name} ilə əsgər dostu oldunuz.`); } } },
+  { id: "a_novbe", army: true, t: "Növbətçilikdə nümunə ol", icon: "🧹", min: 18, fx: () => ({ happy: -1 }), r: () => "Komandir səni bölüyün qarşısında nümunə göstərdi.", after: () => { P.tr.discipline = clamp(P.tr.discipline + 3); P.flags.orduTerif = P.age; } },
+  { id: "a_mezuniyyet", army: true, t: "Məzuniyyət istə", icon: "🏡", min: 18, if: () => !!P.army && !P.army.leave, fx: () => ({}), r: () => { P.army.leave = 1; if (chance(0.5)) { apply({ happy: 10 }); relAdd("ana", 10); relAdd("ata", 8); relAdd("sevgili", 10); relAdd("həyat yoldaşı", 10); return "10 günlük məzuniyyət verdilər! Qapını açanda anan əlindəki boşqabı yerə saldı."; } apply({ happy: -4 }); return "Komandir rədd etdi: “Hələ tezdir.” Bu dəfə alınmadı."; } },
   { id: "meditasiya", t: "Dincəl", icon: "🧘", min: 5, fx: () => ({ happy: rnd(3, 6), health: 1 }), r: () => pick(["Bütün günü yatdın.", "Dəniz kənarında oturdun.", "Serial izlədin, rahatladın."]) }
 ];
 const SHOP = [
@@ -462,6 +469,15 @@ function migrateLife(L) {
     if (!L.people.some(p => p.role === "nənə" || p.role === "baba")) { const keep = P; P = L; addGrandparents(); P = keep; }
     if (L.age < 18) L.money = Math.min(L.money, 30);
     L.v = 4;
+  }
+  if (L.v < 5) {
+    // v5: military service is counted from the birthday of the year it started; discharge if already over
+    if (L.army && !L.army.done && L.army.start != null) {
+      const start = Cal.addYears(L.birth, Cal.yearsBetween(L.birth, L.army.start));
+      L.army.start = start; L.army.end = Cal.addMonths(start, L.army.months || 18);
+      if (L.army.end <= L.day + 31) { L.army.done = true; (L.log.find(y => y.age === L.age) || (L.log.push({ age: L.age, items: [] }), L.log[L.log.length - 1])).items.push(`🏠 Hərbi xidmət (${L.army.months} ay) başa çatdı. Evə qayıtdı.`); }
+    }
+    L.v = 5;
   }
   return L;
 }

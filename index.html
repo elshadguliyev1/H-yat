@@ -329,7 +329,7 @@ function showLegend() {
 // ---------- activities ----------
 function useAct() { if (P.acts <= 0) { toast("Bu il üçün vaxtın bitdi. +1 yaş bas."); return false; } P.acts--; return true; }
 function panelAct() {
-  const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !(a.id === "post" && !P.soc) && !(P.army && !P.army.done && !["idman", "meditasiya", "aile"].includes(a.id)));
+  const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !(a.id === "post" && !P.soc) && (P.army && !P.army.done ? !!a.army : !a.army));
   $("#panel").innerHTML = `<p class="small muted" style="margin:0 0 10px">Hər il 3 fəaliyyət seçə bilərsən (aşağıdakı nöqtələr). Sonra <b>+1 yaş</b> bas.</p>
     <div class="acts">${list.map(a => `<button class="act" data-id="${a.id}" ${P.acts <= 0 || (a.cost && P.age >= 18 && P.money < a.cost) ? "disabled" : ""}><span class="i" aria-hidden="true">${a.icon}</span><span>${typeof a.t === "function" ? a.t() : a.t}${a.cost ? `<small>${P.age >= 18 ? fmtMoney(a.cost) : "valideynlər ödəyir"}</small>` : ""}</span></button>`).join("")}</div>`;
   $("#panel").querySelectorAll(".act").forEach(b => b.onclick = () => doAction(ACTIONS.find(a => a.id === b.dataset.id)));

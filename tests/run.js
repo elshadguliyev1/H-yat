@@ -24,7 +24,7 @@ function sandbox() {
     // a bot that plays one year with seeded decisions (so a seed reproduces a whole life)
     globalThis.playYear = function (log) {
       for (let i = 0; i < 3; i++) {
-        const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !a.special && (!a.cost || P.age < 18 || P.money >= a.cost));
+        const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !a.special && (!a.cost || P.age < 18 || P.money >= a.cost) && (P.army && !P.army.done ? !!a.army : !a.army));
         const a = pick(list); if (a) { apply(a.fx ? a.fx() : {}); if (a.cost && P.age >= 18) P.money -= a.cost; if (a.after) a.after(); }
       }
       if (P.soc && chance(.5)) { const ts = POST_TYPES.filter(t => P.age >= t.min && (!t.need || t.need())); makePost(pick(ts).id); }
@@ -53,7 +53,7 @@ function sandbox() {
     };
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
-    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney;
+    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS;
     globalThis.playLife = function (name, g, dream, seed, maxAge, log) { newLife(name, g, "Bakı", dream, seed); while (P.alive && P.age < (maxAge || 130)) playYear(log); return P; };
   `, ctx);
   return ctx;
@@ -155,6 +155,26 @@ test("18 yaşa qədər pul: avtomatik xərclik yoxdur, tapılan pul ≤ 30 ₼",
   for (let s = 1; s <= 150; s++) { S.newLife("Uşaq", s % 2 ? "k" : "q", "Bakı", "polis", 7000 + s); while (S.P.alive && S.P.age < 15) S.playYear(); maxAt15 = Math.max(maxAt15, S.P.money); }
   ok(maxAt15 <= 120, "15 yaşında çox pul: " + maxAt15);
   console.log(`      (150 uşaqdan 15 yaşda ən çox pul: ${S.fmtMoney(maxAt15)})`);
+});
+
+test("hərbi xidmət: 12 ay bir il, 18 ay iki ilə bitir; xidmətdə yalnız hərbi fəaliyyət", () => {
+  let n12 = 0, n18 = 0;
+  for (let s = 1; s <= 200; s++) {
+    S.newLife("Əsgər", "k", "Bakı", "polis", 20000 + s);
+    let startAge = null;
+    while (S.P.alive && S.P.age < 40) {
+      S.playYear();
+      if (S.P.army && startAge == null) startAge = S.P.age;
+      if (S.P.army && !S.P.army.done) { const acts = S.ACTIONS.filter(a => S.P.age >= a.min && (!a.if || a.if()) && (S.P.army && !S.P.army.done ? !!a.army : !a.army)); ok(acts.every(a => a.army), "xidmətdə mülki fəaliyyət"); }
+      if (S.P.army && S.P.army.done) break;
+    }
+    if (!S.P.army || !S.P.army.done) continue;
+    const years = S.P.age - startAge;
+    if (S.P.army.months === 12) { eq(years, 1, "12 aylıq xidmət " + years + " il çəkdi"); n12++; }
+    if (S.P.army.months === 18) { eq(years, 2, "18 aylıq xidmət " + years + " il çəkdi"); n18++; }
+  }
+  ok(n12 > 0 && n18 > 0, "hər iki müddət sınanmalıdır");
+  console.log(`      (12 ay: ${n12} əsgər, 18 ay: ${n18} əsgər)`);
 });
 
 test("köhnə (V0.1) yaddaş yeni formata köçür və oyun davam edir", () => {

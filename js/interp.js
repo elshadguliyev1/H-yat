@@ -83,7 +83,8 @@ const Interp = (() => {
     start_job(o) { startJob(o.id, o.lv || 0, o.note); },
     end_job(o) { endJob(o.reason || "bitdi"); },
     promote() { promote(); },
-    army_start(o, ctx) { const m = armyMonths(); P.army = { start: P.day, end: Cal.addMonths(P.day, m), months: m, basis: P.edu.master ? "master" : P.edu.degree ? "bachelor" : "none", done: false }; if (P.job && P.job.id !== "futbolcu") endJob("hərbi xidmət"); ctx.vars.months = m; },
+    // service is counted from the start of the current year of age, so 12 months = exactly one "+1 yaş"
+    army_start(o, ctx) { const m = armyMonths(); const start = Cal.addYears(P.birth, P.age); P.army = { start, end: Cal.addMonths(start, m), months: m, basis: P.edu.master ? "master" : P.edu.degree ? "bachelor" : "none", done: false }; if (P.job && P.job.id !== "futbolcu") endJob("hərbi xidmət"); ctx.vars.months = m; },
     open_social() { socOpen(); },
     social_quiet() { socOpen(); P.soc.followers = 3; },
     dream_set(id) { P.dream = id; },
