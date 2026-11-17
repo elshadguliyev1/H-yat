@@ -244,6 +244,7 @@ const Interp = (() => {
     run(o.do, ctx);
     if (o.trait || c.trait) A.trait(Object.assign({}, c.trait || {}, o.trait || {}));
     P.curEvent = null;
+    if (typeof contextTick === "function") contextTick(); // e.g. leaving football mid-year
     const parts = [o.r, o !== c ? c.r : null].filter(Boolean);
     return { text: parts.map(t => text(t, ctx)).join(" "), changes: ctx.changes, outcome: c.odds ? c.odds.indexOf(o) : -1 };
   }
