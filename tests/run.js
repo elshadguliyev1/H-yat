@@ -264,6 +264,19 @@ test("erkən ölüm mümkündür, amma nadirdir; keçmiş futbolçuya məşqçil
   ok(S.jobOptions().some(o => o.id === "mesqci"), "keçmiş futbolçu məşqçi ola bilmir");
 });
 
+test("məktəb və futbol bitəndən sonra müəllim və məşqçi aktiv siyahıda qalmır", () => {
+  for (let s = 1; s <= 80; s++) {
+    S.newLife("X", s % 2 ? "k" : "q", "Bakı", "futbolcu", 80000 + s);
+    while (S.P.alive && S.P.age < 40) {
+      S.playYear();
+      const school = ["bagca", "mekteb"].includes(S.P.edu.stage);
+      if (!school) ok(!S.person("müəllim"), `${S.P.age} yaşında məktəbdən sonra müəllim siyahıdadır`);
+      const fb = (S.P.job && S.P.job.id === "futbolcu") || (S.P.flags.akademiya != null && !S.P.job && S.P.age < 22) || (S.P.flags.futbolBolme != null && S.P.age < 18);
+      if (!fb) ok(!S.person("məşqçi"), `${S.P.age} yaşında futbolsuz məşqçi siyahıdadır`);
+    }
+  }
+});
+
 test("köhnə (V0.1) yaddaş yeni formata köçür və oyun davam edir", () => {
   S.playLife("Leyla", "q", "mugenni", 4242, 15);
   const old = JSON.parse(JSON.stringify(S.P));

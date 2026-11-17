@@ -45,7 +45,7 @@ const FACULTIES = {
 // ---------- state ----------
 let P = null;
 let RULES = null; // data/rules.json (military, education)
-const LIFE_VERSION = 6;
+const LIFE_VERSION = 7;
 const TRAITS = { empathy: "Empatiya", honesty: "Dürüstlük", courage: "Cəsarət", discipline: "İntizam", independence: "Müstəqillik", family: "Ailəyə bağlılıq", social: "Ünsiyyətcillik" };
 
 function newPerson(role, gender, age, extra = {}) {
@@ -314,7 +314,17 @@ function moneyTick() {
   if (P.flags.military_pension != null && !P.job) P.money += 9000;
   if (P.money < -5000 && !P.flags.borc) { P.flags.borc = P.age; }
 }
+// people who belong to a period of life leave the active list when that period ends
+function contextTick() {
+  const school = ["bagca", "mekteb"].includes(P.edu.stage);
+  const football = (P.job && P.job.id === "futbolcu") || (P.flags.akademiya != null && !P.job && P.age < 22) || (P.flags.futbolBolme != null && P.age < 18);
+  for (const p of P.people) {
+    if (p.role === "müəllim" && !school) p.role = "keçmiş müəllim";
+    if (p.role === "məşqçi" && !football) p.role = "keçmiş məşqçi";
+  }
+}
 function peopleTick() {
+  contextTick();
   for (const p of P.people) {
     if (!p.alive) continue;
     if ((p.role === "ana" || p.role === "ata") && p.job === "İşsiz" && p.age < 60 && chance(0.35)) { p.job = pick(PARENT_JOBS[p.g].filter(j => j !== "Evdar qadın")); log(`💼 ${p.role === "ana" ? "Anan" : "Atan"} yenidən işə düzəldi: ${p.job.toLowerCase()}.`); }
@@ -523,6 +533,11 @@ function migrateLife(L) {
     if (L.flags.cinayet != null) L.legal.record.push({ day: L.day, age: L.flags.cinayet, type: "rusvet_alma", verdict: "şərti", years: 2 });
     L.careerHist = L.careerHist || [];
     L.v = 6;
+  }
+  if (L.v < 7) {
+    // v7: teachers and coaches leave the active list once school / football is over
+    const keep = P; P = L; contextTick(); P = keep;
+    L.v = 7;
   }
   return L;
 }
