@@ -129,11 +129,15 @@ Miqrasiyalar `db.js` içində versiya-versiya saxlanılır. Mövcud `localStorag
 | Mərhələ | Nə edilir | Test | Nəticə |
 |---|---|---|---|
 | **1. Analiz** | Bu sənəd | — | ✅ hazırdır |
-| **2. DB, zaman, qərar mühərriki** | `db.js` (IndexedDB + miqrasiya + slotlar), `rng.js` (seed), `calendar.js` (gün əsaslı təqvim, `time_cost`), `scheduler.js`, `events/*.json` + validator + interpretator; mövcud 106 hadisənin JSON-a köçürülməsi; köhnə save miqrasiyası | Deterministik seed, save/load, zaman geri getmir, gecikmiş hadisə vaxtında aktivləşir, sxem validasiyası | Oyun eyni görünür, amma yeni mühərriklə işləyir |
+| **2. DB, zaman, qərar mühərriki** ✅ | `db.js` (IndexedDB + miqrasiya + slotlar), `rng.js` (seed), `calendar.js` (gün əsaslı təqvim, `time_cost`), `scheduler.js`, `events/*.json` + validator + interpretator; mövcud 106 hadisənin JSON-a köçürülməsi; köhnə save miqrasiyası | Deterministik seed, save/load, zaman geri getmir, gecikmiş hadisə vaxtında aktivləşir, sxem validasiyası | Oyun eyni görünür, amma yeni mühərriklə işləyir |
 | **3. Ailə və NPC** | NPC modeli, 4 ölçülü münasibətlər, arxetiplər, NPC illik həyat tiki (təhsil, iş, evlilik, xəstəlik, köçmə), ailə ağacı ekranı | Ölmüş NPC hadisədə görünmür, yaş/qohumluq ziddiyyəti yoxdur | Canlı ailə |
 | **4. Əmlak, maliyyə, karyera, övladlar** | Məkan konfiqurasiyası, xərc cədvəli, ledger, kredit, əmlak növləri, övladların müstəqil həyatı və onlara dəstək, maliyyə ekranı | Balans (Monte-Karlo 1000 həyat), kredit hesablamaları | Real iqtisadiyyat |
 | **5. Ssenarilər, məkanlar, vizual** | 5–25 yaş üçün ≥150 əlaqəli hadisə (mövcud ~60 + pack 21 + ~70–90 yeni), məkan hadisələri, 25 illüstrasiya | Hər hadisənin əlçatanlığı, ton balansı (60/30/10) | **İlk tam prototip (5–25)** |
 | **6. Ölüm, epiloq, arxiv** | Epiloq generatoru (yalnız faktlar), "Geridə Qalanlar", post-ölüm məhdud simulyasiya, arxiv ekranı | Epiloqda olmayan ailə üzvü yoxdur | Tam həyat dövrü |
 | **7. Testlər, balans, performans** | `tests/` (Node, brauzer lazım deyil), ziddiyyət yoxlayıcısı, 26+ yaş hadisələrinin genişləndirilməsi, performans | CI-sız lokal test skripti | V1.0 |
+
+## 9. Vəziyyət
+
+- **2026-11-17 · 2-ci mərhələ hazırdır.** IndexedDB (5 slot, arxiv, qərar tarixçəsi, köhnə yaddaşın köçürülməsi), seed-li RNG, gün əsaslı təqvim, JSON hadisə kitabxanası (127 hadisə) + validator + interpretator, 9 gecikmiş nəticə zənciri, `rules.json` (hərbi xidmət 18/12/12 ay — oyunçunun verdiyi qayda, rəsmi mənbə ilə yoxlanılmalı), magistratura, xarakter xüsusiyyətləri. `tests/run.js`: 10/10 test keçir.
 
 **Həcm haqqında dürüst qiymət:** bu, bir neçə iş sessiyası tələb edən işdir. Hər mərhələnin sonunda oyun işlək vəziyyətdə GitHub-a yüklənəcək, aralıq vəziyyət olmayacaq.
