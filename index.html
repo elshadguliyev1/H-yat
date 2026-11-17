@@ -257,7 +257,7 @@ function renderGame() {
   app.innerHTML = `<div id="game">
     <header class="wrap top"><div class="ava" aria-hidden="true">${avatar()}</div>
       <div class="who"><h2>${esc(P.name)}, ${P.age}</h2><div class="sub">${esc(statusLine())} · ${esc(P.city)}</div></div>
-      <div class="money">${fmtMoney(P.money)}<small>${P.fame ? "⭐ " + P.fame : ""}${P.soc ? " · 👥 " + fmtNum(P.soc.followers) : ""}</small></div></header>
+      <div class="money">${P.age >= 10 || P.money ? fmtMoney(P.money) : ""}<small>${P.fame ? "⭐ " + P.fame : ""}${P.soc ? " · 👥 " + fmtNum(P.soc.followers) : ""}</small></div></header>
     <div class="wrap stats">${STAT_KEYS.map(k => `<div class="stat"><span aria-hidden="true">${STAT_ICONS[k]}</span><div class="bar" role="meter" aria-label="${STAT_NAMES[k]}" aria-valuenow="${P.st[k]}" aria-valuemin="0" aria-valuemax="100"><i style="width:${P.st[k]}%;background:${STAT_COLORS[k]}"></i></div><span class="n">${P.st[k]}</span></div>`).join("")}
       <div class="stat"><span aria-hidden="true">⭐</span><div class="bar"><i style="width:${P.fame}%;background:var(--accent)"></i></div><span class="n">${P.fame}</span></div></div>
     <nav class="tabs"><div class="wrap" role="tablist">${[["life", "Həyat"], ["act", "Fəaliyyət"], ["soc", "Pıçıltı"], ["ppl", "İnsanlar"], ["me", "Mən"]].map(([id, t]) => `<button role="tab" data-t="${id}" aria-selected="${tab === id}">${t}</button>`).join("")}</div></nav>

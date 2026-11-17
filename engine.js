@@ -57,7 +57,7 @@ const FACULTIES = {
 // ---------- state ----------
 let P = null;
 let RULES = null; // data/rules.json (military, education)
-const LIFE_VERSION = 2;
+const LIFE_VERSION = 3;
 const TRAITS = { empathy: "Empatiya", honesty: "Dürüstlük", courage: "Cəsarət", discipline: "İntizam", independence: "Müstəqillik", family: "Ailəyə bağlılıq", social: "Ünsiyyətcillik" };
 
 function newPerson(role, gender, age, extra = {}) {
@@ -317,7 +317,9 @@ function eduTick() {
 }
 function moneyTick() {
   const sal = salaryMonthly() * 12;
-  if (P.age < 16) { const fam = 50 + rnd(0, 100); P.money += fam; return; }
+  // children: no own money before 10; a small pocket allowance (mostly spent) from 10 to 15
+  if (P.age < 10) return;
+  if (P.age < 16) { P.money += rnd(10, 40); return; }
   if (P.job) P.money += sal;
   if (P.edu.stage === "uni" && P.flags.odenisli) P.money -= 2500;
   if (P.age >= 18 && !(["uni", "magistr"].includes(P.edu.stage) && P.age < 26) && !(P.army && !P.army.done)) {
@@ -427,6 +429,11 @@ function migrateLife(L) {
     // legacy event ids that were renamed during the JSON move
     if (L.seen && L.seen["fırıldaq"] != null) L.seen.firildaq = L.seen["fırıldaq"];
     L.v = 2;
+  }
+  if (L.v < 3) {
+    // v3: children no longer get a yearly family allowance; trim what the old rule had piled up
+    if (L.age < 16) L.money = Math.min(L.money, Math.max(0, L.age - 9) * 25);
+    L.v = 3;
   }
   return L;
 }
