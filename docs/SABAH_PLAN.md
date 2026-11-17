@@ -30,6 +30,18 @@ Vəziyyət: son işlək versiya `fddf1f6`, 18/18 test keçir. Aşağıdakılar h
 
 6. **İdmanda yalnız futbol var.** Digər idman növləri lazımdır: güləş, cüdo, boks, voleybol, basketbol, gimnastika, şahmat, üzgüçülük, atletika. Hər birinin öz akademiya və klub yolu, yarışları (çempionat, Avropa, Olimpiya), zədələri və məşqçilik keçidi olmalıdır. Uşaqlıqda istedad hansı idmana uyğundursa, o yol açılmalıdır.
 
+7. **Həbs müddəti:** oyunçu 3,5 il cəza aldığını, amma 10 ildir həbsdə qaldığını bildirir.
+   - Təmiz simulyasiyada 3,5 illik cəza 4-cü ildə bitir (ilkin yoxlama, 5 seed).
+   - Səbəb oyunçunun öz yaddaşında axtarılmalıdır: təkrar məhkəmə və ya yeni iş açılıbmı, köhnə versiyadan qalan vəziyyətdirmi.
+   - Status sətrində qalan müddət düzgün göstərilməlidir.
+8. **Məhkumluğun ödənilməsi:** qanunda göstərilən müddətdən sonra məhkumluq "addan silinməlidir". Bundan sonra adi işlər açılmalıdır, polis, pilot kimi xüsusi peşələr isə qaydaya görə açılmalıdır. Müddət `rules.json`-da oyun konfiqurasiyası kimi saxlanılmalıdır.
+9. **Bank:** banka ayrıca müraciət etmək imkanı olmalıdır. Nağd kredit, depozit, kredit tarixçəsi; gəlirə görə təsdiq və ya rədd; gecikmə və cərimələr.
+10. **Xərclər görünməlidir:** gəlirlə yanaşı xərclər də rəqəmlə göstərilməlidir: kirayə, kommunal, ərzaq, nəqliyyat, uşaq, kredit, maşın. Hər dövr üçün balans (gəlir − xərc).
+11. **Zaman addımı:** oyun 1 il yox, **3 ay** (rüb) irəliləməlidir: "+3 ay" düyməsi.
+   - Hadisələr, maaş və xərclər rüblərə bölünməlidir.
+   - Yaş ad günündə artır.
+   - Fəaliyyət nöqtələri hər rüb üçün olmalıdır.
+
 ## B. KRİTİK: dramaturgiya (növbəti işin əsası)
 
 **Niyə hazırkı mühərrik maraqlı hekayə yaratmır (qısa diaqnoz):**
