@@ -7,7 +7,7 @@
 const fs = require("fs"), path = require("path"), vm = require("vm");
 const ROOT = path.join(__dirname, "..");
 const read = f => fs.readFileSync(path.join(ROOT, f), "utf8");
-const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json"];
+const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json"];
 
 // strict JSON check first (the browser uses JSON.parse; the sandbox below would forgive trailing commas)
 for (const f of ["data/rules.json", ...EVENT_FILES]) { try { JSON.parse(read(f)); } catch (e) { console.log("✗ JSON xətası: " + f + " — " + e.message); process.exit(1); } }
@@ -44,7 +44,7 @@ function sandbox() {
         P.seen[e.id] = P.age;
         const mBefore = P.money;
         const res = Interp.choose(e, ch[i]);
-        if (P.age < 16 && P.money - mBefore > 30) throw new Error(e.id + ": 16 yaşdan kiçik uşağa " + (P.money - mBefore) + " ₼ gəldi");
+        if (P.age < 16 && Math.round((P.money - mBefore) * 100) / 100 > 30) throw new Error(e.id + ": 16 yaşdan kiçik uşağa " + (P.money - mBefore) + " ₼ gəldi");
         recordChoice(e.id, i, res.outcome, res.text);
         for (const s of [text, res.text, ...ch.map(c => Interp.text(c.t))]) if (/\\{[^}]+\\}|undefined|NaN|(^|\\s)\\?(\\s|$)/.test(s)) throw new Error("pis mətn [" + e.id + "]: " + s);
       }
@@ -170,10 +170,10 @@ test("köhnə (V0.1) yaddaş yeni formata köçür və oyun davam edir", () => {
 
 const N = +process.argv[2] || 400;
 test(`Monte-Karlo: ${N} tam həyat çökmədən oynanılır`, () => {
-  const tone = { everyday: 0, dramatic: 0, rare: 0 }, seen = new Set(); let ages = 0, money = [], dream = 0;
+  const tone = { everyday: 0, dramatic: 0, rare: 0 }, seen = new Set(); let ages = 0, money = [], dream = 0, kidSerious = 0, kidAll = 0, kidArcs = 0;
   const dreams = ["polis", "hekim", "futbolcu", "mugenni", "muellim", "proqramci", "biznes", "aktyor"];
   for (let i = 0; i < N; i++) {
-    const P = S.playLife("Sim", i % 2 ? "q" : "k", dreams[i % 8], 100000 + i, 130, e => { tone[e.tone || "everyday"]++; seen.add(e.id); });
+    const P = S.playLife("Sim", i % 2 ? "q" : "k", dreams[i % 8], 100000 + i, 130, e => { tone[e.tone || "everyday"]++; seen.add(e.id); if (S.P.age <= 18) { kidAll++; if ((e.tone || "everyday") !== "everyday") kidSerious++; if (e.id.startsWith("arc_")) kidArcs++; } });
     ages += P.age; money.push(P.money);
     if ([P.job && P.job.id, ...P.jobs.map(j => j.id)].includes(P.dream)) dream++;
   }
@@ -181,6 +181,7 @@ test(`Monte-Karlo: ${N} tam həyat çökmədən oynanılır`, () => {
   const tot = tone.everyday + tone.dramatic + tone.rare, pct = k => Math.round(tone[k] / tot * 100);
   const never = S.Interp.lib.filter(e => !seen.has(e.id)).map(e => e.id);
   console.log(`      orta ömür ${Math.round(ages / N)}, median sərvət ${Math.round(money[N >> 1])} ₼, xəyal gerçəkləşdi ${Math.round(dream / N * 100)}%`);
+  console.log(`      5–18 yaş: həyat başına ${(kidAll / N).toFixed(1)} hadisə, onlardan ${(kidSerious / N).toFixed(1)} ciddi (dramatik/nadir), ${(kidArcs / N).toFixed(1)} hekayə xətti fəsli`);
   console.log(`      ton: gündəlik ${pct("everyday")}% · dramatik ${pct("dramatic")}% · nadir ${pct("rare")}% (hədəf 60/30/10)`);
   console.log(`      heç görünməyən hadisələr (${never.length}): ${never.join(", ") || "yoxdur"}`);
 });

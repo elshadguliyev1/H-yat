@@ -120,7 +120,7 @@ function apply(fx) {
   const out = [];
   if (!fx) return out;
   for (const k of STAT_KEYS) if (fx[k]) { const before = P.st[k]; P.st[k] = clamp(P.st[k] + fx[k]); const d = P.st[k] - before; if (d) out.push([k, d]); }
-  if (fx.money) { P.money += fx.money; out.push(["money", fx.money]); }
+  if (fx.money) { P.money = Math.round((P.money + fx.money) * 100) / 100; out.push(["money", fx.money]); }
   if (fx.fame) { const b = P.fame; P.fame = clamp(P.fame + fx.fame); if (P.fame !== b) out.push(["fame", P.fame - b]); }
   if (fx.followers && P.soc) { const b = P.soc.followers; P.soc.followers = Math.max(0, Math.round(P.soc.followers + (fx.followers > -1 && fx.followers < 1 && fx.followers !== 0 ? P.soc.followers * fx.followers : fx.followers))); if (P.soc.followers !== b) out.push(["followers", P.soc.followers - b]); }
   if (fx.rel) for (const [role, d] of Object.entries(fx.rel)) relAdd(role, d);
@@ -298,7 +298,7 @@ function ageUp() {
   // death check
   deathCheck();
   // events
-  const n = P.age < 12 ? rnd(1, 2) : rnd(2, 3);
+  const n = P.age < 12 ? 2 : rnd(2, 3);
   // events happen on dates spread across the coming year; time only moves forward
   const ids = P.alive ? Interp.pickYear(n) : [];
   const next = Cal.addYears(P.birth, P.age + 1) - 1;
@@ -419,7 +419,8 @@ const ACTIONS = [
   { id: "sevgi", t: "Sevgili axtar", icon: "💘", min: 16, special: "love", if: () => !person("sevgili") && !person("həyat yoldaşı") },
   { id: "sevgili", t: "Sevgilinlə görüş", icon: "🌹", min: 16, if: () => !!person("sevgili"), cost: 40, fx: () => ({ happy: rnd(5, 9) }), r: () => `${who("sevgili")} ilə bulvarda gəzdiniz.`, after: () => relAdd("sevgili", 9) },
   { id: "yoldas", t: "Həyat yoldaşınla vaxt keçir", icon: "💑", min: 18, if: () => !!person("həyat yoldaşı"), fx: () => ({ happy: rnd(4, 8) }), r: () => `${who("həyat yoldaşı")} ilə restorana getdiniz.`, after: () => relAdd("həyat yoldaşı", 9) },
-  { id: "isde", t: "İşdə çox çalış", icon: "⏱️", min: 16, if: () => !!P.job, fx: () => ({ happy: -2, health: -1 }), r: () => "Gec saatlara qədər işlədin. Rəhbər bunu gördü.", after: () => { P.job.perf = clamp(P.job.perf + rnd(8, 15)); } },
+  { id: "isde", t: () => ({ futbolcu: "Əlavə məşq et", mugenni: "Studiyada çalış", aktyor: "Rol üzərində işlə", hekim: "Əlavə növbə götür", polis: "Əlavə növbə götür", muellim: "Dərslərə yaxşı hazırlaş", proqramci: "Gecə də kod yaz", biznes: "Biznesə çox vaxt ayır" }[P.job.id] || "İşdə çox çalış"), icon: "⏱️", min: 16, if: () => !!P.job, fx: () => ({ happy: -2, health: -1 }),
+    r: () => ({ futbolcu: "Hamı gedəndən sonra da meydanda qaldın, cərimə zərbələri vurdun. Məşqçi gördü.", mugenni: "Səhərə qədər studiyada yeni mahnı yazdın.", hekim: "İki növbə ardıcıl. Yorğunsan, amma xəstələr səni tanıyır." }[P.job.id] || "Gec saatlara qədər işlədin. Rəhbər bunu gördü."), after: () => { P.job.perf = clamp(P.job.perf + rnd(8, 15)); } },
   { id: "seyahet", t: "Səyahətə çıx", icon: "✈️", min: 18, cost: 1500, fx: () => ({ happy: rnd(8, 14) }), r: () => { const c = pick(["Türkiyəyə", "Gürcüstana", "Dubaya", "İtaliyaya", "Misirə", "Fransaya", "Qəbələyə", "Şəkiyə"]); P.stats.countries++; return `${c} səyahət etdin, möhtəşəm idi!`; } },
   { id: "al", t: "Maşın / ev al", icon: "🔑", min: 18, special: "shop" },
   { id: "meditasiya", t: "Dincəl", icon: "🧘", min: 5, fx: () => ({ happy: rnd(3, 6), health: 1 }), r: () => pick(["Bütün günü yatdın.", "Dəniz kənarında oturdun.", "Serial izlədin, rahatladın."]) }
@@ -496,6 +497,6 @@ function fill(t) {
   return String(t).replace(/\{(\w+|yoldaş|şəhər|müəllim|məşqçi|müdir|rəqib|xəyal|iş)\}/g, (m, k) => ({
     ad: P.name, ana: who("ana"), ata: who("ata"), dost: who("dost"), sevgili: who("sevgili"), "yoldaş": who("həyat yoldaşı"), "şəhər": P.city,
     "müəllim": who("müəllim"), "məşqçi": who("məşqçi"), "müdir": who("müdir"), "rəqib": who("rəqib"), "xəyal": dreamName(), "iş": jobTitle() || "işsiz",
-    qardas: who("qardaş"), baci: who("bacı"), usaq: who("uşaq")
+    qardas: who("qardaş"), baci: who("bacı"), usaq: who("uşaq"), nene: who("nənə"), baba: who("baba")
   }[k] ?? m));
 }

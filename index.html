@@ -247,7 +247,7 @@ const STAT_COLORS = { health: "var(--bad)", happy: "var(--gold)", smarts: "var(-
 function statusLine() {
   if (!P.alive) return "Həyatını başa vurdu";
   if (P.army && !P.army.done) return "Hərbi xidmətdə";
-  if (P.job) return jobTitle() + (P.age < 18 ? " (yarımştat)" : "");
+  if (P.job) { const c = CAREERS[P.job.id], t = jobTitle(); return (t.includes(c.t) || c.plain ? t : `${c.t} · ${t}`) + (P.age < 18 && c.plain ? " (yarımştat)" : ""); }
   const e = P.edu;
   if (e.stage === "bagca") return "Bağça";
   if (e.stage === "mekteb") return ord(e.grade) + " sinif şagirdi";
@@ -331,7 +331,7 @@ function useAct() { if (P.acts <= 0) { toast("Bu il üçün vaxtın bitdi. +1 ya
 function panelAct() {
   const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !(a.id === "post" && !P.soc) && !(P.army && !P.army.done && !["idman", "meditasiya", "aile"].includes(a.id)));
   $("#panel").innerHTML = `<p class="small muted" style="margin:0 0 10px">Hər il 3 fəaliyyət seçə bilərsən (aşağıdakı nöqtələr). Sonra <b>+1 yaş</b> bas.</p>
-    <div class="acts">${list.map(a => `<button class="act" data-id="${a.id}" ${P.acts <= 0 || (a.cost && P.age >= 18 && P.money < a.cost) ? "disabled" : ""}><span class="i" aria-hidden="true">${a.icon}</span><span>${a.t}${a.cost ? `<small>${P.age >= 18 ? fmtMoney(a.cost) : "valideynlər ödəyir"}</small>` : ""}</span></button>`).join("")}</div>`;
+    <div class="acts">${list.map(a => `<button class="act" data-id="${a.id}" ${P.acts <= 0 || (a.cost && P.age >= 18 && P.money < a.cost) ? "disabled" : ""}><span class="i" aria-hidden="true">${a.icon}</span><span>${typeof a.t === "function" ? a.t() : a.t}${a.cost ? `<small>${P.age >= 18 ? fmtMoney(a.cost) : "valideynlər ödəyir"}</small>` : ""}</span></button>`).join("")}</div>`;
   $("#panel").querySelectorAll(".act").forEach(b => b.onclick = () => doAction(ACTIONS.find(a => a.id === b.dataset.id)));
 }
 function doAction(a) {
@@ -432,7 +432,7 @@ const ORDER = ["həyat yoldaşı", "sevgili", "uşaq", "nəvə", "ana", "ata", "
 function panelPpl() {
   const live = P.people.filter(p => !p.role.startsWith("keçmiş")).sort((a, b) => (ORDER.indexOf(a.role) + 99 * !a.alive) - (ORDER.indexOf(b.role) + 99 * !b.alive));
   const past = P.people.filter(p => p.role.startsWith("keçmiş") && p.alive && ["keçmiş sevgili", "keçmiş dost"].includes(p.role));
-  const row = p => `<button class="pp ${p.alive ? "" : "dead"}" data-id="${p.id}"><span class="e" aria-hidden="true">${p.alive ? (ROLE_ICON[p.role] || avatar(p)) : "🕯️"}</span><span><div class="nm">${esc(p.name)}</div><div class="rl">${esc(p.role)} · ${p.alive ? p.age + " yaş" : "rəhmətə gedib"}${p.job ? " · " + esc(p.job) : ""}</div></span>${p.alive ? `<span class="relbar" title="Münasibət ${p.rel}%"><i style="width:${p.rel}%"></i></span>` : ""}</button>`;
+  const row = p => `<button class="pp ${p.alive ? "" : "dead"}" data-id="${p.id}"><span class="e" aria-hidden="true">${p.alive ? (ROLE_ICON[p.role] || avatar(p)) : "🕯️"}</span><span><div class="nm">${esc(p.name)}</div><div class="rl">${esc(p.role)} · ${p.alive ? p.age + " yaş" : "rəhmətə gedib"}${p.job ? " · " + esc(p.job) : ""}${p.note ? " · " + esc(p.note) : ""}</div></span>${p.alive ? `<span class="relbar" title="Münasibət ${p.rel}%"><i style="width:${p.rel}%"></i></span>` : ""}</button>`;
   $("#panel").innerHTML = `<div class="ppl">${live.map(row).join("")}</div>${past.length ? `<p class="sec-h">Keçmiş</p><div class="ppl">${past.map(row).join("")}</div>` : ""}`;
   $("#panel").querySelectorAll(".pp").forEach(b => b.onclick = () => personSheet(P.people.find(p => p.id === b.dataset.id)));
 }
@@ -513,7 +513,7 @@ function renderEnd() {
 
 // ---------- boot ----------
 // ---------- boot: content library, rules, database ----------
-const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json"];
+const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json"];
 (async function boot() {
   app.innerHTML = '<p class="wrap muted" style="padding-top:40vh;text-align:center">Yüklənir…</p>';
   try {

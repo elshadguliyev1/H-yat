@@ -43,6 +43,7 @@ const Interp = (() => {
     kid_age_gte: v => people("uşaq").some(k => k.age >= v),
     parent_age_gt: v => parentAlive().some(p => p.age > v),
     parent_died_last_year: v => P.people.some(p => ["ana", "ata"].includes(p.role) && !p.alive && p.died === P.age - 1) === v,
+    npc_job: o => Object.entries(o).every(([r, j]) => !!person(r) && person(r).job === j),
     asset: v => P.assets.some(a => a.type === v),
     army: v => v === "none" ? !P.army : v === "active" ? !!P.army && !P.army.done : !!P.army && P.army.done,
     army_due: v => armyDue() === v,
@@ -86,9 +87,11 @@ const Interp = (() => {
     open_social() { socOpen(); },
     social_quiet() { socOpen(); P.soc.followers = 3; },
     dream_set(id) { P.dream = id; },
-    money_rand(r, ctx) { const m = rnd(r[0], r[1]); P.money += m; ctx.vars.amount = fmtMoney(m); ctx.changes.push(["money", m]); },
+    money_rand(r, ctx) { const m = rnd(r[0], r[1]); P.money = Math.round((P.money + m) * 100) / 100; ctx.vars.amount = fmtMoney(m); ctx.changes.push(["money", m]); },
     // money in qəpik (e.g. coins found on the street)
     money_rand_q(r, ctx) { const q = rnd(r[0], r[1]); const m = q / 100; P.money = Math.round((P.money + m) * 100) / 100; ctx.vars.amount = fmtMoney(m); ctx.changes.push(["money", m]); },
+    npc_die(o, ctx) { const p = person(o.role); if (!p) return; p.alive = false; p.died = P.age; ctx.vars.dead = p.name; if (o.log !== false) log(`🕯️ ${o.role[0].toUpperCase() + o.role.slice(1)} ${p.name} ${p.age} yaşında dünyasını dəyişdi.`); },
+    npc_note(o) { const p = person(o.role); if (p) p.note = o.note || undefined; },
     npc_job(o) { const p = person(o.role); if (p) p.job = o.job; },
     money_mul(f) { P.money = Math.round(P.money * f); },
     followers_rand(r, ctx) { if (!P.soc) return; const n = rnd(r[0], r[1]); P.soc.followers += n; P.stats.maxFollowers = Math.max(P.stats.maxFollowers, P.soc.followers); ctx.changes.push(["followers", n]); },
@@ -122,6 +125,8 @@ const Interp = (() => {
     became: () => (P.jobs.concat(P.job ? [{ title: jobTitle() }] : []).filter(j => j.title).pop() || { title: "başqa yollara" }).title.toLowerCase(),
     dream_twist: () => P.dream !== "futbolcu" ? ` Halbuki xəyalın ${dreamName()} idi… Həyat, sən nə qəribəsən!` : "",
     singer_twist: () => P.dream !== "mugenni" ? `Xəyalın ${dreamName()} idi, amma indi müğənnisən. Həyat, sən nə qəribəsən!` : "Xəyalın gerçəkləşdi!",
+    sib: () => { const s = P.people.find(p => p.alive && (p.role === "qardaş" || p.role === "bacı")); return s ? s.name : "?"; },
+    sib_word: () => { const s = P.people.find(p => p.alive && (p.role === "qardaş" || p.role === "bacı")); return s ? (s.role === "qardaş" ? "qardaşın" : "bacın") : "?"; },
     handle: () => P.soc ? P.soc.handle : "",
     npc_old_friend: () => { const id = P.npcFlags && P.npcFlags.defended_classmate; const p = id && P.people.find(x => x.id === id); return p ? p.name : "köhnə sinif yoldaşın"; }
   };
@@ -129,7 +134,7 @@ const Interp = (() => {
     let s = String(t ?? "").replace(/\{(\w+)\}/g, (m, k) => ctx && ctx.vars && ctx.vars[k] != null ? ctx.vars[k] : TV[k] ? TV[k]() : m);
     return fill(s);
   }
-  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "amount", "asset", "months", "exam", "city", "city_from", ...Object.keys(TV)]);
+  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", ...Object.keys(TV)]);
 
   // ---------------- dynamic choice lists ----------------
   const GEN = {
@@ -162,6 +167,12 @@ const Interp = (() => {
     // 2) forced milestones, 3) weighted random by priority
     for (const e of pool) if (e.force && !out.includes(e.id)) out.push(e.id);
     let rest = pool.filter(e => !e.force && !out.includes(e.id));
+    const serious = rest.filter(e => e.tone && e.tone !== "everyday");
+    if (!out.some(id => (BY_ID[id].tone || "everyday") !== "everyday") && serious.length && R() < 0.6) {
+      const tot = serious.reduce((a, e) => a + (e.w || 1) * (1 + (e.priority || 0)), 0); let r = R() * tot, pickE = serious[0];
+      for (const x of serious) { r -= (x.w || 1) * (1 + (x.priority || 0)); if (r <= 0) { pickE = x; break; } }
+      out.push(pickE.id); rest = rest.filter(x => x !== pickE);
+    }
     while (out.length < n && rest.length) {
       const tot = rest.reduce((a, e) => a + (e.w || 1) * (1 + (e.priority || 0)), 0);
       let r = R() * tot, e = rest[0];
@@ -207,9 +218,10 @@ const Interp = (() => {
     const vFx = (fx, where) => { if (!fx) return; for (const k of Object.keys(fx)) if (!FX_KEYS.has(k)) errs.push(`${where}: naməlum effekt "${k}"`); };
     const vDo = (list, where) => { for (const step of list || []) for (const [k, v] of Object.entries(step)) { if (!A[k]) errs.push(`${where}: naməlum əməliyyat "${k}"`); if (k === "schedule" && !known.has(v.event)) errs.push(`${where}: planlanan hadisə tapılmadı "${v.event}"`); if (k === "start_job" && !CAREERS[v.id]) errs.push(`${where}: naməlum peşə "${v.id}"`); } };
     // a text that names a person ({dost}, {müəllim}…) must be guarded by a "has" condition for that role
-    const ROLE_PH = { "{dost}": "dost", "{sevgili}": "sevgili", "{yoldaş}": "həyat yoldaşı", "{müəllim}": "müəllim", "{məşqçi}": "məşqçi", "{ana}": "ana", "{ata}": "ata" };
+    const ROLE_PH = { "{nene}": "nənə", "{baba}": "baba", "{dost}": "dost", "{sevgili}": "sevgili", "{yoldaş}": "həyat yoldaşı", "{müəllim}": "müəllim", "{məşqçi}": "məşqçi", "{ana}": "ana", "{ata}": "ata" };
     const guarded = (cond, role) => !!cond && ([].concat(cond.has || []).includes(role) || (cond.rel_gt && cond.rel_gt[role] != null));
-    const vRoles = (t, conds, where) => { for (const [ph, role] of Object.entries(ROLE_PH)) if (String(t || "").includes(ph) && !conds.some(c => guarded(c, role))) errs.push(`${where}: "${ph}" işlənir, amma şərtdə "has":["${role}"] yoxdur`); };
+    const sibGuard = conds => conds.some(c => c && [].concat(c.has_any || [], c.has || []).some(r => r === "qardaş" || r === "bacı"));
+    const vRoles = (t, conds, where) => { if (/\{sib(_word)?\}/.test(String(t || "")) && !sibGuard(conds)) errs.push(`${where}: "{sib}" işlənir, amma qardaş/bacı şərti yoxdur`); for (const [ph, role] of Object.entries(ROLE_PH)) if (String(t || "").includes(ph) && !conds.some(c => guarded(c, role))) errs.push(`${where}: "${ph}" işlənir, amma şərtdə "has":["${role}"] yoxdur`); };
     for (const e of all) {
       const w = e.id || "(id yoxdur)";
       vRoles(e.t, [e.cond], w);
