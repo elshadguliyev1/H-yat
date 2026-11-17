@@ -53,7 +53,7 @@ function sandbox() {
     };
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
-    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS;
+    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob;
     globalThis.playLife = function (name, g, dream, seed, maxAge, log) { newLife(name, g, "Bakı", dream, seed); while (P.alive && P.age < (maxAge || 130)) playYear(log); return P; };
   `, ctx);
   return ctx;
@@ -175,6 +175,28 @@ test("hərbi xidmət: 12 ay bir il, 18 ay iki ilə bitir; xidmətdə yalnız hə
   }
   ok(n12 > 0 && n18 > 0, "hər iki müddət sınanmalıdır");
   console.log(`      (12 ay: ${n12} əsgər, 18 ay: ${n18} əsgər)`);
+});
+
+test("futbolçu əsgərliyə gedir: karyera qərarı, xidmətdə maaş yoxdur, qayıdanda davamı var", () => {
+  let asked = 0, back = 0, trial = 0, frozenPaid = 0;
+  for (let s = 1; s <= 100; s++) {
+    S.newLife("Fut", "k", "Bakı", "futbolcu", 30000 + s);
+    while (S.P.age < 18) S.playYear();
+    S.P.yearEvents = []; S.P.army = null; S.P.job = null; S.startJob("futbolcu", 1); S.P.edu.stage = "bitdi"; delete S.P.edu.pendingMaster; S.P.flags.imtahanVerdi = 18;
+    ok(S.Interp.check(S.Interp.byId("fut_ordu").cond), "fut_ordu şərti ödənmədi");
+    ok(!S.Interp.check(S.Interp.byId("ordu").cond), "adi çağırış futbolçuya da çıxdı");
+    const e = S.Interp.byId("fut_ordu"); S.P.seen[e.id] = S.P.age; S.Interp.choose(e, e.ch[0]); asked++;
+    const frozen = !!(S.P.job && S.P.job.susp);
+    for (let y = 0; y < 3 && !S.P.army.done; y++) {
+      const m = S.P.money; S.ageUp();
+      if (frozen && !S.P.army.done && S.P.money > m) frozenPaid++;
+      if (S.P.army.done) { if (S.P.yearEvents.some(x => x.id === "fut_qayidis")) back++; if (S.P.yearEvents.some(x => x.id === "fut_sinaq")) trial++; }
+      else S.P.yearEvents = [];
+    }
+  }
+  eq(frozenPaid, 0, "dondurulmuş müqavilə ilə maaş gəldi");
+  ok(back > 0 && trial > 0, `qayıdış hadisələri: gözləyən klub ${back}, sınaq ${trial}`);
+  console.log(`      (${asked} futbolçu: klub gözlədi və qayıdış oldu ${back}, müqavilə ləğv olundu və sınaq çağırışı ${trial})`);
 });
 
 test("köhnə (V0.1) yaddaş yeni formata köçür və oyun davam edir", () => {

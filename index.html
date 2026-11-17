@@ -72,6 +72,7 @@ h1, h2, h3 { font-family: var(--f-display); font-weight: 800; margin: 0; letter-
 .toggle button, .dreams button { border: 2px solid var(--line); background: var(--surface); border-radius: 14px; padding: 12px; font-weight: 800 }
 .toggle button[aria-pressed="true"], .dreams button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft) }
 .dreams { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px }
+.bdate { display: grid; grid-template-columns: 1fr 1.6fr 1.2fr; gap: 8px }
 .dreams button { display: grid; gap: 2px; justify-items: center; padding: 10px 4px; font-size: 12.5px }
 .dreams button span { font-size: 26px }
 
@@ -230,16 +231,24 @@ function renderCreate() {
     <h2 style="font-size:28px">Yeni həyat</h2>
     <div><label class="h" for="nm">Adı</label><input type="text" id="nm" maxlength="20" placeholder="Məs. Murad" autocomplete="off"></div>
     <div><span class="h" style="font-weight:800;display:block;margin-bottom:6px">Cinsi</span><div class="toggle" id="gen"><button data-g="k" aria-pressed="true">👦 Oğlan</button><button data-g="q" aria-pressed="false">👧 Qız</button></div></div>
+    <div><span class="h" style="font-weight:800;display:block;margin-bottom:6px">Doğum tarixi</span>
+      <div class="bdate"><select id="bd" aria-label="Gün">${Array.from({ length: 31 }, (_, i) => `<option>${i + 1}</option>`).join("")}</select>
+      <select id="bm" aria-label="Ay">${Cal.MONTHS.map((m, i) => `<option value="${i + 1}">${m}</option>`).join("")}</select>
+      <select id="by" aria-label="İl">${Array.from({ length: BIRTH_YEAR_MAX - BIRTH_YEAR_MIN + 1 }, (_, i) => BIRTH_YEAR_MAX - i).map(y => `<option>${y}</option>`).join("")}</select></div>
+      <p class="small muted" style="margin:6px 0 0">Oyun 5 yaşından başlayır. Ən gec doğum ili: ${BIRTH_YEAR_MAX}.</p></div>
     <div><label class="h" for="city">Doğulduğu şəhər</label><select id="city">${CITIES.map(c => `<option>${c}</option>`).join("")}</select></div>
     <div><span class="h" style="font-weight:800;display:block;margin-bottom:6px">Böyüyəndə nə olmaq istəyir?</span><div class="dreams" id="dr">${DREAMS.map(d => `<button data-d="${d.id}" aria-pressed="false"><span>${d.icon}</span>${d.t}</button>`).join("")}</div></div>
     <button class="btn" id="go" disabled>Həyata başla 🌱</button>
     <p class="small muted" style="margin:0">Xəyal sadəcə xəyaldır: istedadlar və seçimlər həyatı başqa yerə apara bilər.</p></section>`;
   const upd = () => { $("#go").disabled = !($("#nm").value.trim() && dream); };
+  $("#bd").value = String(1 + Math.floor(Math.random() * 28)); $("#bm").value = String(1 + Math.floor(Math.random() * 12)); $("#by").value = String(1990 + Math.floor(Math.random() * 13));
+  const fixDays = () => { const dim = new Date(Date.UTC(+$("#by").value, +$("#bm").value, 0)).getUTCDate(); if (+$("#bd").value > dim) $("#bd").value = String(dim); [...$("#bd").options].forEach(o => o.disabled = +o.value > dim); };
+  $("#bm").onchange = fixDays; $("#by").onchange = fixDays; fixDays();
   $("#nm").oninput = upd;
   $("#gen").querySelectorAll("button").forEach(b => b.onclick = () => { g = b.dataset.g; $("#gen").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); $("#nm").placeholder = "Məs. " + pick(NAMES[g]); });
   $("#dr").querySelectorAll("button").forEach(b => b.onclick = () => { dream = b.dataset.d; $("#dr").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); upd(); });
   $("#back").onclick = renderStart;
-  $("#go").onclick = () => { const n = $("#nm").value.trim().replace(/\s+/g, " "); const name = n[0].toLocaleUpperCase("az") + n.slice(1); newLife(name, g, $("#city").value, dream); save(true); DB.setMeta("active", P.id); tab = "life"; renderGame(); };
+  $("#go").onclick = () => { const n = $("#nm").value.trim().replace(/\s+/g, " "); const name = n[0].toLocaleUpperCase("az") + n.slice(1); newLife(name, g, $("#city").value, dream, null, { y: +$("#by").value, m: +$("#bm").value, d: +$("#bd").value }); save(true); DB.setMeta("active", P.id); tab = "life"; renderGame(); };
 }
 
 // ---------- main game ----------

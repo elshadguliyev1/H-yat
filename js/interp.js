@@ -15,11 +15,13 @@ const Interp = (() => {
     gender: v => P.g === v,
     stage: v => [].concat(v).includes(P.edu.stage),
     stage_not: v => ![].concat(v).includes(P.edu.stage),
-    job: v => v === true ? !!P.job : v === false ? !P.job : !!P.job && [].concat(v).includes(P.job.id),
-    job_not: v => !P.job || ![].concat(v).includes(P.job.id),
-    job_lv_gte: v => !!P.job && P.job.lv >= v,
-    job_lv_lt: v => !!P.job && P.job.lv < v,
-    job_perf_gt: v => !!P.job && P.job.perf > v,
+    // a frozen (suspended) job counts as "no active job"
+    job: v => { const j = P.job && !P.job.susp ? P.job : null; return v === true ? !!j : v === false ? !j : !!j && [].concat(v).includes(j.id); },
+    job_not: v => !P.job || P.job.susp || ![].concat(v).includes(P.job.id),
+    job_susp: v => !!P.job && !!P.job.susp && [].concat(v).includes(P.job.id),
+    job_lv_gte: v => !!P.job && !P.job.susp && P.job.lv >= v,
+    job_lv_lt: v => !!P.job && !P.job.susp && P.job.lv < v,
+    job_perf_gt: v => !!P.job && !P.job.susp && P.job.perf > v,
     stat_gt: o => Object.entries(o).every(([k, v]) => P.st[k] > v),
     stat_lt: o => Object.entries(o).every(([k, v]) => P.st[k] < v),
     tal_gt: o => Object.entries(o).every(([k, v]) => P.tal[k] > v),
@@ -84,7 +86,9 @@ const Interp = (() => {
     end_job(o) { endJob(o.reason || "bitdi"); },
     promote() { promote(); },
     // service is counted from the start of the current year of age, so 12 months = exactly one "+1 yaş"
-    army_start(o, ctx) { const m = armyMonths(); const start = Cal.addYears(P.birth, P.age); P.army = { start, end: Cal.addMonths(start, m), months: m, basis: P.edu.master ? "master" : P.edu.degree ? "bachelor" : "none", done: false }; if (P.job && P.job.id !== "futbolcu") endJob("hərbi xidmət"); ctx.vars.months = m; },
+    army_start(o, ctx) { const m = armyMonths(); const start = Cal.addYears(P.birth, P.age); P.army = { start, end: Cal.addMonths(start, m), months: m, basis: P.edu.master ? "master" : P.edu.degree ? "bachelor" : "none", done: false }; if (P.job && !P.job.susp) endJob("hərbi xidmət"); ctx.vars.months = m; },
+    job_suspend() { if (P.job) { P.job.susp = true; log(`⏸️ ${jobTitle()}: müqavilə donduruldu.`); } },
+    job_resume(o) { if (!P.job) return; P.job.susp = false; if (o && o.lv_delta) P.job.lv = Math.max(0, P.job.lv + o.lv_delta); P.job.perf = (o && o.perf) || 50; log(`▶️ İşə qayıtdı: ${jobTitle()}.`); },
     open_social() { socOpen(); },
     social_quiet() { socOpen(); P.soc.followers = 3; },
     dream_set(id) { P.dream = id; },
@@ -128,6 +132,8 @@ const Interp = (() => {
     singer_twist: () => P.dream !== "mugenni" ? `Xəyalın ${dreamName()} idi, amma indi müğənnisən. Həyat, sən nə qəribəsən!` : "Xəyalın gerçəkləşdi!",
     sib: () => { const s = P.people.find(p => p.alive && (p.role === "qardaş" || p.role === "bacı")); return s ? s.name : "?"; },
     sib_word: () => { const s = P.people.find(p => p.alive && (p.role === "qardaş" || p.role === "bacı")); return s ? (s.role === "qardaş" ? "qardaşın" : "bacın") : "?"; },
+    army_months: () => armyMonths(),
+    army_job_note: () => P.job && !P.job.susp ? ` ${jobTitle()} işindən ayrılmalı olacaqsan; qayıdanda yenidən iş axtarmalısan.` : "",
     handle: () => P.soc ? P.soc.handle : "",
     npc_old_friend: () => { const id = P.npcFlags && P.npcFlags.defended_classmate; const p = id && P.people.find(x => x.id === id); return p ? p.name : "köhnə sinif yoldaşın"; }
   };
@@ -185,6 +191,7 @@ const Interp = (() => {
   function choicesOf(e) { const list = e.choices_gen ? GEN[e.choices_gen]() : e.ch || [{ t: "Davam" }]; return list.filter(c => { try { return check(c.cond); } catch (err) { return false; } }); }
   function prob(p) {
     if (num(p)) return p;
+    if (p && p.of === "job.lv") return (P.job ? P.job.lv : 0) / (p.div || 1) + (p.add || 0);
     if (p && p.of) { const [grp, key] = p.of.split("."); const base = grp === "st" ? P.st[key] : grp === "tal" ? P.tal[key] : grp === "tr" ? (P.tr[key] || 50) : 0; return base / (p.div || 100) + (p.add || 0); }
     return 0.5;
   }

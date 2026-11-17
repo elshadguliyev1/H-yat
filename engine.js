@@ -66,12 +66,14 @@ function newPerson(role, gender, age, extra = {}) {
   const free = NAMES[gender].filter(n => !used.has(n));
   return Object.assign({ id: "n" + Math.floor(R() * 2176782336).toString(36), role, g: gender, name: pick(free.length ? free : NAMES[gender]), age, rel: rnd(55, 85), alive: true }, extra);
 }
-function newLife(name, gender, city, dream, seed) {
+const BIRTH_YEAR_MIN = 1950, BIRTH_YEAR_MAX = 2002;
+function newLife(name, gender, city, dream, seed, bdate) {
   seed = seed == null ? RNG.newSeed() : seed >>> 0;
   P = { rng: seed }; // so the very first draws are already seeded
   const fam = pick(SURN);
-  const t = Cal.toYMD(Cal.today());
-  const birth = Cal.fromYMD(t.y - 5, rnd(1, 12), rnd(1, 28));
+  const b = bdate || { y: rnd(1985, BIRTH_YEAR_MAX), m: rnd(1, 12), d: rnd(1, 28) };
+  const t = { y: b.y + 5 };
+  const birth = Cal.fromYMD(Math.min(BIRTH_YEAR_MAX, Math.max(BIRTH_YEAR_MIN, b.y)), b.m, b.d);
   P = {
     v: LIFE_VERSION, id: "L" + Date.now().toString(36) + seed.toString(36), seed, rng: seed,
     birth, day: Cal.addYears(birth, 5), tr: Object.fromEntries(Object.keys(TRAITS).map(k => [k, 50])), sched: [], hist: [], npcFlags: {},
@@ -155,6 +157,7 @@ function promote() {
 function salaryMonthly() {
   if (!P.job) return 0;
   const c = CAREERS[P.job.id];
+  if (P.job.susp) return 0; // contract frozen (e.g. military service)
   if (P.job.id === "biznes") return P.job.income || 0;
   const full = c.sal[Math.min(P.job.lv, c.sal.length - 1)];
   return P.age < 18 ? Math.round(full / 2) : full; // under 18: part-time only
@@ -283,7 +286,7 @@ function ageUp() {
   eduTick(msgs);
   // army
   // discharge when the service period is over (service starts on a birthday: 12 months = one year, 18 months = two)
-  if (P.army && !P.army.done) { if (P.army.end <= P.day + 31) { P.army.done = true; log(`🏠 Hərbi xidmət (${P.army.months} ay) başa çatdı. Evə qayıtdı.`); log("🎖️ Hərbi xidməti bitirib evə qayıtdı."); apply({ fitness: 8, happy: 10, rel: { ana: 8 } }); } }
+  if (P.army && !P.army.done) { if (P.army.end <= P.day + 31) { P.army.done = true; log(`🏠 Hərbi xidmət (${P.army.months} ay) başa çatdı. Evə qayıtdı.`); apply({ fitness: 8, happy: 10, rel: { ana: 8 } }); } }
   // money: allowance, salary, costs
   moneyTick(msgs);
   // job performance
@@ -354,6 +357,7 @@ function moneyTick() {
 }
 function jobTick() {
   const j = P.job, c = CAREERS[j.id];
+  if (j.susp) return;
   j.years++;
   const key = c.key === "health" ? P.st.health : P.st[c.key];
   j.perf = clamp(Math.round(j.perf * 0.5 + (key * 0.6 + rnd(0, 40)) * 0.5));
