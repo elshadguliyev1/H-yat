@@ -102,8 +102,8 @@
  {"t":"Yanında ol","fx":{"rel":{"ana":10,"ata":10},"perf":-5},"trait":{"family":4},"r":"Bütün günü dəhlizdə oturdun. Axşam nəticə gəldi: təhlükəli deyil. Əlini tutmuşdun."},
  {"t":"İş və ailə vaxtını bölüşdür","fx":{"rel":{"ana":4,"ata":4},"happy":-3},"trait":{"discipline":2},"r":"Səhər xəstəxana, günorta iş, axşam yenə xəstəxana. Yorğunsan, amma hər yerə çatdın."},
  {"t":"Başqa qohumlardan dəstək istə","fx":{"rel":{"ana":-2,"ata":-2}},"r":"Bibin gəldi, sən işə getdin. Gecə zəng etdin, amma içində bir boşluq qaldı."}]},
-{"id":"az_life_25","cat":"career","tone":"everyday","age":[24,30],"icon":"🏙️","visual":"bus_stop","cond":{"job":true,"job_not":["futbolcu","mugenni","aktyor"]},"t":"Başqa şəhərdə daha yaxşı iş təklifi aldın: maaş iki dəfə çox, amma ailədən uzaq.","ch":[
- {"t":"Təklifi qəbul et","fx":{"happy":4,"rel":{"ana":-4}},"trait":{"independence":3},"do":[{"move_city":"random"},{"promote":true}],"r":"Çamadanı yığdın. İndi {city} şəhərində yaşayırsan."},
- {"t":"Yaxınlarınla müzakirə et","trait":{"family":3},"odds":[{"p":0.5,"do":[{"move_city":"random"},{"promote":true}],"r":"Ailə dedi: “Get, gələcəyin üçündür.” {city} şəhərinə köçdün."},{"p":0.5,"fx":{"rel":{"ana":5}},"r":"Birlikdə qərara gəldiniz ki, qalasan. Anan çox sevindi."}]},
+{"id":"az_life_25","cat":"career","tone":"everyday","age":[24,30],"icon":"🏙️","visual":"bus_stop","cond":{"job":true,"job_not":["futbolcu","mugenni","aktyor"]},"t":"Başqa şəhərdə eyni işə daha yaxşı təklif aldın: maaşın {sal_now} yox, {offer_city} olacaq. Amma ailədən uzaq.","ch":[
+ {"t":"Təklifi qəbul et","fx":{"happy":4,"rel":{"ana":-4}},"trait":{"independence":3},"do":[{"move_city":"random"},{"raise":{"factor":1.6}}],"r":"Çamadanı yığdın. İndi {city} şəhərində yaşayırsan, maaşın {sal_new}."},
+ {"t":"Yaxınlarınla müzakirə et","trait":{"family":3},"odds":[{"p":0.5,"do":[{"move_city":"random"},{"raise":{"factor":1.6}}],"r":"Ailə dedi: “Get, gələcəyin üçündür.” {city} şəhərinə köçdün, maaşın {sal_new}."},{"p":0.5,"fx":{"rel":{"ana":5}},"r":"Birlikdə qərara gəldiniz ki, qalasan. Anan çox sevindi."}]},
  {"t":"Yaşadığın yerdə qal","fx":{"happy":1},"r":"Burada evin, dostların, köklərin var."}]}
 ]

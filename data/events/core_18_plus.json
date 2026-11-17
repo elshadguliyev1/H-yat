@@ -151,9 +151,9 @@
 {"id":"proq_startap","cat":"career","tone":"rare","age":[22,50],"icon":"🚀","cond":{"job":"proqramci","job_lv_gte":1},"t":"Dostunla öz startapınızı qurmaq istəyirsiniz. Bunun üçün işdən çıxmalısan.","ch":[
  {"t":"Risk et!","odds":[{"p":0.35,"fx":{"happy":15,"fame":5,"money":20000},"do":[{"start_job":{"id":"biznes","lv":1,"note":"Startap qurdu"}}],"r":"İnvestor tapıldı! Şirkətin dəyəri artır."},{"p":0.65,"fx":{"happy":-12,"money":-5000},"do":[{"end_job":{"reason":"startap"}}],"r":"Bir il sonra startap bağlandı. Yenidən iş axtarmalısan."}],"trait":{"independence":4}},
  {"t":"Stabil iş daha yaxşıdır","fx":{"happy":-2},"r":"Dostun tək başladı…"}]},
-{"id":"proq_xarici","cat":"career","tone":"rare","age":[22,45],"icon":"🌍","cond":{"job":"proqramci","job_lv_gte":2},"t":"Avropada böyük texnologiya şirkəti sənə uzaqdan iş təklif edir. Maaş indikindən 3 dəfə çoxdur.","ch":[
- {"t":"Qəbul et","fx":{"happy":12,"perf":10},"do":[{"promote":true}],"r":"Evdən işləyirsən, maaş avro ilə!"},
- {"t":"Komandamı tərk etmərəm","fx":{"perf":10,"money":3000},"r":"Rəhbər bunu bilib maaşını artırdı."}]},
+{"id":"proq_xarici","cat":"career","tone":"rare","age":[22,45],"icon":"🌍","cond":{"job":"proqramci","job_lv_gte":2},"t":"Avropada böyük texnologiya şirkəti sənə uzaqdan iş təklif edir: maaşın {sal_now} yox, {offer_remote} olacaq.","ch":[
+ {"t":"Qəbul et","fx":{"happy":12,"perf":10},"do":[{"raise":{"factor":2.5}}],"r":"Evdən işləyirsən, maaş avro ilə: ayda {sal_new}!"},
+ {"t":"Komandamı tərk etmərəm","fx":{"perf":10},"do":[{"raise":{"factor":1.2}}],"r":"Rəhbər bunu bilib maaşını {sal_new}-a qaldırdı."}]},
 {"id":"biz_vergi","cat":"career","tone":"dramatic","age":[20,75],"icon":"🧾","cond":{"job":"biznes"},"t":"Vergi yoxlaması gəldi. Mühasibin “bir az düzəliş edək” deyir.","ch":[
  {"t":"Hər şey qanuni olsun","fx":{"money":-3000},"r":"Bir az cərimə ödədin, amma rahat yatırsan.","trait":{"honesty":3}},
  {"t":"Düzəliş et","odds":[{"p":0.5,"fx":{"money":2000},"r":"Yoxlama heç nə tapmadı."},{"p":0.5,"fx":{"money":-25000,"happy":-15},"r":"Tapdılar! Böyük cərimə və şirkətin adı xəbərlərdə."}],"trait":{"honesty":-3}}]},

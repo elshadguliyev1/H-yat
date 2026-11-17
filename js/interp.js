@@ -87,6 +87,8 @@ const Interp = (() => {
     promote() { promote(); },
     // service is counted from the start of the current year of age, so 12 months = exactly one "+1 yaş"
     army_start(o, ctx) { const m = armyMonths(); const start = Cal.addYears(P.birth, P.age); P.army = { start, end: Cal.addMonths(start, m), months: m, basis: P.edu.master ? "master" : P.edu.degree ? "bachelor" : "none", done: false }; if (P.job && !P.job.susp) endJob("hərbi xidmət"); ctx.vars.months = m; },
+    // a better-paid offer: the salary really grows by this factor (and the offer text shows the exact figures)
+    raise(o, ctx) { if (!P.job) return; const before = salaryMonthly(); P.job.bonus = Math.round((P.job.bonus || 1) * o.factor * 100) / 100; ctx.vars.sal_new = fmtMoney(salaryMonthly()); log(`💰 Maaş: ${fmtMoney(before)} → ${fmtMoney(salaryMonthly())}.`); },
     job_suspend() { if (P.job) { P.job.susp = true; log(`⏸️ ${jobTitle()}: müqavilə donduruldu.`); } },
     job_resume(o) { if (!P.job) return; P.job.susp = false; if (o && o.lv_delta) P.job.lv = Math.max(0, P.job.lv + o.lv_delta); P.job.perf = (o && o.perf) || 50; log(`▶️ İşə qayıtdı: ${jobTitle()}.`); },
     open_social() { socOpen(); },
@@ -132,6 +134,9 @@ const Interp = (() => {
     singer_twist: () => P.dream !== "mugenni" ? `Xəyalın ${dreamName()} idi, amma indi müğənnisən. Həyat, sən nə qəribəsən!` : "Xəyalın gerçəkləşdi!",
     sib: () => { const s = P.people.find(p => p.alive && (p.role === "qardaş" || p.role === "bacı")); return s ? s.name : "?"; },
     sib_word: () => { const s = P.people.find(p => p.alive && (p.role === "qardaş" || p.role === "bacı")); return s ? (s.role === "qardaş" ? "qardaşın" : "bacın") : "?"; },
+    sal_now: () => fmtMoney(salaryMonthly()),
+    offer_city: () => fmtMoney(Math.round(salaryMonthly() * 1.6)),
+    offer_remote: () => fmtMoney(Math.round(salaryMonthly() * 2.5)),
     army_months: () => armyMonths(),
     army_job_note: () => P.job && !P.job.susp ? ` ${jobTitle()} işindən ayrılmalı olacaqsan; qayıdanda yenidən iş axtarmalısan.` : "",
     handle: () => P.soc ? P.soc.handle : "",
@@ -141,7 +146,7 @@ const Interp = (() => {
     let s = String(t ?? "").replace(/\{(\w+)\}/g, (m, k) => ctx && ctx.vars && ctx.vars[k] != null ? ctx.vars[k] : TV[k] ? TV[k]() : m);
     return fill(s);
   }
-  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", ...Object.keys(TV)]);
+  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", "sal_new", ...Object.keys(TV)]);
 
   // ---------------- dynamic choice lists ----------------
   const GEN = {

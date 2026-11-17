@@ -159,7 +159,7 @@ function salaryMonthly() {
   const c = CAREERS[P.job.id];
   if (P.job.susp) return 0; // contract frozen (e.g. military service)
   if (P.job.id === "biznes") return P.job.income || 0;
-  const full = c.sal[Math.min(P.job.lv, c.sal.length - 1)];
+  const full = Math.round(c.sal[Math.min(P.job.lv, c.sal.length - 1)] * (P.job.bonus || 1)); // bonus: better-paid offer at the same position
   return P.age < 18 ? Math.round(full / 2) : full; // under 18: part-time only
 }
 // parents' professions (NPCs) and the family's means: affects how often they can give pocket money
