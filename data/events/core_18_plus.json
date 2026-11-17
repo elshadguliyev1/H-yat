@@ -155,10 +155,13 @@
  {"t":"Yaxşı rolu gözlə","odds":[{"p":0.4,"fx":{"fame":10,"happy":12},"do":[{"promote":true}],"r":"Kino rejissoru səni baş rola çağırdı!"},{"p":0.6,"fx":{"happy":-6,"money":-1000},"r":"Bir il heç bir təklif gəlmədi…"}]}]},
 {"id":"akt_festival","cat":"career","tone":"rare","age":[20,70],"icon":"🏆","cond":{"job":"aktyor","job_lv_gte":2},"t":"Filmin beynəlxalq kinofestivala seçilib!","ch":[
  {"t":"Qırmızı xalçaya çıx","odds":[{"p":0.35,"fx":{"fame":18,"happy":20},"do":[{"promote":true},{"followers_rand":[50000,300000]}],"r":"Ən yaxşı aktyor mükafatı! 🏆"},{"p":0.65,"fx":{"fame":6,"happy":8},"r":"Mükafat almadın, amma bütün dünya səni gördü."}]}]},
+{"id":"fut_gecikme","cat":"career","tone":"everyday","age":[17,36],"once":false,"cool":4,"icon":"⏰","cond":{"job":"futbolcu","has":["məşqçi"]},"t":"Səhər məşqinə 20 dəqiqə gecikdin. Komanda artıq qızınır, məşqçi {məşqçi} saatına baxır.","ch":[
+ {"t":"Üzr istə, cəzanı qəbul et","fx":{"money":-200,"rel":{"məşqçi":3}},"r":"200 ₼ cərimə və əlavə 20 dövrə qaçış. Məşqçi: “Səhv edən çox olur, etiraf edən az.”","trait":{"honesty":2}},
+ {"t":"“Tıxac idi” de","odds":[{"p":0.6,"fx":{"money":-200},"r":"İnandı, amma qayda qaydadır: 200 ₼ cərimə."},{"p":0.4,"fx":{"money":-200,"rel":{"məşqçi":-10},"perf":-10},"r":"Komanda yoldaşı səni metroda gördüyünü dedi. Növbəti oyunu ehtiyatda keçirəcəksən."}],"trait":{"honesty":-2}}]},
 {"id":"is_musteri","cat":"career","tone":"everyday","age":[16,65],"icon":"😡","cond":{"job":["ofisiant","satici","kuryer","taksi"]},"t":"Əsəbi bir müştəri səni hamının qarşısında təhqir edir.","ch":[
  {"t":"Səbirli ol","fx":{"happy":-3,"perf":8},"r":"Müdir səbrini gördü və təriflədi."},
  {"t":"Cavab ver","odds":[{"p":0.5,"fx":{"happy":4},"r":"Haqqını müdafiə etdin."},{"p":0.5,"fx":{"perf":-25},"r":"Müdir səni danladı, xəbərdarlıq aldın."}],"trait":{"courage":2}}]},
-{"id":"is_gecikme","cat":"career","tone":"everyday","age":[18,65],"once":false,"cool":4,"icon":"⏰","cond":{"job":true},"t":"Səhər yatıb qaldın, işə 1 saat gecikirsən.","ch":[
+{"id":"is_gecikme","cat":"career","tone":"everyday","age":[18,65],"once":false,"cool":4,"icon":"⏰","cond":{"job":true,"job_not":["futbolcu","mugenni","aktyor","biznes"]},"t":"Səhər yatıb qaldın, işə 1 saat gecikirsən.","ch":[
  {"t":"Taksi tut, tez çat","fx":{"money":-15},"r":"Cəmi 20 dəqiqə gecikdin."},
  {"t":"Rəhbərə doğrusunu de","fx":{"perf":-3},"r":"Rəhbər başa düşdü, amma bir daha olmasın dedi.","trait":{"honesty":2}},
  {"t":"Bəhanə uydur","odds":[{"p":0.6,"r":"“Tıxac idi” — inandı."},{"p":0.4,"fx":{"perf":-12},"r":"Rəhbər Pıçıltı-da səhər çəkdiyin selfini gördü 😬"}],"trait":{"honesty":-2}}]},
