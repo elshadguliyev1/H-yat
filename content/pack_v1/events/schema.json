@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "age_min",
+      "age_max",
+      "title",
+      "description",
+      "choices"
+    ],
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "age_min": {
+        "type": "integer"
+      },
+      "age_max": {
+        "type": "integer"
+      },
+      "title": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "choices": {
+        "type": "array",
+        "minItems": 2
+      }
+    }
+  }
+}

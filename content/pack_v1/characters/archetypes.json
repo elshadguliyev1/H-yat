@@ -1,0 +1,44 @@
+{
+  "archetypes": [
+    {
+      "id": "caring_parent",
+      "traits": {
+        "warmth": 80,
+        "strictness": 35
+      },
+      "goals": [
+        "family_stability"
+      ]
+    },
+    {
+      "id": "strict_parent",
+      "traits": {
+        "warmth": 45,
+        "strictness": 85
+      },
+      "goals": [
+        "education_success"
+      ]
+    },
+    {
+      "id": "loyal_friend",
+      "traits": {
+        "loyalty": 85,
+        "ambition": 55
+      },
+      "goals": [
+        "stable_job"
+      ]
+    },
+    {
+      "id": "independent_partner",
+      "traits": {
+        "independence": 90,
+        "empathy": 65
+      },
+      "goals": [
+        "career_growth"
+      ]
+    }
+  ]
+}

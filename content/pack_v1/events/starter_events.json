@@ -1,0 +1,1367 @@
+[
+  {
+    "id": "az_life_05",
+    "age_min": 5,
+    "age_max": 6,
+    "category": "life",
+    "tone": "everyday",
+    "title": "Uşaqlığın ilk günü",
+    "description": "Bağçada bir uşaq oyuncağını səndən istəyir.",
+    "location": "Bağça otağı",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Oyuncağı paylaş",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "empathy",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_05_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Birlikdə oynamağı təklif et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "friendship",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_05_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Oyuncağı vermə",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "assertiveness",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_05_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_06",
+    "age_min": 6,
+    "age_max": 7,
+    "category": "life",
+    "tone": "everyday",
+    "title": "Evə gec gələn ata",
+    "description": "Atan bu axşam da işdən gec qayıdır. Anan yorğun görünür.",
+    "location": "Ailə mətbəxi",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Atandan gününün necə keçdiyini soruş",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "father_closeness",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_06_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Anana kömək et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "mother_closeness",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_06_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Öz otağına çəkil",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "independence",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_06_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_07",
+    "age_min": 7,
+    "age_max": 8,
+    "category": "life",
+    "tone": "everyday",
+    "title": "Yeni sinif yoldaşı",
+    "description": "Yeni gələn uşağın geyiminə gülürlər. O, tək oturub.",
+    "location": "Məktəb",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Onun yanında otur",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "friendship",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_07_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Sakitcə müəllimə xəbər ver",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "courage",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_07_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Heç nə etmə",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "avoidance",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_07_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_08",
+    "age_min": 8,
+    "age_max": 9,
+    "category": "life",
+    "tone": "everyday",
+    "title": "İtən pul",
+    "description": "Sinifdə pul itib və hamı bir-birindən şübhələnir.",
+    "location": "Məktəb",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Bildiklərini dürüst danış",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "honesty",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_08_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Sübut olmadan heç kimi günahlandırma",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "fairness",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_08_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Söhbətdən uzaq dur",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "avoidance",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_08_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_09",
+    "age_min": 9,
+    "age_max": 10,
+    "category": "life",
+    "tone": "dramatic",
+    "title": "Köçmək xəbəri",
+    "description": "Ailən başqa rayona köçməyi düşünür.",
+    "location": "Ev",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Narahatlığını valideynlərinə de",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "family_trust",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_09_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Yeni yer haqqında sual ver",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "curiosity",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_09_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Sakit qal",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "stress",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_09_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_10",
+    "age_min": 10,
+    "age_max": 11,
+    "category": "life",
+    "tone": "everyday",
+    "title": "İlk böyük imtahan",
+    "description": "Sınaq nəticən gözlədiyindən aşağıdır.",
+    "location": "Məktəb",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Müəllimdən kömək istə",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "study",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_10_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Özün plan qur",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "discipline",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_10_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Nəticəni gizlət",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "secrecy",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_10_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_11",
+    "age_min": 11,
+    "age_max": 12,
+    "category": "life",
+    "tone": "everyday",
+    "title": "Dostun sirri",
+    "description": "Dostun ailəsində çətinlik olduğunu deyir və sirr saxlamağını istəyir.",
+    "location": "Park",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Onu dinlə",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "empathy",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_11_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Etibarlı böyüklə danışmağı təklif et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "support",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_11_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Mövzunu dəyiş",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "distance",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_11_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_12",
+    "age_min": 12,
+    "age_max": 13,
+    "category": "life",
+    "tone": "everyday",
+    "title": "İdman və dərs",
+    "description": "Məşq saatın dərs hazırlığı ilə üst-üstə düşür.",
+    "location": "Ev",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Həftəlik plan qur",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "discipline",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_12_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Məşqi seç",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "fitness",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_12_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Dərsi seç",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "education",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_12_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_13",
+    "age_min": 13,
+    "age_max": 14,
+    "category": "life",
+    "tone": "everyday",
+    "title": "Sosial təzyiq",
+    "description": "Dostların bir sinif yoldaşına qarşı zarafat hazırlayır.",
+    "location": "Məktəb",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Qarşı çıx",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "courage",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_13_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Oradan uzaqlaş",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "avoidance",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_13_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Onlara qoşul",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "peer_approval",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_13_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_14",
+    "age_min": 14,
+    "age_max": 15,
+    "category": "life",
+    "tone": "dramatic",
+    "title": "Ailə büdcəsi",
+    "description": "Evdə xərcləri azaltmaq lazım gəlir.",
+    "location": "Ailə mətbəxi",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "İstədiyin alışdan imtina et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "responsibility",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_14_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Kiçik işlərlə kömək et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "initiative",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_14_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Etiraz et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "conflict",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_14_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_15",
+    "age_min": 15,
+    "age_max": 16,
+    "category": "life",
+    "tone": "everyday",
+    "title": "İlk xoşlanma",
+    "description": "Bir sinif yoldaşına qarşı hisslərin var.",
+    "location": "Məktəb həyəti",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Söhbətə başla",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "confidence",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_15_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Dost kimi tanımağa çalış",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "patience",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_15_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Hisslərini gizlət",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "shyness",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_15_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_16",
+    "age_min": 16,
+    "age_max": 17,
+    "category": "life",
+    "tone": "everyday",
+    "title": "Yay işi",
+    "description": "Tanışın yayda işləmək təklif edir.",
+    "location": "Küçə",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Ailə ilə məsləhətləş",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "family_trust",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_16_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Təhlükəsizliyini və şərtləri yoxla",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "prudence",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_16_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Təklifi rədd et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "education",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_16_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_17",
+    "age_min": 17,
+    "age_max": 18,
+    "category": "life",
+    "tone": "dramatic",
+    "title": "İxtisas seçimi",
+    "description": "Ailən bir ixtisası məsləhət görür, sən isə başqasını istəyirsən.",
+    "location": "Ev",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Öz maraqlarını izah et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "independence",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_17_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Məsləhəti araşdır",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "planning",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_17_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Mübahisə et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "conflict",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_17_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_18",
+    "age_min": 18,
+    "age_max": 19,
+    "category": "life",
+    "tone": "dramatic",
+    "title": "Qəbul nəticəsi",
+    "description": "İmtahan nəticələrin gözlədiyin kimi deyil.",
+    "location": "Ev",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Alternativ təhsil yollarını araşdır",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "adaptability",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_18_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Yenidən hazırlaş",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "study",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_18_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "İş axtar",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "career",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_18_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_19",
+    "age_min": 19,
+    "age_max": 20,
+    "category": "life",
+    "tone": "everyday",
+    "title": "Dostun borc istəyir",
+    "description": "Yaxın dostun qaytaracağı tarix bəlli olmayan borc istəyir.",
+    "location": "Kafe",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "İmkanın qədər kömək et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "generosity",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_19_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Şərtləri açıq danış",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "boundaries",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_19_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Nəzakətlə imtina et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "savings",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_19_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_20",
+    "age_min": 20,
+    "age_max": 21,
+    "category": "life",
+    "tone": "everyday",
+    "title": "Hərbi xidmət xəbəri",
+    "description": "Sənə hərbi statusunu dəqiqləşdirməyin vacibliyi bildirilir.",
+    "location": "Ev",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Rəsmi qaydaları araşdır",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "planning",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_20_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Sənədləri hazırla",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "responsibility",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_20_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Məsələni sonraya saxla",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "delay",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_20_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_21",
+    "age_min": 21,
+    "age_max": 22,
+    "category": "life",
+    "tone": "everyday",
+    "title": "İlk iş müsahibəsi",
+    "description": "İşəgötürən təcrübən az olsa da səni müsahibəyə çağırır.",
+    "location": "Ofis",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Dürüst cavab ver",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "honesty",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_21_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Bacarıqlarını nümunə ilə göstər",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "confidence",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_21_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Hazırlıqsız get",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "career",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_21_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_22",
+    "age_min": 22,
+    "age_max": 23,
+    "category": "life",
+    "tone": "dramatic",
+    "title": "Uzaq məsafə",
+    "description": "Yaxın olduğun insan başqa şəhərə köçür.",
+    "location": "Avtovağzal",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Əlaqə üçün plan qur",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "commitment",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_22_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Münasibəti açıq müzakirə et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "communication",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_22_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Uzaqlaş",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "distance",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_22_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_23",
+    "age_min": 23,
+    "age_max": 24,
+    "category": "life",
+    "tone": "everyday",
+    "title": "İş və təhsil",
+    "description": "Əlavə kursa yazılmaq üçün iş saatını azaltmalısan.",
+    "location": "Ev",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Büdcə qur və kursa yazıl",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "skill",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_23_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "İşdə qal",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "income",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_23_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Təqaüd imkanı axtar",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "initiative",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_23_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_24",
+    "age_min": 24,
+    "age_max": 25,
+    "category": "life",
+    "tone": "dramatic",
+    "title": "Ailədə xəstəlik",
+    "description": "Yaxın ailə üzvünün müayinəyə ehtiyacı var.",
+    "location": "Xəstəxana",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Yanında ol",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "care",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_24_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "İş və ailə vaxtını bölüşdür",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "balance",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_24_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Başqa qohumlardan dəstək istə",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "support_network",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_24_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  },
+  {
+    "id": "az_life_25",
+    "age_min": 25,
+    "age_max": 26,
+    "category": "life",
+    "tone": "everyday",
+    "title": "Yeni şəhər fürsəti",
+    "description": "Başqa şəhərdə daha yaxşı iş təklifi alırsan.",
+    "location": "Avtovağzal",
+    "repeatable": false,
+    "weight": 50,
+    "conditions": {
+      "protagonist_alive": true
+    },
+    "choices": [
+      {
+        "id": "choice_1",
+        "text": "Təklifi qəbul et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "career",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_25_choice_1"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_2",
+        "text": "Yaxınlarınla müzakirə et",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "family_trust",
+            "value": 3
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_25_choice_2"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      },
+      {
+        "id": "choice_3",
+        "text": "Yaşadığın yerdə qal",
+        "effects": [
+          {
+            "type": "stat_delta",
+            "key": "stability",
+            "value": -1
+          },
+          {
+            "type": "set_flag",
+            "key": "az_life_25_choice_3"
+          }
+        ],
+        "result_text": "Bu qərar gələcək münasibətlərinə və imkanlarına təsir edə bilər."
+      }
+    ]
+  }
+]

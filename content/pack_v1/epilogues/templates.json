@@ -1,0 +1,7 @@
+{
+  "protagonist": "{name} {age} yaşında həyatını başa vurdu. {life_summary}",
+  "spouse_alive": "Həyat yoldaşı {name} onun ölümündə {age} yaşında idi. {status_summary}",
+  "child": "{name} — {relation}. {education_career_summary} {relationship_summary}",
+  "no_children": "Bu həyatda övladı olmadı. Onun izi başqa yaxınlarının xatirələrində qaldı.",
+  "post_death": "Ölümündən sonrakı illər: {simulated_events}"
+}
