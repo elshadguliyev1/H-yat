@@ -42,6 +42,12 @@ Vəziyyət: son işlək versiya `fddf1f6`, 18/18 test keçir. Aşağıdakılar h
    - Yaş ad günündə artır.
    - Fəaliyyət nöqtələri hər rüb üçün olmalıdır.
 
+12. **Əlavə qazanc və passiv gəlir:** borc yığılıb oyunçunu "boğmamalıdır".
+   - **Əlavə iş yolları, hər yaşda əlçatan:** taksi və kuryer kimi part-time, freelance, repetitorluq, usta sifarişləri, satış, kirayəyə vermək.
+   - **Daimi passiv gəlir, əldən çıxmayan:** kirayə mənzil və mağaza, depozit faizi, kiçik biznesin gəliri, təqaüd. Bu gəlirlər hər dövr avtomatik gəlməlidir.
+   - **Borcdan çıxış yolu:** borc böyüyəndə restrukturizasiya, əmlak satmaq, ailədən kömək, əlavə iş kimi seçimlər görünməlidir.
+   - **Balans testi:** adi həyatda oyunçu çıxılmaz borc spiralına düşməməlidir.
+
 ## B. KRİTİK: dramaturgiya (növbəti işin əsası)
 
 **Niyə hazırkı mühərrik maraqlı hekayə yaratmır (qısa diaqnoz):**
