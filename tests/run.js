@@ -7,18 +7,19 @@
 const fs = require("fs"), path = require("path"), vm = require("vm");
 const ROOT = path.join(__dirname, "..");
 const read = f => fs.readFileSync(path.join(ROOT, f), "utf8");
-const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json"];
+const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json"];
 
 // strict JSON check first (the browser uses JSON.parse; the sandbox below would forgive trailing commas)
-for (const f of ["data/rules.json", ...EVENT_FILES]) { try { JSON.parse(read(f)); } catch (e) { console.log("✗ JSON xətası: " + f + " — " + e.message); process.exit(1); } }
+for (const f of ["data/rules.json", "data/careers.json", ...EVENT_FILES]) { try { JSON.parse(read(f)); } catch (e) { console.log("✗ JSON xətası: " + f + " — " + e.message); process.exit(1); } }
 
 function sandbox() {
   const store = {};
   const ctx = { console, Math, Date, JSON, Object, Array, String, Number, Intl, Set, Map, Promise, isFinite,
     localStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } } };
   vm.createContext(ctx);
-  vm.runInContext(read("js/core.js") + "\n" + read("engine.js") + "\n" + read("js/interp.js") + `
+  vm.runInContext(read("js/core.js") + "\n" + read("engine.js") + "\n" + read("js/career.js") + "\n" + read("js/justice.js") + "\n" + read("js/interp.js") + `
     RULES = ${read("data/rules.json")};
+    loadCareers(${read("data/careers.json")});
     globalThis.LISTS = [${EVENT_FILES.map(read).join(",")}];
     Interp.load(LISTS);
     // a bot that plays one year with seeded decisions (so a seed reproduces a whole life)
@@ -53,7 +54,7 @@ function sandbox() {
     };
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
-    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob;
+    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial;
     globalThis.playLife = function (name, g, dream, seed, maxAge, log) { newLife(name, g, "Bakı", dream, seed); while (P.alive && P.age < (maxAge || 130)) playYear(log); return P; };
   `, ctx);
   return ctx;
@@ -114,7 +115,8 @@ test("gecikmiş nəticə: 7 yaşdakı qərar 15–20 il sonra hadisə yaradır",
       if (seen) break;
     }
     const npcAlive = S.Interp.check({ npc_flag_alive: "defended_classmate" });
-    if (seen) fired++; else ok(!npcAlive || !S.P.alive, "vaxtı çatdı, şərt ödənirdi, amma hadisə gəlmədi (seed " + (5000 + s) + ")");
+    const jailed = !!(S.P.legal && S.P.legal.prison && !S.P.legal.prison.released); // waits until release
+    if (seen) fired++; else ok(!npcAlive || !S.P.alive || jailed, "vaxtı çatdı, şərt ödənirdi, amma hadisə gəlmədi (seed " + (5000 + s) + ")");
   }
   ok(fired > tries * 0.7, `yalnız ${fired}/${tries} dəfə aktivləşdi`);
 });
@@ -138,6 +140,7 @@ test("hərbi xidmət qaydaları (rules.json)", () => {
       if (!before && S.P.army && wasStudent && ["uni", "magistr"].includes(S.P.edu.stage)) studentsDrafted++;
     }
     if (!S.P.army) continue;
+    if (S.P.army.basis === "officer") continue; // military academy graduates (men and women): officers, no conscript service
     if (S.P.g === "q") { girls++; continue; }
     const want = { none: M.months_without_higher_education, bachelor: M.months_after_bachelor, master: M.months_after_master }[S.P.army.basis];
     eq(S.P.army.months, want, "xidmət müddəti əsasa uyğun deyil (" + S.P.army.basis + ")");
@@ -182,7 +185,7 @@ test("futbolçu əsgərliyə gedir: karyera qərarı, xidmətdə maaş yoxdur, q
   for (let s = 1; s <= 100; s++) {
     S.newLife("Fut", "k", "Bakı", "futbolcu", 30000 + s);
     while (S.P.age < 18) S.playYear();
-    S.P.yearEvents = []; S.P.army = null; S.P.job = null; S.startJob("futbolcu", 1); S.P.edu.stage = "bitdi"; delete S.P.edu.pendingMaster; S.P.flags.imtahanVerdi = 18;
+    S.P.yearEvents = []; S.P.army = null; S.P.job = null; S.P.legal = { record: [], case: null, prison: null, history: [] }; S.startJob("futbolcu", 1); S.P.edu.stage = "bitdi"; delete S.P.edu.pendingMaster; S.P.flags.imtahanVerdi = 18;
     ok(S.Interp.check(S.Interp.byId("fut_ordu").cond), "fut_ordu şərti ödənmədi");
     ok(!S.Interp.check(S.Interp.byId("ordu").cond), "adi çağırış futbolçuya da çıxdı");
     const e = S.Interp.byId("fut_ordu"); S.P.seen[e.id] = S.P.age; S.Interp.choose(e, e.ch[0]); asked++;
@@ -199,6 +202,68 @@ test("futbolçu əsgərliyə gedir: karyera qərarı, xidmətdə maaş yoxdur, q
   console.log(`      (${asked} futbolçu: klub gözlədi və qayıdış oldu ${back}, müqavilə ləğv olundu və sınaq çağırışı ${trial})`);
 });
 
+test("karyera: maaş artımı və yüksəliş avtomatik deyil, maaş diapazonda qalır", () => {
+  let asks = 0, ok1 = 0, promos = 0, preq = 0;
+  for (let s = 1; s <= 150; s++) {
+    S.newLife("İşçi", s % 2 ? "k" : "q", "Bakı", "proqramci", 40000 + s);
+    while (S.P.age < 22) S.playYear();
+    S.P.yearEvents = []; S.P.army = { done: true, months: 0 }; S.startJob(["proqramci", "ofis", "muellim", "hekim"][s % 4], 0);
+    for (let y = 0; y < 8 && S.P.alive && S.P.job; y++) {
+      const before = S.P.job.sal; const r = S.askRaise(); asks++; if (S.P.job.sal > before) ok1++;
+      if (y % 2) { preq++; const lv = S.P.job.lv; S.askPromotion(); if (S.P.job.lv > lv) promos++; }
+      const c = S.CAREERS[S.P.job.id], [mn, mx] = c.sal[Math.min(S.P.job.lv, c.sal.length - 1)];
+      ok(S.P.job.sal <= Math.round(mx * 1.12) + 1, `maaş diapazondan çıxdı: ${S.P.job.sal} > ${mx}`);
+      S.ageUp(); S.P.yearEvents = [];
+      if (!S.P.job) break;
+    }
+  }
+  const rr = ok1 / asks, pr = promos / preq;
+  ok(rr > 0.05 && rr < 0.85, "artım ehtimalı qeyri-real: " + rr.toFixed(2));
+  ok(pr < 0.7, "yüksəliş çox asandır: " + pr.toFixed(2));
+  console.log(`      (maaş artımı tələblərinin ${Math.round(rr * 100)}%-i, yüksəliş müraciətlərinin ${Math.round(pr * 100)}%-i uğurlu)`);
+});
+
+test("aviasiya: CPL ilə işə qəbul, ATPL və 3000 saat olmadan kapitan yoxdur", () => {
+  S.newLife("Pilot", "q", "Bakı", "pilot", 555); while (S.P.age < 24) S.playYear(); S.P.yearEvents = [];
+  S.P.st.health = 90; S.P.lic = { cpl: 22, ppl: true }; S.P.hours = 250; S.P.legal = { record: [], history: [] };
+  ok(S.jobOptions().some(o => o.id === "pilot"), "CPL olan pilot işə müraciət edə bilmir");
+  S.startJob("pilot", 1); S.P.job.lvYears = 10; S.P.job.perf = 95;
+  ok(!S.promote(), "ATPL olmadan kapitan oldu");
+  S.P.lic.atpl = 25; S.P.hours = 3200; ok(S.promote(), "ATPL və 3200 saatla kapitan olmadı"); eq(S.P.job.lv, 2);
+  S.P.legal.record.push({ type: "ogurluq" }); S.P.job = null;
+  ok(!S.jobOptions().some(o => ["pilot", "polis", "herbci"].includes(o.id)), "məhkumluqla pilot/polis/hərbçi ola bildi");
+});
+
+test("ədliyyə: həbsdə zaman axır, ailə qocalır, azadlıq və qeyd qalır", () => {
+  let jailed = 0, released = 0;
+  for (let s = 1; s <= 60; s++) {
+    S.newLife("Məhkum", "k", "Bakı", "polis", 60000 + s); while (S.P.age < 25) S.playYear(); S.P.yearEvents = [];
+    S.P.legal = { record: [], case: { type: "narkotik", day: S.P.day, age: S.P.age }, prison: null, history: [] };
+    S.trial("dovlet", false);
+    if (!S.inPrison()) continue; jailed++;
+    const ana = S.P.people.find(p => p.role === "ana" && p.alive), a0 = ana && ana.age, start = S.P.age;
+    for (let y = 0; y < 15 && S.inPrison() && S.P.alive; y++) {
+      S.ageUp();
+      if (S.inPrison()) ok(S.P.yearEvents.every(ev => S.Interp.byId(ev.id).prison), "həbsdə adi hadisə gəldi");
+      ok(!S.P.job, "həbsdə iş");
+      S.P.yearEvents = [];
+    }
+    if (ana && ana.alive && S.P.alive) ok(ana.age > a0, `ana həbs müddətində qocalmadı (seed ${60000 + s}, ${a0} → ${ana.age}, oyunçu ${start} → ${S.P.age})`);
+    if (!S.inPrison() && S.P.alive) { released++; ok(S.P.legal.record.length > 0, "qeyd silindi"); ok(!S.jobOptions().some(o => o.id === "polis"), "azadlıqdan sonra polis ola bildi"); }
+  }
+  ok(jailed > 10 && released > 5, `həbs ${jailed}, azadlıq ${released}`);
+  console.log(`      (60 narkotik işindən: həbs ${jailed}, azad edildi ${released})`);
+});
+
+test("erkən ölüm mümkündür, amma nadirdir; keçmiş futbolçuya məşqçilik açıqdır", () => {
+  let under30 = 0, under40 = 0; const N2 = 3000;
+  for (let s = 1; s <= N2; s++) { S.newLife("R", "k", "Bakı", "polis", 70000 + s); for (let a = 5; a < 40 && S.P.alive; a++) { const r = S.deathRisk(); if (Math.random() < r.natural + r.job) { if (S.P.age < 30) under30++; under40++; break; } S.P.age++; } }
+  ok(under40 > 0, "40 yaşa qədər heç kim ölmədi"); ok(under40 / N2 < 0.06, "40 yaşa qədər ölüm çox yüksəkdir: " + (under40 / N2));
+  console.log(`      (${N2} insandan 30 yaşa qədər ${under30}, 40 yaşa qədər ${under40} nəfər öldü — ${(under40 / N2 * 100).toFixed(1)}%)`);
+  S.newLife("Ex", "k", "Bakı", "futbolcu", 4); while (S.P.age < 34) S.playYear(); S.P.job = null; S.P.flags.exFutbolcu = 33; S.P.legal = { record: [], history: [] };
+  ok(S.jobOptions().some(o => o.id === "mesqci"), "keçmiş futbolçu məşqçi ola bilmir");
+});
+
 test("köhnə (V0.1) yaddaş yeni formata köçür və oyun davam edir", () => {
   S.playLife("Leyla", "q", "mugenni", 4242, 15);
   const old = JSON.parse(JSON.stringify(S.P));
@@ -212,17 +277,22 @@ test("köhnə (V0.1) yaddaş yeni formata köçür və oyun davam edir", () => {
 
 const N = +process.argv[2] || 400;
 test(`Monte-Karlo: ${N} tam həyat çökmədən oynanılır`, () => {
-  const tone = { everyday: 0, dramatic: 0, rare: 0 }, seen = new Set(); let ages = 0, money = [], dream = 0, kidSerious = 0, kidAll = 0, kidArcs = 0;
+  const tone = { everyday: 0, dramatic: 0, rare: 0 }, seen = new Set(); let ages = 0, money = [], dream = 0, kidSerious = 0, kidAll = 0, kidArcs = 0, jailedLives = 0, early = 0; const careers = {};
   const dreams = ["polis", "hekim", "futbolcu", "mugenni", "muellim", "proqramci", "biznes", "aktyor"];
   for (let i = 0; i < N; i++) {
     const P = S.playLife("Sim", i % 2 ? "q" : "k", dreams[i % 8], 100000 + i, 130, e => { tone[e.tone || "everyday"]++; seen.add(e.id); if (S.P.age <= 18) { kidAll++; if ((e.tone || "everyday") !== "everyday") kidSerious++; if (e.id.startsWith("arc_")) kidArcs++; } });
     ages += P.age; money.push(P.money);
+    for (const id of new Set([P.job && P.job.id, ...P.jobs.map(j => j.id)].filter(Boolean))) careers[id] = (careers[id] || 0) + 1;
+    if (P.legal && P.legal.record && P.legal.record.some(r => r.verdict === "həbs")) jailedLives++;
+    if (P.age < 40) early++;
     if ([P.job && P.job.id, ...P.jobs.map(j => j.id)].includes(P.dream)) dream++;
   }
   money.sort((a, b) => a - b);
   const tot = tone.everyday + tone.dramatic + tone.rare, pct = k => Math.round(tone[k] / tot * 100);
   const never = S.Interp.lib.filter(e => !seen.has(e.id)).map(e => e.id);
   console.log(`      orta ömür ${Math.round(ages / N)}, median sərvət ${Math.round(money[N >> 1])} ₼, xəyal gerçəkləşdi ${Math.round(dream / N * 100)}%`);
+  console.log(`      karyeralar: ${Object.entries(careers).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + " " + v).join(", ")}`);
+  console.log(`      həbs yaşamış: ${jailedLives} həyat (bot cinayət təkliflərinin yarısını qəbul edir), 40 yaşdan əvvəl ölüm: ${early}`);
   console.log(`      5–18 yaş: həyat başına ${(kidAll / N).toFixed(1)} hadisə, onlardan ${(kidSerious / N).toFixed(1)} ciddi (dramatik/nadir), ${(kidArcs / N).toFixed(1)} hekayə xətti fəsli`);
   console.log(`      ton: gündəlik ${pct("everyday")}% · dramatik ${pct("dramatic")}% · nadir ${pct("rare")}% (hədəf 60/30/10)`);
   console.log(`      heç görünməyən hadisələr (${never.length}): ${never.join(", ") || "yoxdur"}`);

@@ -1,0 +1,142 @@
+[
+{"id":"mehkeme","cat":"justice","tone":"dramatic","age":[14,99],"force":true,"once":false,"icon":"⚖️","cond":{"legal_case":true},"t":"İstintaq bitdi. Bu gün məhkəmədir: {case_title}. Zalda ailən oturub, hamı sənə baxır.","ch":[
+ {"t":"Dövlət vəkili ilə (pulsuz)","do":[{"trial":{"lawyer":"dovlet"}}],"r":"{verdict}"},
+ {"t":"Özəl vəkil tut ({lawyer_cost})","do":[{"trial":{"lawyer":"ozel"}}],"r":"{verdict}"},
+ {"t":"Ən yaxşı vəkili tut ({lawyer_cost3})","do":[{"trial":{"lawyer":"yaxsi"}}],"r":"{verdict}"},
+ {"t":"Günahını etiraf et, peşman ol","trait":{"honesty":4},"do":[{"trial":{"lawyer":"dovlet","plea":true}}],"r":"Hakimin gözünə baxıb hər şeyi danışdın. {verdict}"}]},
+{"id":"crime_ogurluq","w":0.4,"cat":"justice","tone":"dramatic","age":[18,40],"icon":"🌑","cond":{"money_lt":1000,"job":false,"in_prison":false},"t":"Köhnə tanış gecə yanına gəlir: “Limandakı anbarın gözətçisi yoxdur. İki saatlıq işdir, payın 2000 manat.” Cibində isə bir manat da yoxdur.","ch":[
+ {"t":"Razılaş","fx":{"happy":-4},"trait":{"honesty":-6},"do":[{"money_rand":[1500,2500]},{"crime":"ogurluq"}],"r":"Payını aldın: {amount}. Amma gecələr yata bilmirsən. {caught}"},
+ {"t":"Rədd et","fx":{"happy":-2},"trait":{"honesty":3},"r":"“Yox, qardaş. Mən bunu etmərəm.” Səhər bildin ki, onları tutublar."},
+ {"t":"Rədd et və ondan uzaqlaş","trait":{"honesty":2,"discipline":2},"r":"Nömrəsini sildin. Bəzi dostluqlar bitməlidir."}]},
+{"id":"crime_narkotik","w":0.4,"cat":"justice","tone":"rare","age":[18,35],"icon":"🎒","cond":{"money_lt":3000,"in_prison":false},"t":"Tanımadığın biri təklif edir: “Bu çantanı sərhədin o tayına apar, 5000 manat sənindir. İçində nə olduğunu bilmək lazım deyil.”","ch":[
+ {"t":"Apar","fx":{"money":5000,"happy":-6},"trait":{"honesty":-8},"do":[{"crime":"narkotik"},{"schedule":{"event":"crime_desta_teleb","after_months":8}}],"r":"Pulu aldın. Amma indi onlar səni tanıyır. {caught}"},
+ {"t":"Qətiyyən yox","trait":{"courage":2,"honesty":2},"r":"Çantaya toxunmadın. Gedəndə arxanca güldü: “Kasıb ölərsən.”"}]},
+{"id":"crime_desta_teleb","cat":"justice","tone":"dramatic","age":[18,45],"scheduled_only":true,"icon":"🕶️","cond":{"flag":"got_away_narkotik","in_prison":false},"t":"Onlar yenə gəldi: “Bir dəfə apardınsa, yenə aparacaqsan. Yoxsa ailənə də danışarıq.”","ch":[
+ {"t":"Yenə apar","fx":{"money":5000,"happy":-10},"do":[{"crime":"narkotik"}],"r":"İkinci dəfə daha qorxulu idi. {caught}"},
+ {"t":"Polisə get, hər şeyi danış","fx":{"happy":-4,"unflag":"got_away_narkotik"},"trait":{"courage":4,"honesty":4},"do":[{"crime":"narkotik"}],"r":"İstintaqla əməkdaşlıq edirsən. Məhkəmədə bu nəzərə alınacaq, amma iş açılıb."},
+ {"t":"Başqa şəhərə köç","fx":{"happy":-8,"unflag":"got_away_narkotik"},"do":[{"move_city":"random"}],"r":"Hər şeyi atıb {city} şəhərinə köçdün. Telefon nömrəni dəyişdin. Arxana baxmağı isə hələ tərgitməmisən."}]},
+{"id":"crime_dava","w":0.4,"cat":"justice","tone":"dramatic","age":[16,45],"icon":"🥊","cond":{"in_prison":false},"t":"Toyda sərxoş bir oğlan sənin yaxınını təhqir edir və itələyir. Hamı baxır.","ch":[
+ {"t":"Sakitcə uzaqlaşdır, hadisəni böyütmə","trait":{"discipline":3},"fx":{"happy":-2},"r":"Qohumlar onu çıxardı. Məclis davam etdi."},
+ {"t":"Yumruq at","trait":{"courage":2,"discipline":-3},"odds":[{"p":0.5,"fx":{"happy":2,"health":-4},"r":"Kiçik dava oldu, araya girdilər. Hamı səni haqlı saydı."},{"p":0.5,"fx":{"health":-8},"do":[{"crime":"dava"}],"r":"O, yerə yıxılıb başını vurdu. Təcili yardım gəldi. {caught}"}]}]},
+{"id":"crime_serxos","w":0.4,"cat":"justice","tone":"dramatic","age":[18,65],"icon":"🍷","cond":{"asset":"maşın","in_prison":false},"t":"Dostunun ad günündən sonra gecə saat 2-dir. Bir neçə qədəh içmisən. Maşının qapının ağzındadır.","ch":[
+ {"t":"Taksi çağır","fx":{"money":-20},"trait":{"discipline":2},"r":"Maşını səhər götürdün. Ağıllı qərar."},
+ {"t":"Yaxındır, özüm sürərəm","trait":{"discipline":-4},"odds":[{"p":0.78,"fx":{"happy":-1},"r":"Evə çatdın. Səhər nə qədər riskə getdiyini düşünüb titrədin."},{"p":0.2,"fx":{"health":-15,"money":-3000},"do":[{"crime":"serxos"}],"r":"Döngədə dayanmış maşına çırpıldın. Sürücü xəsarət aldı. {caught}"},{"p":0.02,"do":[{"die_chance":{"p":1,"cause":"sərxoş halda yol qəzası"}}],"r":"Maşın dirəyə çırpıldı…"}]}]},
+{"id":"crime_rusvet_ver","w":0.4,"cat":"justice","tone":"everyday","age":[17,30],"icon":"📋","cond":{"no_lic":"surucu","in_prison":false},"t":"Sürücülük imtahanında bir nəfər pıçıldayır: “300 manat ver, imtahandan keçmiş sayılırsan.”","ch":[
+ {"t":"Ver","fx":{"money":-300,"flag":"vesiqe"},"trait":{"honesty":-4},"do":[{"set_lic":"surucu"},{"crime":"rusvet_verme"}],"r":"Vəsiqəni aldın. {caught}"},
+ {"t":"Yox, özüm verəcəyəm","trait":{"honesty":3},"r":"İki dəfə kəsildin, üçüncüdə keçdin. Hər manevrin özünündür."}]},
+{"id":"pr_kamera","cat":"prison","tone":"dramatic","age":[14,99],"prison":true,"icon":"🚪","t":"Kamera yoldaşın səni sınayır: yatağını tutub, “burada qayda belədir” deyir.","ch":[
+ {"t":"Sakit, amma qətiyyətli danış","trait":{"courage":3},"odds":[{"p":0.6,"fx":{"happy":2},"r":"Bir müddət baxışdınız. Sonra o, gülümsədi: “Yaxşı, öz yerin olsun.”"},{"p":0.4,"fx":{"health":-6},"r":"Söz-söhbət əl-qola çevrildi. Gözətçilər ayırdı, ikiniz də cəza kamerasında bir həftə qaldınız."}]},
+ {"t":"Güzəştə get","fx":{"happy":-4},"r":"Küncdəki yatağa keçdin. Burada sağ qalmağın da öz qaydaları var."}]},
+{"id":"pr_deste","cat":"prison","tone":"dramatic","age":[14,99],"prison":true,"icon":"🫥","t":"Həbsxananın “böyükləri” təklif edir: “Bizimlə ol, səni heç kim incitməz. Amma bizə də xidmət edəcəksən.”","ch":[
+ {"t":"Qoşul","fx":{"happy":2,"flag":"prison_gang"},"trait":{"honesty":-3},"r":"İndi “arxan” var. Amma azadlıqda da səni unutmayacaqlar."},
+ {"t":"Rədd et, öz yolunla get","trait":{"courage":3,"independence":3},"odds":[{"p":0.6,"r":"Bir müddət gözlərini ayırmadılar, sonra əl çəkdilər."},{"p":0.4,"fx":{"health":-10},"r":"Hamamda dörd nəfər gözləyirdi. İki həftə tibb məntəqəsində yatdın."}]}]},
+{"id":"pr_ana","cat":"prison","tone":"dramatic","age":[14,99],"prison":true,"icon":"👵","cond":{"has":["ana"]},"t":"Görüş günü anan gəlib. Bir il əvvəlkindən çox qocalıb, saçları ağarıb. Sənə evdən dolma gətirib.","ch":[
+ {"t":"Əlini öp, üzr istə","fx":{"rel":{"ana":12},"happy":4},"trait":{"family":3},"r":"“Mənim balam pis deyil, sadəcə səhv edib” dedi. Bu sözləri həyatın boyu xatırlayacaqsan."},
+ {"t":"Utandığından gözlərinə baxa bilmə","fx":{"rel":{"ana":4},"happy":-4},"r":"Bütün görüş boyu yerə baxdın. Gedəndə anan pəncərənin arxasından uzun-uzun əl elədi."}]},
+{"id":"pr_usaq","cat":"prison","tone":"dramatic","age":[18,99],"prison":true,"icon":"🧒","cond":{"has":["uşaq"]},"t":"Məktub gəlib: övladının şəkli. Birinci sinfə gedib, sən isə orada deyildin.","ch":[
+ {"t":"Ona uzun məktub yaz","fx":{"rel":{"uşaq":10},"happy":-2},"trait":{"family":3},"r":"Hər gecə bir az yazdın. Məktubun sonunda: “Qayıdanda hər şeyi düzəldəcəyəm.”"},
+ {"t":"Məktubu gizlət, ağlama","fx":{"happy":-8},"r":"Şəkli yastığın altına qoydun. Kamerada heç kim zəifliyini görməməlidir."}]},
+{"id":"pr_bosanma","cat":"prison","tone":"dramatic","age":[18,99],"prison":true,"icon":"📄","cond":{"has":["həyat yoldaşı"]},"t":"{yoldaş} görüşə gəlib, amma bu dəfə əlində sənəd var.","ch":[
+ {"t":"Yalvar: “Məni gözlə”","odds":[{"p":{"of":"tr.family","div":120},"fx":{"rel":{"həyat yoldaşı":10},"happy":6},"r":"Uzun susdu. Sonra sənədi cırdı: “Uşaqlar üçün gözləyəcəyəm.”"},{"p":0.5,"fx":{"happy":-15},"do":[{"remove_role":{"role":"həyat yoldaşı","note":"həbsdə ikən boşandı"}}],"r":"“Bağışla. Mən daha bacarmıram.” Sənədi imzaladın."}]},
+ {"t":"İmzala, onu azad et","fx":{"happy":-12},"trait":{"empathy":3},"do":[{"remove_role":{"role":"həyat yoldaşı","note":"həbsdə ikən boşandı"}}],"r":"“Sən daha yaxşısına layiqsən” dedin. O, ağlaya-ağlaya getdi."}]},
+{"id":"pr_tehsil","cat":"prison","tone":"everyday","age":[14,99],"prison":true,"icon":"📖","t":"Həbsxanada orta təhsil və peşə proqramı açılıb. Müəllim deyir ki, bu, azadlıqda iş tapmağa kömək edəcək.","ch":[
+ {"t":"Qatıl","fx":{"smarts":4,"flag":"pese_kursu"},"trait":{"discipline":3},"r":"Bir il ərzində elektrik ustası sertifikatı aldın. Azadlıqda bu kağız qapı aça bilər."},
+ {"t":"Vaxt itkisidir","r":"Günlər kartla, söhbətlə keçdi."}]},
+{"id":"pr_komissiya","cat":"prison","tone":"dramatic","age":[14,99],"prison":true,"icon":"🗂️","t":"Şərti azadlıq komissiyası səni dinləyir. Sual sadədir: “Niyə sənə inanmalıyıq?”","ch":[
+ {"t":"Səmimi danış: peşmançılıq və planlar","trait":{"honesty":3},"fx":{"happy":3},"r":"Komissiya üzvlərindən biri başını tərpətdi. Davranışın yaxşı olsa, vaxtından əvvəl çıxa bilərsən."},
+ {"t":"Hirslən: “Mən haqsız yerə buradayam”","fx":{"happy":-4},"r":"Komissiya qeyd apardı: “Peşmançılıq göstərmir.”"}]},
+{"id":"re_qarsilama","cat":"family","tone":"dramatic","age":[16,99],"force":true,"icon":"🚪","cond":{"flag":"released","flag_since_gte":{"released":0}},"t":"Həbsxananın dəmir qapısı arxanda bağlandı. Hava fərqli qoxuyur. Qarşıda kimsə gözləyir… ya da heç kim.","ch":[
+ {"t":"Evə get","cond":{"has_any":["ana","ata"]},"fx":{"happy":10,"rel":{"ana":8,"ata":4}},"r":"Anan qapını açdı və heç nə demədən səni qucaqladı. Süfrə hazır idi, sanki hər gün gözləyirdi."},
+ {"t":"Tək, yeni başlanğıc","cond":{"has_not":["ana","ata"]},"fx":{"happy":-4},"r":"Kimsə gözləmirdi. Kirayə otaq tapdın. Sıfırdan başlamaq lazımdır."}]},
+{"id":"re_musahibe","cat":"career","tone":"dramatic","age":[18,65],"icon":"📝","cond":{"record":true,"job":false,"in_prison":false},"t":"İş müsahibəsi yaxşı gedir. Sonra kadrlar şöbəsinin müdiri soruşur: “Məhkumluğunuz olubmu?”","ch":[
+ {"t":"Düzünü de","trait":{"honesty":3},"odds":[{"p":0.35,"fx":{"happy":10},"do":[{"start_job":{"id":"ofis","note":"İkinci şans verildi"}}],"r":"Uzun pauza. Sonra dedi: “Hamı ikinci şansa layiqdir. Bazar ertəsi gəl.”"},{"p":0.65,"fx":{"happy":-6},"r":"“Sizə zəng edəcəyik.” Zəng gəlmədi."}]},
+ {"t":"Gizlət","trait":{"honesty":-3},"odds":[{"p":0.4,"do":[{"start_job":{"id":"ofis","note":"İşə götürüldü"}}],"r":"İşə götürüldün. Amma hər gün bunun üzə çıxacağından qorxursan."},{"p":0.6,"fx":{"happy":-8},"r":"Arayış istədilər. Yalan üzə çıxdı, utanc içində otaqdan çıxdın."}]}]},
+{"id":"re_kohne_dost","w":0.4,"cat":"justice","tone":"dramatic","age":[18,60],"icon":"📞","cond":{"flag":"released","in_prison":false,"job":false},"t":"Həbsxanadan tanıdığın biri zəng edir: “Bir iş var. Tez pul, risk yoxdur.” Hər iki sözün yalan olduğunu bilirsən.","ch":[
+ {"t":"Yenə razılaş","fx":{"happy":-4},"trait":{"honesty":-4},"do":[{"money_rand":[1000,3000]},{"crime":"ogurluq"}],"r":"Köhnə yol tanış idi. {caught}"},
+ {"t":"Telefonu söndür","trait":{"discipline":4},"fx":{"happy":2},"r":"Nömrəni blokladın. Asan deyildi, amma düzgün idi."}]},
+{"id":"re_usta","cat":"career","tone":"everyday","age":[18,60],"icon":"🔧","cond":{"flag":["released","pese_kursu"],"job":false,"in_prison":false},"t":"Məhəllədəki yaşlı elektrik ustası deyir: “Eşitdim, sertifikatın var. Mənə köməkçi lazımdır. Keçmişin məni maraqlandırmır.”","ch":[
+ {"t":"Minnətdarlıqla qəbul et","fx":{"happy":10},"do":[{"start_job":{"id":"usta","note":"Usta yanında işə başladı"}}],"r":"İlk gün əllərin titrəyirdi. İkinci həftə usta dedi: “Səndən usta çıxacaq.”"},
+ {"t":"Özüm bacararam","r":"Təşəkkür etdin, amma öz yolunu axtarmağa qərar verdin."}]},
+{"id":"avi_xeyal","cat":"career","tone":"everyday","age":[13,17],"icon":"🛫","t":"Hava limanında təyyarələrin qalxmasına baxırsan. Yanındakı pilot formalı adam soruşur: “Xoşuna gəlir? Bu işə riyaziyyat və sağlamlıq lazımdır.”","ch":[
+ {"t":"Riyaziyyata ciddi başla","fx":{"smarts":3,"flag":"avi_interest"},"trait":{"discipline":2},"r":"O gündən fizika və riyaziyyat sənin üçün “uçuşa hazırlıq” oldu."},
+ {"t":"Sadəcə bax, zövq al","fx":{"happy":3},"r":"Təyyarələr göydə kiçik nöqtəyə çevrilənə qədər baxdın."}]},
+{"id":"avi_mekteb","cat":"career","tone":"everyday","age":[18,32],"icon":"🎓","cond":{"no_lic":"cpl","money_gte":45000,"medical":true,"in_prison":false},"t":"Özəl uçuş məktəbi elan verib: iki illik proqram, sonda PPL və CPL lisenziyaları. Qiyməti 45 000 ₼.","ch":[
+ {"t":"Yazıl","fx":{"money":-45000,"happy":6},"do":[{"flight_school":true}],"trait":{"discipline":3},"r":"İlk təlim uçuşunda əllərin tər içində idi. İki il sonra lisenziyalar səni gözləyir."},
+ {"t":"Çox bahadır","r":"Bəlkə nə vaxtsa…"}]},
+{"id":"avi_muherrik","cat":"career","tone":"rare","age":[20,65],"icon":"⚠️","cond":{"track":"aviation"},"t":"Qalxışdan 10 dəqiqə sonra sol mühərrikin xəbərdarlıq siqnalı yanır. Göyərtədə 160 sərnişin var.","ch":[
+ {"t":"Prosedur üzrə hərəkət et, geri qayıt","trait":{"discipline":3},"odds":[{"p":{"of":"st.smarts","div":100,"add":0.15},"fx":{"perf":20,"fame":5,"happy":10},"do":[{"followers_rand":[2000,20000]}],"r":"Bir mühərriklə təhlükəsiz eniş. Sərnişinlər alqışladı, xəbərlərdə adın çəkildi."},{"p":0.3,"fx":{"happy":-10,"perf":-10},"r":"Eniş sərt oldu, bir neçə sərnişin yüngül xəsarət aldı. İstintaq başladı, amma sən prosedura əməl etmişdin."}]},
+ {"t":"Uçuşa davam et, təyinat yerinə çat","trait":{"discipline":-3},"odds":[{"p":0.85,"fx":{"perf":-15},"r":"Çatdın, amma rəhbərlik qərarını təhlükəli saydı. Xəbərdarlıq aldın."},{"p":0.15,"fx":{"perf":-30,"happy":-12},"do":[{"die_chance":{"p":0.1,"cause":"uçuş qəzası"}}],"r":"İkinci mühərrikdə də problem yarandı. Məcburi eniş… Bu gecəni heç vaxt unutmayacaqsan."}]}]},
+{"id":"avi_kapitan","cat":"career","tone":"dramatic","age":[24,60],"w":3,"icon":"👨‍✈️","cond":{"job":"pilot","job_lv_gte":1,"job_lv_lt":2,"lic":"atpl","hours_gte":3000},"t":"Kapitan imtahanına buraxıldın: simulyator, nəzəriyyə və yoxlama uçuşu.","ch":[
+ {"t":"Aylarla hazırlaş","fx":{"happy":-2},"trait":{"discipline":2},"odds":[{"p":{"of":"st.smarts","div":100,"add":0.2},"fx":{"happy":15},"do":[{"promote":true}],"r":"Çiyinlərindəki zolaqlar dördə çatdı. Artıq kapitansan."},{"p":0.35,"fx":{"happy":-8},"r":"Simulyatorda bir səhv. Bir il sonra yenidən cəhd edə bilərsən."}]}]},
+{"id":"mil_pilot_secim","cat":"military","tone":"dramatic","age":[19,23],"icon":"🛩️","cond":{"faculty":"herbi"},"t":"Akademiyada hərbi aviasiya üçün kursant seçimi elan olunub: tibbi komissiya, fiziki test, psixoloji yoxlama.","ch":[
+ {"t":"Müraciət et","odds":[{"p":{"of":"st.fitness","div":130,"add":0.1},"fx":{"happy":12,"flag":"pilot_secildi"},"r":"Seçildin! Bitirəndə hərbi pilot olacaqsan."},{"p":0.5,"fx":{"happy":-5},"r":"Tibbi komissiyada görmə testindən keçmədin. Quru qoşunlarında zabit olacaqsan."}]},
+ {"t":"Quru qoşunlarında qalıram","r":"Ayaqların yerdə olsun."}]},
+{"id":"mil_teyinat","cat":"military","tone":"dramatic","age":[21,50],"icon":"🗺️","cond":{"track":"military"},"t":"Təyinat əmri gəldi: üç il uzaq sərhəd bölgəsində xidmət. Ailə üçün xidməti mənzil var, amma məktəb, xəstəxana uzaqdır.","ch":[
+ {"t":"Ailəni də apar","cond":{"has":["həyat yoldaşı"]},"fx":{"rel":{"həyat yoldaşı":-4},"perf":8},"trait":{"family":2},"r":"Dağ kəndində kiçik mənzil. Uşaqlar tez alışdı, {yoldaş} isə şəhəri darıxır."},
+ {"t":"Tək get","fx":{"perf":8,"happy":-6,"rel":{"həyat yoldaşı":-8}},"r":"Üç il həftəsonları yolda keçdi."},
+ {"t":"Təyinatdan imtina etməyə çalış","fx":{"perf":-15},"r":"Hərbi xidmətdə əmr müzakirə olunmur. Karyerana qara ləkə düşdü."}]},
+{"id":"mil_telim","cat":"military","tone":"everyday","age":[19,55],"once":false,"cool":3,"icon":"🪖","cond":{"track":"military"},"t":"Böyük təlimlər: üç gün yuxusuz, çöldə. Bölmən sənə baxır.","ch":[
+ {"t":"Önündə get","fx":{"perf":10,"fitness":3,"health":-2},"trait":{"courage":2},"r":"Bölmən tapşırığı ən yaxşı nəticə ilə bitirdi. Komandan adını qeyd etdi."},
+ {"t":"Riskləri azalt, ehtiyatlı ol","fx":{"perf":4},"trait":{"discipline":2},"r":"Heç kim xəsarət almadı. Bu da bir uğurdur."}]},
+{"id":"mil_teqaud","cat":"military","tone":"dramatic","age":[40,55],"icon":"🎖️","cond":{"track":"military","job_lv_gte":4},"t":"Xidmət illərin təqaüd hüququna yetir. Mülki həyatda yeni yol, yoxsa general rütbəsinə qədər xidmət?","ch":[
+ {"t":"Mülki həyata keç","fx":{"happy":8},"do":[{"military_retire":true}],"r":"Formanı şkafa asdın. Hərbi təqaüd hər il gələcək. İndi nə edəcəksən?"},
+ {"t":"Xidmətə davam","fx":{"perf":5},"r":"“Vətənə hələ lazımam.”"}]},
+{"id":"mil_mulki","cat":"career","tone":"everyday","age":[40,62],"icon":"🏢","cond":{"flag":"ex_herbci","job":false},"t":"Keçmiş zabit kimi böyük şirkət səni təhlükəsizlik xidmətinə rəhbər təklif edir.","ch":[
+ {"t":"Qəbul et","fx":{"happy":6},"do":[{"start_job":{"id":"ofis","lv":2,"note":"Təhlükəsizlik xidmətinin rəhbəri oldu"}}],"r":"Ofisdə kostyumla işləmək əvvəl qəribə gəldi. Sonra alışdın."},
+ {"t":"Öz biznesimi quracağam","cond":{"money_gte":10000},"fx":{"money":-10000},"do":[{"start_job":{"id":"biznes","lv":0,"note":"Öz biznesini qurdu"}}],"r":"Kiçik mühafizə şirkəti açdın. İlk müştəri keçmiş xidmət yoldaşın oldu."}]},
+{"id":"fhn_qebul","cat":"career","tone":"everyday","age":[18,30],"icon":"🚒","cond":{"job":false,"stat_gt":{"fitness":64},"record":false,"in_prison":false},"t":"Fövqəladə hallar xidməti xilasedici qəbulu elan edib: fiziki test, tibbi komissiya, müsahibə.","ch":[
+ {"t":"Müraciət et","odds":[{"p":{"of":"st.fitness","div":120},"fx":{"happy":10},"do":[{"start_job":{"id":"xilasedici","note":"Xilasedici kimi qəbul olundu"}}],"r":"Testdən keçdin! İlk növbədə çiyninə kaskanı taxanda içində nəsə dəyişdi."},{"p":0.4,"fx":{"happy":-4},"r":"Bu dəfə yer çatmadı. Gələn il yenə qəbul olacaq."}],"trait":{"courage":2}},
+ {"t":"Maraqlanmıram","r":"Elanı keçdin."}]},
+{"id":"fhn_yangin","cat":"career","tone":"rare","age":[18,55],"icon":"🔥","cond":{"track":"rescue"},"t":"Doqquzmərtəbəli binada yanğın. Beşinci mərtəbədə uşaq səsi gəlir, pilləkən tüstüdədir.","ch":[
+ {"t":"İçəri gir","trait":{"courage":5},"odds":[{"p":0.75,"fx":{"fame":8,"happy":15,"perf":20},"do":[{"followers_rand":[3000,30000]}],"r":"Uşağı qucağında çıxardın. Anası diz çöküb əllərini öpdü. Bütün ölkə bu görüntünü izlədi."},{"p":0.23,"fx":{"health":-25,"perf":10},"r":"Uşağı çıxardın, amma tüstüdən zəhərləndin. Bir ay xəstəxanada qaldın."},{"p":0.02,"do":[{"die_chance":{"p":1,"cause":"yanğında uşağı xilas edərkən"}}],"r":"Tavan çökdü…"}]},
+ {"t":"Nərdivanlı maşını gözlə","fx":{"perf":5},"trait":{"discipline":2},"r":"Nərdivan gələnə qədər dəqiqələr il kimi keçdi. Uşaq pəncərədən təhlükəsiz endirildi."}]},
+{"id":"fhn_travma","cat":"health","tone":"dramatic","age":[22,60],"icon":"🌫️","cond":{"track":["rescue","military","law"]},"t":"Gecələr yanğının, qışqırıqların səsi yuxuna girir. Yaxınların deyir ki, dəyişmisən.","ch":[
+ {"t":"Psixoloqa müraciət et","fx":{"happy":8,"health":3},"trait":{"courage":2},"r":"İlk seansda danışa bilmədin. Üçüncüdə ağladın. Altıncıda ilk dəfə səhərə qədər yatdın."},
+ {"t":"Kişilər ağlamaz, keçər","fx":{"happy":-8,"health":-5},"r":"Keçmədi. Sadəcə daha dərinə getdi."},
+ {"t":"Axşamlar bir-iki qədəh","fx":{"happy":-3,"health":-6,"flag":"alkoqol"},"r":"Əvvəl kömək edir kimi göründü. Sonra iki qədəh dörd oldu."}]},
+{"id":"med_cerrah","cat":"career","tone":"dramatic","age":[24,40],"icon":"🔪","cond":{"job":"hekim","job_lv_gte":1,"stat_gt":{"smarts":68}},"t":"Baş cərrah səni əməliyyatlarda müşahidə edib: “Əllərin cərrah əlidir. Cərrahiyyə rezidenturasına gəl. Ağır olacaq: 5 il, yuxusuz gecələr.”","ch":[
+ {"t":"Qəbul et","fx":{"happy":8,"flag":"cerrah_rezidentura"},"do":[{"start_job":{"id":"cerrah","lv":0,"note":"Cərrahiyyə rezidenturasına başladı"}}],"trait":{"discipline":3},"r":"İlk tikişini qoyanda baş cərrah çiyninə vurdu."},
+ {"t":"Terapevt qalmaq istəyirəm","r":"Hər kəsin öz yolu var."}]},
+{"id":"med_emeliyyat","cat":"career","tone":"dramatic","age":[26,65],"icon":"🫀","cond":{"job":"cerrah","job_lv_gte":1},"t":"Gecə 3-də təcili xəstə: ürək ətrafında qəlpə. Növbəti cərrah 2 saata gələ bilər.","ch":[
+ {"t":"Özün əməliyyat et","odds":[{"p":{"of":"st.smarts","div":110},"fx":{"perf":20,"happy":12,"fame":3},"r":"6 saat. Səhər xəstənin ürəyi öz-özünə döyünürdü. Əllərin hələ də titrəyir."},{"p":0.3,"fx":{"happy":-15,"perf":-5},"r":"Əlindən gələni etdin. Xəstəni xilas etmək mümkün olmadı. Bu gecə səninlə qalacaq."}],"trait":{"courage":3}},
+ {"t":"Xəstəni sabitləşdir, gözlə","fx":{"perf":5},"trait":{"discipline":2},"r":"Xəstə dayandı, növbəti cərrah gəldi və birlikdə əməliyyat etdiniz."}]},
+{"id":"sci_doktorantura","cat":"school","tone":"everyday","age":[23,40],"icon":"📜","cond":{"stat_gt":{"smarts":64},"no_flag":["phd","phd_basladi"],"in_prison":false,"any":[{"job":"alim"},{"stage":"magistr"}]},"t":"Elmi rəhbərin təklif edir: “Doktoranturaya gəl. 3 il, kiçik təqaüd, çoxlu iş. Amma sonunda fəlsəfə doktoru olacaqsan.”","ch":[
+ {"t":"Razılaş","fx":{"happy":4},"do":[{"phd_start":true}],"trait":{"discipline":3},"r":"Mövzunu təsdiqlətdin. Kitabxana ikinci evin oldu."},
+ {"t":"Elm mənlik deyil","r":"Rəhbərin təəssüfləndi, amma başa düşdü."}]},
+{"id":"sci_qebul","cat":"career","tone":"everyday","age":[23,40],"icon":"🏛️","cond":{"job":false,"stat_gt":{"smarts":64},"in_prison":false,"record":false,"any":[{"flag":"phd"},{"flag":"phd_basladi"}]},"t":"Universitet kafedrası assistent axtarır. Maaş azdır, amma elmlə məşğul olacaqsan.","ch":[
+ {"t":"Qəbul et","do":[{"start_job":{"id":"alim","note":"Universitetdə assistent oldu"}}],"fx":{"happy":5},"r":"İlk mühazirəndə səsin titrəyirdi. Sonuncu sırada oturan tələbə sual verəndə özünə gəldin."},
+ {"t":"Başqa iş axtaracağam","r":"Elm gözləyə bilər."}]},
+{"id":"sci_plagiat","cat":"career","tone":"dramatic","age":[25,70],"icon":"📑","cond":{"job":"alim"},"t":"Həmkarın məqaləsinə adını yazmağı təklif edir. Bilirsən ki, yarısı xarici jurnaldan köçürülüb.","ch":[
+ {"t":"Rədd et","trait":{"honesty":4},"fx":{"perf":-3},"r":"Həmkarın küsdü. İki il sonra o məqalə skandal oldu, sənin adın isə orada yox idi."},
+ {"t":"Razılaş, məqalə lazımdır","trait":{"honesty":-4},"odds":[{"p":0.6,"fx":{"perf":10},"r":"Məqalə çıxdı, attestasiyada lazım oldu."},{"p":0.4,"fx":{"perf":-30,"fame":-5,"happy":-15},"r":"Plagiat üzə çıxdı. Elmi şura töhmət verdi, adın biabır oldu."}]}]},
+{"id":"sci_konfrans","cat":"career","tone":"everyday","age":[25,75],"once":false,"cool":4,"icon":"🌐","cond":{"job":"alim"},"t":"Beynəlxalq konfransa dəvət olunmusan. Məruzən ingiliscədir.","ch":[
+ {"t":"Get, çıxış et","fx":{"smarts":3,"perf":8,"fame":1,"happy":5},"r":"Çıxışdan sonra iki professor yaxınlaşdı: birgə layihə təklif etdilər."},
+ {"t":"Vaxtım yoxdur","r":"Başqa vaxt."}]},
+{"id":"coach_teklif","cat":"career","tone":"dramatic","age":[30,50],"icon":"🧢","cond":{"flag":"exFutbolcu","job":false,"in_prison":false},"t":"Köhnə klubun telefon edir: “Uşaq komandasına məşqçi lazımdır. Futbolu səndən yaxşı kim bilər?”","ch":[
+ {"t":"Qəbul et","fx":{"happy":10},"do":[{"start_job":{"id":"mesqci","note":"Futbolçudan məşqçiyə"}}],"r":"İlk məşqdə 10 yaşlı uşaqlar səni “bəyəm!” deyə qarşıladı. Futbol bitməmişdi, sadəcə forması dəyişmişdi."},
+ {"t":"Futboldan tam uzaqlaşmaq istəyirəm","r":"Telefonu qoydun. Amma axşam yenə matçı açdın."}]},
+{"id":"coach_akademiya","cat":"career","tone":"rare","age":[38,70],"icon":"🏟️","cond":{"job":"mesqci","job_lv_gte":3,"money_gte":80000},"t":"Öz futbol akademiyanı açmaq imkanı var: meydan, məşqçilər, 200 uşaq. Bütün yığdığın pul gedəcək.","ch":[
+ {"t":"Aç","fx":{"money":-60000,"happy":12},"do":[{"promote":true}],"r":"Akademiyanın lövhəsi asılanda gözlərin doldu. Bir gün buradan ulduz çıxacaq."},
+ {"t":"Riskə getmirəm","r":"Baş məşqçi kimi davam edirsən."}]},
+{"id":"usta_emalat","cat":"career","tone":"dramatic","age":[25,65],"icon":"🏪","cond":{"job":"usta","job_lv_gte":2,"money_gte":8000},"t":"Ustan təqaüdə çıxır və emalatxanasını sənə satmaq istəyir: 8000 ₼.","ch":[
+ {"t":"Al","fx":{"money":-8000,"happy":10},"do":[{"promote":true}],"r":"Qapının üstündə indi sənin adın yazılıb."},
+ {"t":"Hələ tezdir","r":"Usta başqa alıcı tapdı."}]},
+{"id":"pese_kurs","cat":"career","tone":"everyday","age":[18,50],"icon":"🧰","cond":{"job":false,"no_flag":["pese_kursu","pese_kurs_basladi","pese_mekteb"],"in_prison":false},"t":"Məşğulluq mərkəzi pulsuz peşə kursu təklif edir: elektrik, santexnik, qaynaqçı. Bir il çəkir.","ch":[
+ {"t":"Yazıl","fx":{"happy":3,"flag":"pese_kurs_basladi"},"trait":{"discipline":2},"r":"Hər səhər 8-də dərs. Əlləri işləməyə öyrədirsən."},
+ {"t":"Maraqlı deyil","r":"Başqa yol axtaracaqsan."}]},
+{"id":"fehle_bos","cat":"career","tone":"everyday","age":[16,65],"once":false,"cool":2,"icon":"🧱","cond":{"job":"fehle"},"t":"Bu səhər də “mərkəz”də gözlədin, amma heç kim iş təklif etmədi. Evə boş qayıtmaq olmaz.","ch":[
+ {"t":"Başqa bazara get","fx":{"health":-2},"odds":[{"p":0.6,"fx":{"money":40},"r":"Günortadan sonra yük boşaltmağa götürdülər: 40 manat."},{"p":0.4,"fx":{"happy":-4},"r":"Orada da iş yox idi."}]},
+ {"t":"Peşə öyrənmək lazımdır","fx":{"flag":"pese_kurs_basladi"},"r":"Məşğulluq mərkəzinə yazıldın. Bir ildən sonra sertifikat."}]},
+{"id":"issiz_depressiya","cat":"health","tone":"dramatic","age":[25,58],"icon":"🌧️","cond":{"job":false,"stage_not":["uni","magistr"],"in_prison":false,"no_flag":"teqaud"},"t":"Aylardır iş yoxdur. Səhərlər yataqdan qalxmaq istəmirsən, telefona cavab vermirsən.","ch":[
+ {"t":"Bir yaxınına aç ürəyini","cond":{"has_any":["ana","həyat yoldaşı","dost","qardaş","bacı"]},"fx":{"happy":8},"trait":{"family":2},"r":"Danışdıqca yük yüngülləşdi. “Birlikdə bir yol taparıq.”"},
+ {"t":"Həkimə get","fx":{"happy":6,"health":3,"money":-100},"r":"Həkim dedi ki, bu xəstəlikdir, tənbəllik yox. Müalicə başladı."},
+ {"t":"İçki ilə unut","fx":{"happy":-4,"health":-6,"flag":"alkoqol"},"r":"Unutmadın. Sadəcə səhərlər daha ağır oldu."}]},
+{"id":"alkoqol_verdis","cat":"health","tone":"everyday","age":[20,60],"icon":"🍺","cond":{"no_flag":"alkoqol","in_prison":false},"t":"Hər cümə dostlarla oturuş artıq hər axşama çevrilib.","ch":[
+ {"t":"Dayandır, idmana yazıl","fx":{"fitness":3,"health":3},"trait":{"discipline":3},"r":"İlk həftələr çətin idi. Sonra səhərlər yüngül oyanmağa başladın."},
+ {"t":"Nə olacaq ki?","fx":{"happy":2,"health":-3,"flag":"alkoqol"},"r":"Hələlik hər şey qaydasındadır… hələlik."}]},
+{"id":"inv_cokus","cat":"money","tone":"dramatic","age":[18,99],"once":false,"cool":5,"icon":"📉","cond":{"asset_type":"sehm","in_prison":false},"t":"Birja çöküb! Səhmlərin bir gündə 40% ucuzlaşıb.","ch":[
+ {"t":"Panika etmə, saxla","do":[{"asset_mul":{"type":"sehm","f":0.6}},{"schedule":{"event":"inv_berpa","after_years":[1,3]}}],"fx":{"happy":-6},"r":"Ekrana baxmağı dayandırdın. Gözləyəcəksən."},
+ {"t":"Hamısını sat","do":[{"asset_mul":{"type":"sehm","f":0.6}},{"sell_asset":"sehm"}],"fx":{"happy":-10},"r":"Zərərlə satdın: {asset} — qalan pul hesabına qayıtdı."}]},
+{"id":"inv_berpa","cat":"money","tone":"everyday","age":[18,99],"scheduled_only":true,"icon":"📈","cond":{"asset_type":"sehm"},"t":"Bazar bərpa olundu. Səbrin bəhrəsini verdi.","ch":[
+ {"t":"Bax və sevin","do":[{"asset_mul":{"type":"sehm","f":1.7}}],"fx":{"happy":8},"r":"Səhmlərin itkiləri qaytardı, üstəlik bir az da qazandı."}]}
+]

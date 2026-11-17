@@ -17,5 +17,103 @@
     "bachelor_years": 4,
     "medical_years": 6,
     "master_years": 2
+  },
+  "aviation": {
+    "source": "ICAO/EASA ümumi minimumları əsasında sadələşdirilmiş oyun konfiqurasiyası; yerli qaydalarla yoxlanılmalıdır.",
+    "verified": false,
+    "cpl_hours_after_school": 220,
+    "atpl_hours": 1500,
+    "atpl_min_age": 21,
+    "max_commercial_age": 65,
+    "captain_hours_company_policy": 3000
+  },
+  "justice": {
+    "source": "Sadələşdirilmiş OYUN KONFİQURASİYASI. Real Cinayət Məcəlləsinin maddələrini və cəzalarını əks etdirmir.",
+    "verified": false,
+    "plea_discount": 0.25,
+    "suspended_max_years": 3,
+    "parole_fraction": 0.66,
+    "parole_behavior": 65,
+    "crimes": {
+      "rusvet_alma": {
+        "t": "Vəzifəli şəxs tərəfindən rüşvət alma",
+        "caught": 0.4,
+        "years": [
+          2,
+          7
+        ],
+        "fine": [
+          2000,
+          10000
+        ],
+        "lawyer_cost": 3000
+      },
+      "rusvet_verme": {
+        "t": "Rüşvət vermə",
+        "caught": 0.3,
+        "years": [
+          0,
+          2
+        ],
+        "fine": [
+          500,
+          3000
+        ],
+        "lawyer_cost": 800
+      },
+      "ogurluq": {
+        "t": "Oğurluq",
+        "caught": 0.5,
+        "years": [
+          1,
+          4
+        ],
+        "lawyer_cost": 1200
+      },
+      "dava": {
+        "t": "Davada ağır xəsarət yetirmə",
+        "caught": 0.6,
+        "years": [
+          1,
+          5
+        ],
+        "lawyer_cost": 1500
+      },
+      "narkotik": {
+        "t": "Narkotik vasitələrin daşınması",
+        "caught": 0.55,
+        "years": [
+          5,
+          12
+        ],
+        "lawyer_cost": 5000
+      },
+      "vergi": {
+        "t": "Vergidən yayınma",
+        "caught": 0.45,
+        "years": [
+          0,
+          5
+        ],
+        "fine": [
+          5000,
+          40000
+        ],
+        "lawyer_cost": 6000
+      },
+      "serxos": {
+        "t": "Sərxoş halda nəqliyyat idarə etmə (nəticəsi ağır)",
+        "caught": 0.6,
+        "years": [
+          0,
+          3
+        ],
+        "fine": [
+          500,
+          2000
+        ],
+        "lawyer_cost": 1000
+      }
+    }
   }
 }

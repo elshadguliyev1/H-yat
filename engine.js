@@ -21,28 +21,12 @@ const SURN = ["Məmmədov","Əliyev","Həsənov","Hüseynov","Quliyev","Kərimov
 const surname = (base, g) => g === "q" ? base + "a" : base;
 const CITIES = ["Bakı","Gəncə","Sumqayıt","Lənkəran","Şəki","Mingəçevir","Quba","Naxçıvan","Şamaxı","Qəbələ"];
 
-// ---------- careers ----------
-// level titles, monthly salary per level, how they are entered (see events / job search)
-const CAREERS = {
-  polis:     { t: "Polis", icon: "👮", lv: ["Leytenant","Baş leytenant","Kapitan","Mayor","Polkovnik"], sal: [700, 900, 1200, 1700, 2600], key: "fitness", fame: 0 },
-  hekim:     { t: "Həkim", icon: "🩺", lv: ["Rezident həkim","Həkim","Baş həkim","Şöbə müdiri","Professor"], sal: [600, 1100, 1800, 2800, 4200], key: "smarts", fame: 0 },
-  futbolcu:  { t: "Futbolçu", icon: "⚽", lv: ["Gənclər komandası","Əsas heyət","Klubun ulduzu","Avropa klubu","Dünya ulduzu"], sal: [500, 2500, 8000, 40000, 150000], key: "fitness", fame: 6, sport: true },
-  mugenni:   { t: "Müğənni", icon: "🎤", lv: ["Toy müğənnisi","Yeni səs","Tanınan müğənni","Məşhur müğənni","Səhnə ulduzu"], sal: [600, 1200, 3500, 9000, 25000], key: "looks", fame: 7 },
-  muellim:   { t: "Müəllim", icon: "📚", lv: ["Gənc müəllim","Müəllim","Baş müəllim","Direktor müavini","Məktəb direktoru"], sal: [500, 650, 800, 1000, 1400], key: "smarts", fame: 0 },
-  proqramci: { t: "Proqramçı", icon: "💻", lv: ["Junior proqramçı","Middle proqramçı","Senior proqramçı","Komanda rəhbəri","Texniki direktor"], sal: [700, 1300, 2200, 3200, 4500], key: "smarts", fame: 0 },
-  biznes:    { t: "Biznesmen", icon: "💼", lv: ["Kiçik dükan sahibi","Şirkət sahibi","Uğurlu biznesmen","Holdinq rəhbəri","Milyonçu"], sal: [0, 0, 0, 0, 0], key: "smarts", fame: 2 },
-  aktyor:    { t: "Aktyor", icon: "🎭", lv: ["Teatr aktyoru","Serial aktyoru","Tanınan aktyor","Kino ulduzu","Xalq artisti"], sal: [450, 1100, 3000, 8000, 15000], key: "looks", fame: 6 },
-  // ordinary jobs (no degree)
-  kuryer:    { t: "Kuryer", icon: "🛵", lv: ["Kuryer","Baş kuryer"], sal: [550, 700], key: "fitness", fame: 0, plain: true },
-  ofisiant:  { t: "Ofisiant", icon: "🍽️", lv: ["Ofisiant","Baş ofisiant"], sal: [450, 650], key: "looks", fame: 0, plain: true },
-  satici:    { t: "Satıcı", icon: "🛒", lv: ["Satıcı","Mağaza müdiri"], sal: [500, 900], key: "looks", fame: 0, plain: true },
-  taksi:     { t: "Taksi sürücüsü", icon: "🚕", lv: ["Taksi sürücüsü"], sal: [800], key: "health", fame: 0, plain: true },
-  ofis:      { t: "Ofis işçisi", icon: "🗂️", lv: ["Ofis işçisi","Şöbə rəhbəri"], sal: [700, 1300], key: "smarts", fame: 0, plain: true }
-};
+// careers: data/careers.json, logic: js/career.js
 const DREAMS = [
   { id: "polis", t: "Polis", icon: "👮" }, { id: "hekim", t: "Həkim", icon: "🩺" }, { id: "futbolcu", t: "Futbolçu", icon: "⚽" },
   { id: "mugenni", t: "Müğənni", icon: "🎤" }, { id: "muellim", t: "Müəllim", icon: "📚" }, { id: "proqramci", t: "Proqramçı", icon: "💻" },
-  { id: "biznes", t: "Biznesmen", icon: "💼" }, { id: "aktyor", t: "Aktyor", icon: "🎭" }
+  { id: "biznes", t: "Biznesmen", icon: "💼" }, { id: "aktyor", t: "Aktyor", icon: "🎭" }, { id: "pilot", t: "Pilot", icon: "✈️" },
+  { id: "herbci", t: "Hərbçi", icon: "🎖️" }, { id: "xilasedici", t: "Xilasedici", icon: "🚒" }, { id: "alim", t: "Alim", icon: "🔬" }
 ];
 // university faculties → which career they open
 const FACULTIES = {
@@ -52,13 +36,16 @@ const FACULTIES = {
   ped:    { t: "Pedaqoji Universitet", need: 45, opens: "muellim", years: 4 },
   incesenet: { t: "Mədəniyyət və İncəsənət Universiteti", need: 40, opens: "aktyor", years: 4 },
   konserv:{ t: "Konservatoriya", need: 40, opens: "mugenni", years: 4, music: 55 },
-  iqtisad:{ t: "İqtisad Universiteti", need: 55, opens: "biznes", years: 4 }
+  iqtisad:{ t: "İqtisad Universiteti", need: 55, opens: "biznes", years: 4 },
+  aviasiya:{ t: "Milli Aviasiya Akademiyası (pilot)", need: 65, opens: "pilot", years: 4, fit: 50, med: true },
+  herbi:  { t: "Hərbi Akademiya", need: 50, opens: "herbi", years: 4, fit: 60, med: true },
+  pese:   { t: "Peşə məktəbi (kollec)", need: 15, opens: "usta", years: 2 }
 };
 
 // ---------- state ----------
 let P = null;
 let RULES = null; // data/rules.json (military, education)
-const LIFE_VERSION = 5;
+const LIFE_VERSION = 6;
 const TRAITS = { empathy: "Empatiya", honesty: "Dürüstlük", courage: "Cəsarət", discipline: "İntizam", independence: "Müstəqillik", family: "Ailəyə bağlılıq", social: "Ünsiyyətcillik" };
 
 function newPerson(role, gender, age, extra = {}) {
@@ -133,35 +120,6 @@ function apply(fx) {
   return out;
 }
 
-// ---------- jobs ----------
-function jobTitle() { if (!P.job) return null; const c = CAREERS[P.job.id]; return c.lv[Math.min(P.job.lv, c.lv.length - 1)]; }
-function startJob(id, lv = 0, note) {
-  if (P.job) endJob("dəyişdi");
-  P.job = { id, lv, years: 0, perf: 60, since: P.age };
-  P.stats.jobsHad++;
-  const c = CAREERS[id];
-  log(`${c.icon} ${note || "İşə başladı"}: ${c.lv[lv]} (${fmtMoney(c.sal[Math.min(lv, c.sal.length - 1)])}/ay).`);
-}
-function endJob(reason) {
-  if (!P.job) return;
-  const c = CAREERS[P.job.id];
-  P.jobs.push({ id: P.job.id, title: jobTitle(), from: P.job.since, to: P.age, reason });
-  P.job = null;
-  return c;
-}
-function promote() {
-  const c = CAREERS[P.job.id]; if (P.job.lv >= c.lv.length - 1) return false;
-  P.job.lv++; P.job.perf = 55;
-  log(`📈 Vəzifə artımı: ${jobTitle()}!`); return true;
-}
-function salaryMonthly() {
-  if (!P.job) return 0;
-  const c = CAREERS[P.job.id];
-  if (P.job.susp) return 0; // contract frozen (e.g. military service)
-  if (P.job.id === "biznes") return P.job.income || 0;
-  const full = Math.round(c.sal[Math.min(P.job.lv, c.sal.length - 1)] * (P.job.bonus || 1)); // bonus: better-paid offer at the same position
-  return P.age < 18 ? Math.round(full / 2) : full; // under 18: part-time only
-}
 // parents' professions (NPCs) and the family's means: affects how often they can give pocket money
 const PARENT_JOBS = {
   k: ["Mühəndis", "Sürücü", "Tikinti ustası", "Həkim", "Müəllim", "Polis", "Mühasib", "Bazarda satıcı", "Neftçi", "Elektrik ustası", "Kiçik dükan sahibi", "Proqramçı"],
@@ -177,23 +135,6 @@ function addGrandparents() {
 }
 // pocket money: under 18 the only money sources are family, things found on the street, and (16+) part-time work
 const POCKET_MAX = { ana: 10, ata: 10, "nənə": 15, baba: 15 };
-// what jobs can the player apply to right now
-function jobOptions() {
-  const o = [];
-  const s = P.st, deg = P.edu.degree;
-  if (P.age < 16) return o;
-  o.push({ id: "kuryer", odds: 0.85 }, { id: "ofisiant", odds: 0.7 + s.looks / 500 }, { id: "satici", odds: 0.75 });
-  if (P.age >= 18 && P.flags.vesiqe) o.push({ id: "taksi", odds: 0.85 });
-  if (P.age >= 18 && (deg || s.smarts > 60)) o.push({ id: "ofis", odds: deg ? 0.7 : 0.35 });
-  if (deg === "polis" || (P.army && P.army.done && s.fitness >= 60 && P.age <= 30)) o.push({ id: "polis", odds: deg === "polis" ? 0.9 : 0.4 });
-  if (deg === "hekim") o.push({ id: "hekim", odds: 0.85 });
-  if (deg === "muellim") o.push({ id: "muellim", odds: 0.9 });
-  if (deg === "proqramci" || P.flags.kodYazir) o.push({ id: "proqramci", odds: deg === "proqramci" ? 0.75 : 0.35 + s.smarts / 400 });
-  if (deg === "aktyor" || P.tal.acting > 70) o.push({ id: "aktyor", odds: deg === "aktyor" ? 0.6 : 0.2 });
-  if (deg === "mugenni" || P.tal.music > 70) o.push({ id: "mugenni", odds: deg === "mugenni" ? 0.6 : 0.25 });
-  return o.filter(x => !P.job || P.job.id !== x.id);
-}
-
 // ---------- social network ("Pıçıltı") ----------
 function socOpen() { if (!P.soc) P.soc = { handle: "@" + P.name.toLowerCase().replace(/[^a-zəığöşüç0-9]/g, "") + "_" + rnd(10, 99), followers: rnd(8, 40), posts: [], verified: false, feed: [] }; }
 const POST_TYPES = [
@@ -287,6 +228,10 @@ function ageUp() {
   // army
   // discharge when the service period is over (service starts on a birthday: 12 months = one year, 18 months = two)
   if (P.army && !P.army.done) { if (P.army.end <= P.day + 31) { P.army.done = true; log(`🏠 Hərbi xidmət (${P.army.months} ay) başa çatdı. Evə qayıtdı.`); apply({ fitness: 8, happy: 10, rel: { ana: 8 } }); } }
+  // prison, licences, investments
+  prisonTick();
+  licenceTick();
+  investTick();
   // money: allowance, salary, costs
   moneyTick(msgs);
   // job performance
@@ -333,7 +278,13 @@ function eduTick() {
     if (e.uniYear >= f.years) {
       e.stage = "bitdi"; e.degree = f.opens; log(`🎓 ${f.t}-ni bitirdi! Diplom aldı.`); P.flags.diplom = P.age; apply({ happy: 12, smarts: 5, rel: { ana: 6, ata: 6 } });
       if (f.opens === "polis" && !P.job) startJob("polis", 0, "Akademiyadan sonra təyinat aldı");
-      else if (e.fac !== "tibb") { e.pendingMaster = true; P.flags.pendingMasterQ = P.age; }
+      else if (f.opens === "herbi") {
+        P.army = { start: P.day, end: P.day, months: 0, basis: "officer", done: true, officer: true }; // officers don't do conscript service
+        if (P.flags.pilot_secildi != null && medicalOk()) startJob("herbi_pilot", 0, "Hərbi pilot kimi təyinat aldı"); else startJob("herbci", 2, "Zabit kimi təyinat aldı");
+      }
+      else if (f.opens === "pilot") { if (medicalOk()) { P.lic = P.lic || {}; P.lic.ppl = true; P.lic.cpl = P.age; P.hours = Math.max(P.hours || 0, 250); log("🎫 PPL və CPL lisenziyaları alındı (250 uçuş saatı)."); } else { P.flags.medical_fail = P.age; log("🩺 Tibbi komissiya: sağlamlıq kommersiya pilotu üçün yetərli deyil."); } }
+      else if (f.opens === "usta") P.flags.pese_mekteb = P.age;
+      if (!["tibb", "herbi", "pese", "akad"].includes(e.fac)) { e.pendingMaster = true; P.flags.pendingMasterQ = P.age; }
     }
   }
 }
@@ -341,7 +292,8 @@ function moneyTick() {
   const sal = salaryMonthly() * 12;
   // under 18: no automatic allowance (money only from family, finds, part-time work)
   if (P.age < 16) return;
-  if (P.job) P.money += sal;
+  if (inPrison()) return; // no salary, no rent while inside
+  if (P.job) P.money += P.job && CAREERS[P.job.id].unstable ? Math.round(salaryMonthly() * (P.job.monthsWorked || 8)) : sal;
   if (P.edu.stage === "uni" && P.flags.odenisli) P.money -= 2500;
   if (P.age >= 18 && !(["uni", "magistr"].includes(P.edu.stage) && P.age < 26) && !(P.army && !P.army.done)) {
     const ownHouse = P.assets.some(a => a.type === "ev");
@@ -353,19 +305,8 @@ function moneyTick() {
   for (const a of P.assets) if (a.type === "maşın") { P.money -= 600; a.value = Math.round(a.value * 0.9); }
   for (const a of P.assets) if (a.type === "ev") a.value = Math.round(a.value * (1.02 + R() * 0.05));
   if (P.age >= 63 && !P.job && P.flags.teqaud) P.money += 4200;
+  if (P.flags.military_pension != null && !P.job) P.money += 9000;
   if (P.money < -5000 && !P.flags.borc) { P.flags.borc = P.age; }
-}
-function jobTick() {
-  const j = P.job, c = CAREERS[j.id];
-  if (j.susp) return;
-  j.years++;
-  const key = c.key === "health" ? P.st.health : P.st[c.key];
-  j.perf = clamp(Math.round(j.perf * 0.5 + (key * 0.6 + rnd(0, 40)) * 0.5));
-  if (j.id === "biznes") { const base = [800, 3000, 9000, 25000, 80000][j.lv]; j.income = Math.round(base * (0.3 + R() * 1.4) * (P.st.smarts / 70)); if (chance(0.12)) { j.income = -Math.round(base * 0.8); log("📉 Biznes bu il ziyana düşdü."); } }
-  if (j.id === "futbolcu" && P.age >= 33 && chance((P.age - 32) / 5)) { endJob("təqaüdə çıxdı"); log("⚽ Futbol karyerasını bitirdi. Stadion ayaq üstə alqışladı."); P.flags.exFutbolcu = P.age; return; }
-  if (j.perf >= 75 && j.years >= 2 && chance(0.45)) promote();
-  else if (j.perf < 25 && chance(0.4)) { const t = jobTitle(); endJob("işdən çıxarıldı"); log(`📉 ${t} işindən çıxarıldı.`); apply({ happy: -15 }); }
-  if (P.age >= 63 && !c.sport && chance(0.35)) { endJob("təqaüd"); P.flags.teqaud = P.age; log("🏖️ Təqaüdə çıxdı."); }
 }
 function peopleTick() {
   for (const p of P.people) {
@@ -385,18 +326,51 @@ function peopleTick() {
   }
   // the kids grow up: children leave school etc. (flavour only)
 }
+// annual death risk: age, health, lifestyle, occupation, prison. Early death is possible but rare.
+const AGE_RISK = [[15, 0.0002], [25, 0.0008], [35, 0.001], [45, 0.0018], [55, 0.004], [65, 0.01], [75, 0.025], [85, 0.075], [200, 0.2]];
+function deathRisk() {
+  const a = P.age, h = P.st.health;
+  const base = AGE_RISK.find(([lim]) => a < lim)[1];
+  const hf = h >= 70 ? 0.7 : h >= 50 ? 1 : h >= 30 ? 2 : h >= 15 ? 5 : 15;
+  let life = 1;
+  if (P.flags.siqaret != null && a > 35) life *= 1.6;
+  if (P.flags.alkoqol != null) life *= 1.3;
+  if (inPrison()) life *= 1.5;
+  const job = P.job && !P.job.susp ? (CAREERS[P.job.id].risk || 0) : 0;
+  const army = P.army && !P.army.done ? 0.0006 : 0;
+  return { natural: base * hf * life, job: job + army };
+}
+const JOB_DEATH = { pilot: "uçuş qəzası", herbi_pilot: "təlim uçuşunda qəza", herbci: "xidmət zamanı", xilasedici: "yanğında insanları xilas edərkən", polis: "xidmət vəzifəsini yerinə yetirərkən", taksi: "yol qəzası", kuryer: "yol qəzası", fehle: "iş yerində bədbəxt hadisə", futbolcu: "meydanda qəfil ürək tutması" };
 function deathCheck() {
-  let p = 0;
-  if (P.age > 60) p = ((P.age - 60) / 40) ** 2.2 * 0.6;
-  if (P.st.health < 15) p += 0.25;
-  if (P.st.health <= 0) p = 1;
-  if (chance(p)) die(P.st.health < 20 ? "xəstəlik" : "qocalıq");
+  if (P.st.health <= 0) return die("ağır xəstəlik");
+  const r = deathRisk();
+  if (chance(r.job)) return die(P.army && !P.army.done ? "hərbi xidmət zamanı" : JOB_DEATH[P.job && P.job.id] || "bədbəxt hadisə");
+  if (chance(r.natural)) {
+    const a = P.age;
+    const cause = P.st.health < 30 ? "uzun sürən xəstəlik" : a < 45 ? pick(["yol qəzası", "qəfil ürək tutması", "ağır xəstəlik"]) : a < 70 ? pick(["infarkt", "insult", "xərçəng"]) : pick(["qocalıq", "ürək çatışmazlığı", "insult"]);
+    die(cause);
+  }
 }
 function die(cause) {
   P.alive = false; P.cause = cause; P.deathDay = P.day;
   log(`🕊️ ${P.name} ${P.age} yaşında dünyasını dəyişdi (${cause}).`);
   if (typeof DB !== "undefined") DB.archive(Object.assign({ id: P.id, birth: P.birth, deathDay: P.day, city: P.city, log: P.log }, lifeSummary())).catch(() => {});
   save(true);
+}
+// "Geridə qalanlar": facts from the save only — no invented relatives or events
+function survivors() {
+  const out = [], alive = r => P.people.filter(p => p.role === r && p.alive), dead = r => P.people.filter(p => p.role === r && !p.alive);
+  const sp = alive("həyat yoldaşı")[0];
+  if (sp) out.push(`💍 ${sp.name} — həyat yoldaşı, ${sp.age} yaşında. ${P.flags.evli != null ? `${P.age - P.flags.evli} il birlikdə yaşadılar.` : ""}`.trim());
+  for (const k of P.people.filter(p => p.role === "uşaq")) out.push(k.alive ? `${k.g === "k" ? "👦 Oğlu" : "👧 Qızı"} ${k.name} — ${k.age} yaşında.` : `🕯️ ${k.g === "k" ? "Oğlu" : "Qızı"} ${k.name} ondan əvvəl dünyasını dəyişmişdi.`);
+  const gk = alive("nəvə"); if (gk.length) out.push(`👶 Nəvələri: ${gk.map(g => g.name).join(", ")}.`);
+  for (const r of ["ana", "ata"]) for (const p of alive(r)) out.push(`${r === "ana" ? "👩 Anası" : "👨 Atası"} ${p.name} ${p.age} yaşında övladını itirdi.`);
+  for (const r of ["qardaş", "bacı"]) for (const p of alive(r)) out.push(`${r === "qardaş" ? "👦 Qardaşı" : "👧 Bacısı"} ${p.name}, ${p.age} yaşında.`);
+  const fr = alive("dost")[0]; if (fr) out.push(`🤝 Ən yaxın dostu ${fr.name} vida mərasimində ilk gələnlərdən oldu.`);
+  if (!out.length) out.push("Arxasında yaxın ailə üzvü qalmadı. Onun izi başqa yaxınlarının xatirələrində qaldı.");
+  const before = P.people.filter(p => !p.alive && ["ana", "ata", "həyat yoldaşı", "qardaş", "bacı", "nənə", "baba"].includes(p.role) && p.died != null && p.died > 0);
+  const POSS = { ana: "anası", ata: "atası", "həyat yoldaşı": "həyat yoldaşı", "qardaş": "qardaşı", "bacı": "bacısı", "nənə": "nənəsi", baba: "babası" };
+  return { now: out, before: before.map(p => `${p.name}, ${POSS[p.role]} — ${P.name} ${p.died} yaşında olanda dünyasını dəyişmişdi.`) };
 }
 function lifeSummary() {
   const dream = DREAMS.find(d => d.id === P.dream);
@@ -424,8 +398,8 @@ const ACTIONS = [
   { id: "sevgi", t: "Sevgili axtar", icon: "💘", min: 16, special: "love", if: () => !person("sevgili") && !person("həyat yoldaşı") },
   { id: "sevgili", t: "Sevgilinlə görüş", icon: "🌹", min: 16, if: () => !!person("sevgili"), cost: 40, fx: () => ({ happy: rnd(5, 9) }), r: () => `${who("sevgili")} ilə bulvarda gəzdiniz.`, after: () => relAdd("sevgili", 9) },
   { id: "yoldas", t: "Həyat yoldaşınla vaxt keçir", icon: "💑", min: 18, if: () => !!person("həyat yoldaşı"), fx: () => ({ happy: rnd(4, 8) }), r: () => `${who("həyat yoldaşı")} ilə restorana getdiniz.`, after: () => relAdd("həyat yoldaşı", 9) },
-  { id: "isde", t: () => ({ futbolcu: "Əlavə məşq et", mugenni: "Studiyada çalış", aktyor: "Rol üzərində işlə", hekim: "Əlavə növbə götür", polis: "Əlavə növbə götür", muellim: "Dərslərə yaxşı hazırlaş", proqramci: "Gecə də kod yaz", biznes: "Biznesə çox vaxt ayır" }[P.job.id] || "İşdə çox çalış"), icon: "⏱️", min: 16, if: () => !!P.job, fx: () => ({ happy: -2, health: -1 }),
-    r: () => ({ futbolcu: "Hamı gedəndən sonra da meydanda qaldın, cərimə zərbələri vurdun. Məşqçi gördü.", mugenni: "Səhərə qədər studiyada yeni mahnı yazdın.", hekim: "İki növbə ardıcıl. Yorğunsan, amma xəstələr səni tanıyır." }[P.job.id] || "Gec saatlara qədər işlədin. Rəhbər bunu gördü."), after: () => { P.job.perf = clamp(P.job.perf + rnd(8, 15)); } },
+  { id: "isde", t: () => CAREERS[P.job.id].work || "İşdə çox çalış", icon: "⏱️", min: 16, if: () => !!P.job && !P.job.susp, fx: () => ({ happy: -2, health: -1 }),
+    r: () => ({ futbolcu: "Hamı gedəndən sonra da meydanda qaldın, cərimə zərbələri vurdun. Məşqçi gördü.", mugenni: "Səhərə qədər studiyada yeni mahnı yazdın.", hekim: "İki növbə ardıcıl. Yorğunsan, amma xəstələr səni tanıyır." }[P.job.id] || "Gec saatlara qədər işlədin. Rəhbər bunu gördü."), after: () => { P.job.perf = clamp(P.job.perf + rnd(8, 15)); P.job.boss = clamp((P.job.boss || 50) + 2); } },
   { id: "seyahet", t: "Səyahətə çıx", icon: "✈️", min: 18, cost: 1500, fx: () => ({ happy: rnd(8, 14) }), r: () => { const c = pick(["Türkiyəyə", "Gürcüstana", "Dubaya", "İtaliyaya", "Misirə", "Fransaya", "Qəbələyə", "Şəkiyə"]); P.stats.countries++; return `${c} səyahət etdin, möhtəşəm idi!`; } },
   { id: "al", t: "Maşın / ev al", icon: "🔑", min: 18, special: "shop" },
   // during military service only these are available
@@ -483,6 +457,20 @@ function migrateLife(L) {
     }
     L.v = 5;
   }
+  if (L.v < 6) {
+    // v6: careers with salary bands, employer, boss, company; licences; legal record
+    if (L.job) {
+      const c = CAREERS[L.job.id];
+      if (c && !L.job.sal) { const [a, b] = c.sal[Math.min(L.job.lv, c.sal.length - 1)]; L.job.sal = Math.round(((a + b) / 2) * (L.job.bonus || 1)); }
+      L.job.lvYears = L.job.lvYears ?? Math.min(L.job.years || 0, 2); L.job.boss = L.job.boss ?? 55; L.job.company = L.job.company ?? 65;
+      L.job.employer = L.job.employer || (c && c.employers ? c.employers[0] : "—");
+    }
+    L.lic = L.lic || {}; if (L.flags.vesiqe != null) L.lic.surucu = true;
+    L.legal = L.legal || { record: [], case: null, prison: null, history: [] };
+    if (L.flags.cinayet != null) L.legal.record.push({ day: L.day, age: L.flags.cinayet, type: "rusvet_alma", verdict: "şərti", years: 2 });
+    L.careerHist = L.careerHist || [];
+    L.v = 6;
+  }
   return L;
 }
 // record a decision (event_history)
@@ -496,7 +484,7 @@ function examTry(fid) {
   const f = FACULTIES[fid];
   P.flags.imtahanVerdi = P.age;
   const score = P.st.smarts * 0.6 + P.edu.gpa * 0.3 + (P.flags.repetitor ? 8 : 0) + (P.flags.olimpiada ? 6 : 0) + rnd(-10, 10);
-  const extra = (f.fit && P.st.fitness < f.fit) ? `fiziki hazırlıq yetərli deyil (${P.st.fitness}/${f.fit})` : (f.music && P.tal.music < f.music) ? "musiqi qabiliyyəti imtahanından keçmədin" : null;
+  const extra = (f.med && !medicalOk()) ? "tibbi komissiyadan keçmədin" : (f.fit && P.st.fitness < f.fit) ? `fiziki hazırlıq yetərli deyil (${P.st.fitness}/${f.fit})` : (f.music && P.tal.music < f.music) ? "musiqi qabiliyyəti imtahanından keçmədin" : null;
   if (score >= f.need && !extra) {
     P.edu.stage = "uni"; P.edu.fac = fid; P.edu.uniYear = 0;
     const free = score >= f.need + 12;

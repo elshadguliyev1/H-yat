@@ -45,6 +45,16 @@ const Interp = (() => {
     kid_age_gte: v => people("uşaq").some(k => k.age >= v),
     parent_age_gt: v => parentAlive().some(p => p.age > v),
     parent_died_last_year: v => P.people.some(p => ["ana", "ata"].includes(p.role) && !p.alive && p.died === P.age - 1) === v,
+    faculty: v => P.edu.fac === v && ["uni", "magistr"].includes(P.edu.stage),
+    legal_case: v => !!(P.legal && P.legal.case) === v,
+    in_prison: v => inPrison() === v,
+    record: v => hasRecord() === v,
+    track: v => !!P.job && !P.job.susp && [].concat(v).includes(CAREERS[P.job.id].track),
+    lic: v => !!(P.lic && P.lic[v]),
+    no_lic: v => !(P.lic && P.lic[v]),
+    hours_gte: v => (P.hours || 0) >= v,
+    medical: v => medicalOk() === v,
+    asset_type: v => P.assets.some(a => a.type === v),
     npc_job: o => Object.entries(o).every(([r, j]) => !!person(r) && person(r).job === j),
     asset: v => P.assets.some(a => a.type === v),
     army: v => v === "none" ? !P.army : v === "active" ? !!P.army && !P.army.done : !!P.army && P.army.done,
@@ -62,6 +72,7 @@ const Interp = (() => {
   function armyDue() {
     const M = RULES.military;
     if (P.g !== M.applies_to_gender || P.army || P.age < M.call_age) return false;
+    if (inPrison()) return false;
     if (M.deferment_while_studying && ["uni", "magistr", "mekteb", "mezun"].includes(P.edu.stage)) return false;
     if (P.edu.stage === "bitdi" && P.edu.pendingMaster) return false;
     return true;
@@ -115,6 +126,15 @@ const Interp = (() => {
     schedule(o) { const yrs = Array.isArray(o.after_years) ? rnd(o.after_years[0], o.after_years[1]) : (o.after_years || 0); const day = Cal.addMonths(Cal.addYears(P.day, yrs), o.after_months || 0); P.sched.push({ event: o.event, day, from: P.curEvent || null, set: P.day }); P.sched.sort((a, b) => a.day - b.day); },
     move_city(v, ctx) { const to = v === "random" ? pick(CITIES.filter(c => c !== P.city)) : v; ctx.vars.city_from = P.city; P.city = to; ctx.vars.city = to; log(`🚚 ${to} şəhərinə köçdü.`); },
     allow_retake() { delete P.flags.imtahanVerdi; P.edu.stage = "mezun"; },
+    crime(type, ctx) { const r = commitCrime(type); ctx.vars.crime = r.title; ctx.vars.caught = r.caught ? "Polis artıq məsələni araşdırır." : "Hələlik heç kim bilmir…"; if (!r.caught) P.flags["got_away_" + type] = P.age; },
+    trial(o, ctx) { ctx.vars.verdict = trial(o.lawyer, !!o.plea); },
+    set_lic(k) { P.lic = P.lic || {}; P.lic[k] = P.age; },
+    phd_start() { P.flags.phd_basladi = P.age; },
+    flight_school() { P.flags.flight_school = P.age; },
+    military_retire(o) { endJob("hərbi təqaüd"); P.flags.military_pension = P.age; P.flags.ex_herbci = P.age; },
+    asset_mul(o) { for (const a of P.assets) if (a.type === o.type) a.value = Math.round(a.value * o.f); },
+    // a rare fatal outcome inside a dangerous situation (kept small on purpose)
+    die_chance(o) { if (chance(o.p)) die(o.cause); },
     trait(o) { for (const [k, v] of Object.entries(o)) P.tr[k] = clamp((P.tr[k] || 50) + v); }
   };
   function run(list, ctx) { for (const step of list || []) for (const [k, v] of Object.entries(step)) { const f = A[k]; if (!f) throw new Error("naməlum əməliyyat: " + k); f(v, ctx); } }
@@ -134,6 +154,10 @@ const Interp = (() => {
     singer_twist: () => P.dream !== "mugenni" ? `Xəyalın ${dreamName()} idi, amma indi müğənnisən. Həyat, sən nə qəribəsən!` : "Xəyalın gerçəkləşdi!",
     sib: () => { const s = P.people.find(p => p.alive && (p.role === "qardaş" || p.role === "bacı")); return s ? s.name : "?"; },
     sib_word: () => { const s = P.people.find(p => p.alive && (p.role === "qardaş" || p.role === "bacı")); return s ? (s.role === "qardaş" ? "qardaşın" : "bacın") : "?"; },
+    case_title: () => P.legal && P.legal.case ? RULES.justice.crimes[P.legal.case.type].t.toLowerCase() : "iş",
+    lawyer_cost: () => P.legal && P.legal.case ? fmtMoney(RULES.justice.crimes[P.legal.case.type].lawyer_cost) : "",
+    lawyer_cost3: () => P.legal && P.legal.case ? fmtMoney(RULES.justice.crimes[P.legal.case.type].lawyer_cost * 3) : "",
+    prison_left: () => P.legal && P.legal.prison ? Math.max(0, Math.ceil((P.legal.prison.end - P.day) / 365)) + " il" : "",
     sal_now: () => fmtMoney(salaryMonthly()),
     offer_city: () => fmtMoney(Math.round(salaryMonthly() * 1.6)),
     offer_remote: () => fmtMoney(Math.round(salaryMonthly() * 2.5)),
@@ -146,7 +170,7 @@ const Interp = (() => {
     let s = String(t ?? "").replace(/\{(\w+)\}/g, (m, k) => ctx && ctx.vars && ctx.vars[k] != null ? ctx.vars[k] : TV[k] ? TV[k]() : m);
     return fill(s);
   }
-  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", "sal_new", ...Object.keys(TV)]);
+  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", "sal_new", "crime", "caught", "verdict", ...Object.keys(TV)]);
 
   // ---------------- dynamic choice lists ----------------
   const GEN = {
@@ -161,6 +185,7 @@ const Interp = (() => {
   function load(lists) { LIB = [].concat(...lists).map(normalize); BY_ID = Object.fromEntries(LIB.map(e => [e.id, e])); return LIB; }
   function normalize(e) { const x = Object.assign({}, e); if (!x.age && x.age_min != null) x.age = [x.age_min, x.age_max]; if (x.repeatable === true) x.once = false; return x; }
   function ok(e) {
+    if (!!e.prison !== inPrison()) return false; // in prison only prison events, outside never
     if (e.age && (P.age < e.age[0] || P.age > e.age[1])) return false;
     if (e.once !== false && P.seen[e.id] != null) return false;
     if (e.cool && P.seen[e.id] != null && P.age - P.seen[e.id] < e.cool) return false;
@@ -171,16 +196,20 @@ const Interp = (() => {
   function pickYear(n) {
     const out = [];
     // 1) delayed consequences that are due now (they ignore age windows only if the event itself allows it)
+    const later = [];
     while (P.sched.length && P.sched[0].day <= P.day) {
       const s = P.sched.shift(); const e = BY_ID[s.event];
+      if (e && !!e.prison !== inPrison()) { later.push(s); continue; } // waits until the person is out (or in)
       if (e && check(e.cond) && (!e.age || (P.age >= e.age[0] && P.age <= e.age[1] + 3))) out.push(e.id);
     }
+    for (const s of later) { s.day = Cal.addYears(P.day, 1); P.sched.push(s); }
+    P.sched.sort((a, b) => a.day - b.day);
     const pool = LIB.filter(e => !e.scheduled_only && ok(e));
     // 2) forced milestones, 3) weighted random by priority
     for (const e of pool) if (e.force && !out.includes(e.id)) out.push(e.id);
     let rest = pool.filter(e => !e.force && !out.includes(e.id));
     const serious = rest.filter(e => e.tone && e.tone !== "everyday");
-    if (!out.some(id => (BY_ID[id].tone || "everyday") !== "everyday") && serious.length && R() < 0.6) {
+    if (!out.some(id => (BY_ID[id].tone || "everyday") !== "everyday") && serious.length && R() < 0.3) {
       const tot = serious.reduce((a, e) => a + (e.w || 1) * (1 + (e.priority || 0)), 0); let r = R() * tot, pickE = serious[0];
       for (const x of serious) { r -= (x.w || 1) * (1 + (x.priority || 0)); if (r <= 0) { pickE = x; break; } }
       out.push(pickE.id); rest = rest.filter(x => x !== pickE);
@@ -220,7 +249,7 @@ const Interp = (() => {
   }
 
   // ---------------- validation ----------------
-  const EVENT_KEYS = new Set(["id", "cat", "tone", "age", "age_min", "age_max", "icon", "visual", "t", "title", "description", "location", "w", "weight", "priority", "force", "once", "repeatable", "cool", "scheduled_only", "cond", "conditions", "ch", "choices", "choices_gen", "g", "note"]);
+  const EVENT_KEYS = new Set(["prison", "id", "cat", "tone", "age", "age_min", "age_max", "icon", "visual", "t", "title", "description", "location", "w", "weight", "priority", "force", "once", "repeatable", "cool", "scheduled_only", "cond", "conditions", "ch", "choices", "choices_gen", "g", "note"]);
   const CHOICE_KEYS = new Set(["t", "cond", "fx", "do", "r", "odds", "trait", "id", "text", "result_text", "effects"]);
   const FX_KEYS = new Set([...STAT_KEYS, "money", "fame", "followers", "rel", "tal", "flag", "unflag", "perf"]);
   function validate(lists) {

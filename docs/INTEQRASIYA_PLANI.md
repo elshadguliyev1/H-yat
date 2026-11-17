@@ -140,4 +140,6 @@ Miqrasiyalar `db.js` içində versiya-versiya saxlanılır. Mövcud `localStorag
 
 - **2026-11-17 · 2-ci mərhələ hazırdır.** IndexedDB (5 slot, arxiv, qərar tarixçəsi, köhnə yaddaşın köçürülməsi), seed-li RNG, gün əsaslı təqvim, JSON hadisə kitabxanası (127 hadisə) + validator + interpretator, 9 gecikmiş nəticə zənciri, `rules.json` (hərbi xidmət 18/12/12 ay — oyunçunun verdiyi qayda, rəsmi mənbə ilə yoxlanılmalı), magistratura, xarakter xüsusiyyətləri. `tests/run.js`: 10/10 test keçir.
 
+- **2026-11-18 · Həyat yolları sistemi (4-cü mərhələnin karyera hissəsi + yeni yollar).** `data/careers.json` (22 karyera: pillələr, maaş diapazonları, qəbul şərtləri, risk, təqaüd), `js/career.js` (illik qiymətləndirmə, rəhbər və şirkət vəziyyəti, maaş artımı/yüksəliş müraciəti, iş yerini dəyişmək, öz biznesi, investisiya, lisenziyalar və uçuş saatları, hərbi rütbələr), `js/justice.js` (cinayət → istintaq → məhkəmə → cəza → həbs həyatı → şərti azadlıq → məhkumluq qeydi; cəzalar `rules.json`-da sadələşdirilmiş oyun konfiqurasiyasıdır), ölüm riski modeli (yaş, sağlamlıq, həyat tərzi, peşə, həbs), yekun ekranda “Geridə qalanlar”. `data/events/paths.json`: 50+ hadisə. Testlər: 17/17.
+
 **Həcm haqqında dürüst qiymət:** bu, bir neçə iş sessiyası tələb edən işdir. Hər mərhələnin sonunda oyun işlək vəziyyətdə GitHub-a yüklənəcək, aralıq vəziyyət olmayacaq.

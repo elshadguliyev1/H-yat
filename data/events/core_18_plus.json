@@ -100,7 +100,7 @@
  {"t":"Sevincdən uç!","fx":{"happy":20,"flag":"neveGeldi"},"do":[{"add_person":{"role":"nəvə","g":"any","age":0}}],"r":"Həyatın ən gözəl anlarından biri 💛 Nəvənin adı: {new}."}]},
 {"id":"polis_rusvet","cat":"career","tone":"dramatic","age":[18,65],"icon":"💰","cond":{"job":"polis"},"t":"Yol polisi postundasan. Sürət həddini aşan sürücü qovluğa 200 ₼ qoyub uzadır.","ch":[
  {"t":"Protokol yaz","fx":{"perf":10,"happy":3},"r":"Qanun hamı üçün birdir. Rəhbərlik səni təriflədi.","trait":{"honesty":3}},
- {"t":"Pulu götür","odds":[{"p":0.6,"fx":{"money":200,"happy":-4},"do":[{"flag_inc":"rusvet"},{"count":"crimes"}],"r":"Heç kim bilmədi… hələlik."},{"p":0.4,"fx":{"happy":-25,"flag":"cinayet"},"do":[{"end_job":{"reason":"rüşvət"}},{"count":"crimes"}],"r":"Gizli kamera imiş! İşdən çıxarıldın və məhkəmə şərti cəza verdi."}],"trait":{"honesty":-5}}]},
+ {"t":"Pulu götür","fx":{"money":200,"happy":-4},"do":[{"flag_inc":"rusvet"},{"crime":"rusvet_alma"}],"r":"Zərfi cibinə qoydun. {caught}","trait":{"honesty":-5}}]},
 {"id":"polis_qacaq","cat":"career","tone":"dramatic","age":[18,60],"icon":"🚓","cond":{"job":"polis"},"t":"Bank soyğunu! Şübhəli qaçır, sən təqib edirsən.","ch":[
  {"t":"Arxasınca qaç","odds":[{"p":{"of":"st.fitness","div":110},"fx":{"perf":20,"fame":4,"happy":10},"do":[{"followers_rand":[500,4000]}],"r":"Tutdun! Xəbərlərdə adın çəkildi."},{"p":0.4,"fx":{"health":-8},"r":"Hasardan atlayanda ayağını burxdun, qaçdı."}],"trait":{"courage":3}},
  {"t":"Yoldaşlara xəbər ver, mühasirə et","fx":{"perf":12,"smarts":2},"r":"Plan işlədi, şübhəli tutuldu."}]},
@@ -156,7 +156,7 @@
  {"t":"Komandamı tərk etmərəm","fx":{"perf":10},"do":[{"raise":{"factor":1.2}}],"r":"Rəhbər bunu bilib maaşını {sal_new}-a qaldırdı."}]},
 {"id":"biz_vergi","cat":"career","tone":"dramatic","age":[20,75],"icon":"🧾","cond":{"job":"biznes"},"t":"Vergi yoxlaması gəldi. Mühasibin “bir az düzəliş edək” deyir.","ch":[
  {"t":"Hər şey qanuni olsun","fx":{"money":-3000},"r":"Bir az cərimə ödədin, amma rahat yatırsan.","trait":{"honesty":3}},
- {"t":"Düzəliş et","odds":[{"p":0.5,"fx":{"money":2000},"r":"Yoxlama heç nə tapmadı."},{"p":0.5,"fx":{"money":-25000,"happy":-15},"r":"Tapdılar! Böyük cərimə və şirkətin adı xəbərlərdə."}],"trait":{"honesty":-3}}]},
+ {"t":"Düzəliş et","fx":{"money":2000},"do":[{"crime":"vergi"}],"r":"Hesabatlar “düzəldildi”. {caught}","trait":{"honesty":-3}}]},
 {"id":"biz_genislen","cat":"career","tone":"everyday","age":[22,70],"icon":"🏬","cond":{"job":"biznes","money_gt":30000,"job_lv_lt":4},"t":"Biznesini genişləndirmək üçün ikinci filial açmaq olar. 30 000 ₼ lazımdır.","ch":[
  {"t":"Aç","odds":[{"p":{"of":"st.smarts","div":300,"add":0.4},"fx":{"money":-30000,"happy":10},"do":[{"promote":true}],"r":"Filial uğurlu oldu, gəlirlər artdı!"},{"p":0.4,"fx":{"money":-30000,"happy":-10},"r":"Yeri pis seçildi, filial bağlandı."}]},
  {"t":"Gözlə","r":"Ehtiyatlı olmaq da strategiyadır."}]},
