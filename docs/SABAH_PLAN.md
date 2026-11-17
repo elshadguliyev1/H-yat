@@ -28,6 +28,8 @@ Vəziyyət: son işlək versiya `fddf1f6`, 18/18 test keçir. Aşağıdakılar h
    - **Oğulun toyu:** ev (mənzil) və maşın almaq, toy xərcləri; imkan çatmasa, kredit və ya ailədən borc.
    - **Valideynin seçimi:** kömək etmək, qismən kömək etmək və ya imtina. Bu, övladla münasibətə və ailə büdcəsinə təsir etməlidir.
 
+6. **İdmanda yalnız futbol var.** Digər idman növləri lazımdır: güləş, cüdo, boks, voleybol, basketbol, gimnastika, şahmat, üzgüçülük, atletika. Hər birinin öz akademiya və klub yolu, yarışları (çempionat, Avropa, Olimpiya), zədələri və məşqçilik keçidi olmalıdır. Uşaqlıqda istedad hansı idmana uyğundursa, o yol açılmalıdır.
+
 ## B. KRİTİK: dramaturgiya (növbəti işin əsası)
 
 **Niyə hazırkı mühərrik maraqlı hekayə yaratmır (qısa diaqnoz):**
