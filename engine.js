@@ -296,14 +296,20 @@ function moneyTick() {
   if (P.job) P.money += P.job && CAREERS[P.job.id].unstable ? Math.round(salaryMonthly() * (P.job.monthsWorked || 8)) : sal;
   if (P.edu.stage === "uni" && P.flags.odenisli) P.money -= 2500;
   if (P.age >= 18 && !(["uni", "magistr"].includes(P.edu.stage) && P.age < 26) && !(P.army && !P.army.done)) {
-    const ownHouse = P.assets.some(a => a.type === "ev");
+    const ownHouse = P.assets.some(a => a.type === "ev" || a.home);
     const living = 3000 + (ownHouse ? 0 : 3600) + (person("həyat yoldaşı") ? 1500 : 0) + people("uşaq").filter(k => k.age < 18).length * 1800;
     const livingWithParents = !ownHouse && P.age < 30 && !person("həyat yoldaşı") && person("ana");
     const lifestyle = Math.round(sal * 0.35); // people spend more as they earn more
     P.money -= (livingWithParents ? 1500 : living) + lifestyle;
   }
-  for (const a of P.assets) if (a.type === "maşın") { P.money -= 600; a.value = Math.round(a.value * 0.9); }
-  for (const a of P.assets) if (a.type === "ev") a.value = Math.round(a.value * (1.02 + R() * 0.05));
+  for (const a of P.assets) {
+    if (a.type === "maşın") { P.money -= 400 + Math.round(a.value * 0.03); a.value = Math.round(a.value * 0.9); }       // insurance, fuel, repairs
+    else if (a.type === "ev") { P.money -= Math.round(a.value * 0.004) + 300; a.value = Math.round(a.value * (1.02 + R() * 0.05)); } // utilities, upkeep
+    else if (a.type === "torpaq") a.value = Math.round(a.value * (1.03 + R() * 0.06));
+    else if (a.type === "mağaza") { a.value = Math.round(a.value * (1.01 + R() * 0.04)); P.money += Math.round(a.value * 0.06); } // rent income
+  }
+  for (const l of P.loans || []) { const pay = Math.min(l.left, l.yearly); P.money -= pay; l.left -= Math.round(pay * (1 - LOAN.rate * 0.5)); }
+  if (P.loans && P.loans.some(l => l.left <= 0)) { for (const l of P.loans.filter(x => x.left <= 0)) log(`🏦 Kredit bağlandı: ${l.t}.`); P.loans = P.loans.filter(l => l.left > 0); }
   if (P.age >= 63 && !P.job && P.flags.teqaud) P.money += 4200;
   if (P.flags.military_pension != null && !P.job) P.money += 9000;
   if (P.money < -5000 && !P.flags.borc) { P.flags.borc = P.age; }
@@ -384,15 +390,15 @@ function lifeSummary() {
 
 // ---------- activities (3 per year) ----------
 const ACTIONS = [
-  { id: "oxu", t: "Dərs oxu / kitab oxu", icon: "📖", min: 6, fx: () => ({ smarts: rnd(2, 5), happy: -1 }), r: () => pick(["Saatlarla oxudun, beynin işləyir.", "Yeni bir kitab bitirdin.", "Riyaziyyat məsələləri artıq asan gəlir."]), after: () => { P.flags["oxudu" + P.age] = 1; } },
-  { id: "idman", t: "İdmanla məşğul ol", icon: "🏃", min: 6, fx: () => ({ fitness: rnd(3, 6), health: rnd(1, 3), happy: 1 }), r: () => pick(["Həyətdə top qovdun, tərlədin.", "Qaçışa çıxdın, nəfəsin açıldı.", "Zalda yaxşı məşq etdin."]), after: () => { if (P.age <= 17) P.tal.sport = clamp(P.tal.sport + 1); } },
-  { id: "musiqi", t: "Musiqi ilə məşğul ol", icon: "🎸", min: 7, fx: () => ({ happy: 3 }), r: () => P.tal.music > 65 ? "Müəllim deyir ki, səsin çox gözəldir!" : pick(["Gitarada yeni akkord öyrəndin.", "Mahnı oxudun, qonşular döyməyə başladı 😅", "Sintezatorda çalmağı öyrənirsən."]), after: () => { P.tal.music = clamp(P.tal.music + 2); } },
-  { id: "dost", t: "Dostlarla vaxt keçir", icon: "🧑‍🤝‍🧑", min: 6, fx: () => ({ happy: rnd(4, 8) }), r: () => person("dost") ? `${who("dost")} ilə gəzdiniz, çox güldünüz.` : "Həyətdə uşaqlarla oynadın.", after: () => { relAdd("dost", 8); if (!person("dost") && chance(0.6)) { const d = addPerson("dost", P.g, P.age + rnd(-1, 1)); log(`🤝 Yeni dost tapdı: ${d.name}.`); } } },
-  { id: "aile", t: "Ailə ilə vaxt keçir", icon: "🏡", min: 5, fx: () => ({ happy: 3 }), r: () => pick(["Ailəlikcə çay süfrəsi arxasında oturdunuz.", "Nənəgilə qonaq getdiniz.", "Atanla nərd oynadın.", "Anana mətbəxdə kömək etdin."]), after: () => { relAdd("ana", 6); relAdd("ata", 6); relAdd("qardaş", 4); relAdd("bacı", 4); relAdd("həyat yoldaşı", 8); relAdd("uşaq", 8); } },
+  { id: "oxu", t: () => P.age < 18 ? "Dərs oxu" : "Kitab oxu", icon: "📖", min: 6, max: 45, fx: () => ({ smarts: rnd(2, 5), happy: -1 }), r: () => pick(["Saatlarla oxudun, beynin işləyir.", "Yeni bir kitab bitirdin.", "Riyaziyyat məsələləri artıq asan gəlir."]), after: () => { P.flags["oxudu" + P.age] = 1; } },
+  { id: "idman", t: "İdmanla məşğul ol", icon: "🏃", min: 6, max: 25, fx: () => ({ fitness: rnd(3, 6), health: rnd(1, 3), happy: 1 }), r: () => pick(["Həyətdə top qovdun, tərlədin.", "Qaçışa çıxdın, nəfəsin açıldı.", "Zalda yaxşı məşq etdin."]), after: () => { if (P.age <= 17) P.tal.sport = clamp(P.tal.sport + 1); } },
+  { id: "musiqi", t: "Musiqi ilə məşğul ol", icon: "🎸", min: 7, max: 35, fx: () => ({ happy: 3 }), r: () => P.tal.music > 65 ? "Müəllim deyir ki, səsin çox gözəldir!" : pick(["Gitarada yeni akkord öyrəndin.", "Mahnı oxudun, qonşular döyməyə başladı 😅", "Sintezatorda çalmağı öyrənirsən."]), after: () => { P.tal.music = clamp(P.tal.music + 2); } },
+  { id: "dost", t: "Dostlarla vaxt keçir", icon: "🧑‍🤝‍🧑", min: 6, max: 25, fx: () => ({ happy: rnd(4, 8) }), r: () => person("dost") ? `${who("dost")} ilə gəzdiniz, çox güldünüz.` : "Həyətdə uşaqlarla oynadın.", after: () => { relAdd("dost", 8); if (!person("dost") && chance(0.6)) { const d = addPerson("dost", P.g, P.age + rnd(-1, 1)); log(`🤝 Yeni dost tapdı: ${d.name}.`); } } },
+  { id: "aile", t: "Ailə ilə vaxt keçir", icon: "🏡", min: 5, max: 25, fx: () => ({ happy: 3 }), r: () => pick(["Ailəlikcə çay süfrəsi arxasında oturdunuz.", "Nənəgilə qonaq getdiniz.", "Atanla nərd oynadın.", "Anana mətbəxdə kömək etdin."]), after: () => { relAdd("ana", 6); relAdd("ata", 6); relAdd("qardaş", 4); relAdd("bacı", 4); relAdd("həyat yoldaşı", 8); relAdd("uşaq", 8); } },
   { id: "aktyor", t: "Teatr dərnəyinə get", icon: "🎭", min: 8, max: 25, fx: () => ({ happy: 2, looks: 1 }), r: () => P.tal.acting > 65 ? "Rejissor deyir ki, səhnədə doğulmusan!" : "Rol məşq etdin, sözləri unutdun 😅", after: () => { P.tal.acting = clamp(P.tal.acting + 2); } },
-  { id: "kod", t: "Proqramlaşdırma öyrən", icon: "⌨️", min: 11, fx: () => ({ smarts: rnd(2, 4) }), r: () => pick(["İlk oyununu yazdın!", "Bir saytı sıfırdan qurdun.", "Kod işləmədi, 3 saat xəta axtardın 😵"]), after: () => { P.flags.kodSaat = (P.flags.kodSaat || 0) + 1; if (P.flags.kodSaat >= 4 && P.st.smarts > 55) P.flags.kodYazir = P.age; } },
+  { id: "kod", t: "Proqramlaşdırma öyrən", icon: "⌨️", min: 11, max: 40, fx: () => ({ smarts: rnd(2, 4) }), r: () => pick(["İlk oyununu yazdın!", "Bir saytı sıfırdan qurdun.", "Kod işləmədi, 3 saat xəta axtardın 😵"]), after: () => { P.flags.kodSaat = (P.flags.kodSaat || 0) + 1; if (P.flags.kodSaat >= 4 && P.st.smarts > 55) P.flags.kodYazir = P.age; } },
   { id: "gorunus", t: "Özünə qulluq et", icon: "💅", min: 13, cost: 50, fx: () => ({ looks: rnd(2, 4), happy: 2 }), r: () => pick(["Bərbərə getdin, yeni görkəm!", "Yeni paltar aldın.", "Dəri baxımı etdin, parıldayırsan."]) },
-  { id: "hekim", t: "Həkimə get", icon: "🏥", min: 5, cost: 60, fx: () => ({ health: rnd(5, 12) }), r: () => P.st.health < 40 ? "Həkim müalicə yazdı, xeyli yaxşılaşdın." : "Müayinə oldun, hər şey qaydasındadır." },
+  { id: "hekim", t: "Həkimə get", icon: "🏥", min: 5, max: 45, cost: 60, fx: () => ({ health: rnd(5, 12) }), r: () => P.st.health < 40 ? "Həkim müalicə yazdı, xeyli yaxşılaşdın." : "Müayinə oldun, hər şey qaydasındadır." },
   { id: "post", t: "Pıçıltı-da paylaş", icon: "📱", min: 12, special: "post" },
   { id: "is", t: "İş axtar", icon: "🔎", min: 16, special: "job" },
   { id: "sevgi", t: "Sevgili axtar", icon: "💘", min: 16, special: "love", if: () => !person("sevgili") && !person("həyat yoldaşı") },
@@ -401,7 +407,28 @@ const ACTIONS = [
   { id: "isde", t: () => CAREERS[P.job.id].work || "İşdə çox çalış", icon: "⏱️", min: 16, if: () => !!P.job && !P.job.susp, fx: () => ({ happy: -2, health: -1 }),
     r: () => ({ futbolcu: "Hamı gedəndən sonra da meydanda qaldın, cərimə zərbələri vurdun. Məşqçi gördü.", mugenni: "Səhərə qədər studiyada yeni mahnı yazdın.", hekim: "İki növbə ardıcıl. Yorğunsan, amma xəstələr səni tanıyır." }[P.job.id] || "Gec saatlara qədər işlədin. Rəhbər bunu gördü."), after: () => { P.job.perf = clamp(P.job.perf + rnd(8, 15)); P.job.boss = clamp((P.job.boss || 50) + 2); } },
   { id: "seyahet", t: "Səyahətə çıx", icon: "✈️", min: 18, cost: 1500, fx: () => ({ happy: rnd(8, 14) }), r: () => { const c = pick(["Türkiyəyə", "Gürcüstana", "Dubaya", "İtaliyaya", "Misirə", "Fransaya", "Qəbələyə", "Şəkiyə"]); P.stats.countries++; return `${c} səyahət etdin, möhtəşəm idi!`; } },
-  { id: "al", t: "Maşın / ev al", icon: "🔑", min: 18, special: "shop" },
+  { id: "al", t: "Alış-veriş: əşya, maşın, ev", icon: "🔑", min: 18, special: "shop" },
+  // ---- adulthood (26+): family, home, work, community
+  { id: "q_valideyn", t: "Valideynlərini ziyarət et", icon: "🏘️", min: 26, if: () => !!(person("ana") || person("ata")), fx: () => ({ happy: 4 }), r: () => pick([`Ananın dolması, atanın köhnə hekayələri. Ev hələ də uşaqlığın kimi qoxuyur.`, "Atanla bağda alma ağaclarını budadınız.", "Anan yenə “arıqlamısan” dedi və bir çanta yemək qoydu."]), after: () => { relAdd("ana", 8); relAdd("ata", 8); } },
+  { id: "q_piknik", t: "Ailəlikcə təbiətə çıx", icon: "🧺", min: 26, cost: 150, if: () => !!(person("həyat yoldaşı") || person("uşaq")), fx: () => ({ happy: rnd(6, 10) }), r: () => `${pick(["Quba meşəsində", "Qəbələdə göl kənarında", "Şamaxının dağlarında", "Nabranda dəniz kənarında"])} kabab, samovar, uşaqların səsi.`, after: () => { relAdd("həyat yoldaşı", 7); relAdd("uşaq", 7); } },
+  { id: "q_usaq_oyna", t: "Övladınla oyna", icon: "🧸", min: 20, if: () => people("uşaq").some(k => k.age < 12), fx: () => ({ happy: rnd(5, 9) }), r: () => { const k = people("uşaq").filter(x => x.age < 12).sort(() => R() - .5)[0]; return `${k.name} ilə ${pick(["legodan qala tikdiniz", "həyətdə top oynadınız", "yastıq davası etdiniz", "rəsm çəkdiniz"])}. Gülüşü hələ də qulağındadır.`; }, after: () => relAdd("uşaq", 8) },
+  { id: "q_usaq_ders", t: "Övladının dərsinə kömək et", icon: "✏️", min: 25, if: () => people("uşaq").some(k => k.age >= 7 && k.age <= 17), fx: () => ({ happy: 1 }), r: () => { const k = people("uşaq").find(x => x.age >= 7 && x.age <= 17); return `${k.name} ilə riyaziyyat məsələsini birlikdə həll etdiniz. “Sən hər şeyi bilirsən!” — dedi.`; }, after: () => { relAdd("uşaq", 6); P.tr.family = clamp(P.tr.family + 1); } },
+  { id: "q_temir", t: "Evdə təmir et", icon: "🛠️", min: 22, cost: 2000, if: () => P.assets.some(a => a.home), fx: () => ({ happy: 6 }), r: () => "Yeni mətbəx, rənglənmiş divarlar. Ev təzələndi, qiyməti də artdı.", after: () => { const a = P.assets.find(x => x.home); a.value = Math.round(a.value * 1.06); } },
+  { id: "q_kurs", t: "İxtisasartırma kursuna get", icon: "🎓", min: 22, cost: 300, if: () => !!P.job && !P.job.susp, fx: () => ({ smarts: rnd(2, 4) }), r: () => "Həftəsonları kurs, sonda sertifikat. Rəhbər bunu qeyd etdi.", after: () => { P.job.perf = clamp(P.job.perf + rnd(5, 10)); } },
+  { id: "q_futbol", t: "Şənbə günü dostlarla futbol", icon: "⚽", min: 26, max: 55, fx: () => ({ fitness: rnd(2, 5), happy: rnd(3, 6) }), r: () => pick(["Mini-meydanda iki saat. Qol vurdun, sonra ayağın ağrıdı 😅", "Uduzan komanda çay pulunu ödədi. Siz uddunuz!", "Köhnə dostlar, eyni zarafatlar."]), after: () => relAdd("dost", 6) },
+  { id: "q_zal", t: "İdman zalına get", icon: "🏋️", min: 26, max: 65, cost: 40, fx: () => ({ fitness: rnd(3, 5), health: rnd(1, 3) }), r: () => "Həftədə üç dəfə zal. Bel ağrıların azaldı." },
+  { id: "q_qonaq", t: "Evə qonaq çağır", icon: "🍲", min: 26, cost: 100, fx: () => ({ happy: rnd(4, 7) }), r: () => pick(["Plov, dolma, gecə yarısına qədər söhbət.", "Qonşular da qoşuldu, süfrə uzandıqca uzandı.", "Uşaqlıq dostların gəldi, köhnə şəkillərə baxdınız."]), after: () => { relAdd("dost", 6); relAdd("həyat yoldaşı", 3); } },
+  { id: "q_xeyriyye", t: "Xeyriyyəyə ianə et", icon: "🤲", min: 22, cost: 200, fx: () => ({ happy: 5 }), r: () => pick(["Uşaq evinə qış paltarları aldın.", "Xəstə uşağın müalicəsinə kömək etdin.", "Kənd məktəbinə kitab göndərdin."]), after: () => { P.tr.empathy = clamp(P.tr.empathy + 2); } },
+  // ---- 46+
+  { id: "q_muayine", t: "Tam tibbi müayinədən keç", icon: "🩺", min: 46, cost: 150, fx: () => ({ health: rnd(5, 10) }), r: () => P.st.health < 50 ? "Həkim təzyiq dərmanı yazdı və rejim verdi." : "Analizlər yaxşıdır. Həkim gülümsədi: “Belə davam edin.”" },
+  { id: "q_kurort", t: "Müalicəvi istirahət (Naftalan / Qalaaltı)", icon: "♨️", min: 46, cost: 800, fx: () => ({ health: rnd(6, 10), happy: rnd(4, 7) }), r: () => pick(["Naftalanda on gün: oynaqların ağrısı azaldı.", "Qalaaltının suyu və meşə havası. Yuxun düzəldi.", "İstisu sanatoriyasında dincəldin."]) },
+  { id: "q_bag", t: "Bağda işlə", icon: "🌳", min: 46, if: () => P.assets.some(a => ["torpaq", "bag"].includes(a.kind)), fx: () => ({ health: 2, happy: rnd(4, 7) }), r: () => pick(["Pomidor və bibər əkdin. Torpağın qoxusu ürəyini açdı.", "Üzüm tənəyini qaydaya saldın.", "Bağda çay içib quşlara qulaq asdın."]) },
+  { id: "q_neve", t: "Nəvələrlə vaxt keçir", icon: "👶", min: 40, if: () => people("nəvə").length > 0, fx: () => ({ happy: rnd(7, 11) }), r: () => `${pick(people("nəvə")).name} ilə parkda göyərçinlərə yem verdiniz.`, after: () => relAdd("nəvə", 8) },
+  { id: "q_mentor", t: "Gənclərə məsləhət ver", icon: "🧑‍🏫", min: 50, if: () => !!P.job, fx: () => ({ happy: 4 }), r: () => "Gənc həmkarına təcrübəni danışdın. O, qeyd dəftərçəsinə yazırdı.", after: () => { P.tr.social = clamp(P.tr.social + 2); if (P.job) P.job.perf = clamp(P.job.perf + 4); } },
+  // ---- 61+
+  { id: "q_nerd", t: "Parkda nərd və şahmat", icon: "🎲", min: 58, fx: () => ({ happy: rnd(4, 7), smarts: 1 }), r: () => pick(["“Şeşbeş!” — qonşu Rafiq yenə uduzdu.", "Şahmatda gənc bir oğlana məğlub oldun, sonra ona dərs verdin.", "Parkın köşkündə çay, nərd, siyasət söhbəti."]) },
+  { id: "q_gezinti", t: "Səhər gəzintisi", icon: "🚶", min: 61, fx: () => ({ health: rnd(2, 4), happy: 2 }), r: () => "Bulvarda yavaş-yavaş gəzinti. Dəniz həmişəki kimidir." },
+  { id: "q_xatire", t: "Xatirələrini yaz", icon: "📔", min: 60, fx: () => ({ happy: rnd(4, 8) }), r: () => `Dəftərə yazırsan: “${P.age - rnd(30, 50)} yaşım olanda…” Nəvələr bir gün oxuyacaq.`, after: () => { P.flags.memoir = (P.flags.memoir || 0) + 1; } },
   // during military service only these are available
   { id: "a_telim", army: true, t: "Ağır təlim keç", icon: "🪖", min: 18, fx: () => ({ fitness: rnd(4, 7), health: 1, happy: -1 }), r: () => pick(["Tam döyüş sursatı ilə 10 km yürüş. Ayaqların qan içində, amma bitirdin.", "Atıcılıq təlimində hədəfi vurdun. Komandir başını tərpətdi.", "Səngər qazdınız, yağış altında. Bu günü heç vaxt unutmayacaqsan."]) },
   { id: "a_mektub", army: true, t: "Evə məktub yaz", icon: "✉️", min: 18, fx: () => ({ happy: 3 }), r: () => person("ana") ? `Anana məktub yazdın: “Hər şey yaxşıdır, narahat olma.” Cavabında yazdı ki, hər gecə sənin üçün dua edir.` : "Evə məktub yazdın. Cavab gələndə çadırda üç dəfə oxudun.", after: () => { relAdd("ana", 5); relAdd("ata", 4); relAdd("sevgili", 6); relAdd("həyat yoldaşı", 6); } },
@@ -410,12 +437,38 @@ const ACTIONS = [
   { id: "a_mezuniyyet", army: true, t: "Məzuniyyət istə", icon: "🏡", min: 18, if: () => !!P.army && !P.army.leave, fx: () => ({}), r: () => { P.army.leave = 1; if (chance(0.5)) { apply({ happy: 10 }); relAdd("ana", 10); relAdd("ata", 8); relAdd("sevgili", 10); relAdd("həyat yoldaşı", 10); return "10 günlük məzuniyyət verdilər! Qapını açanda anan əlindəki boşqabı yerə saldı."; } apply({ happy: -4 }); return "Komandir rədd etdi: “Hələ tezdir.” Bu dəfə alınmadı."; } },
   { id: "meditasiya", t: "Dincəl", icon: "🧘", min: 5, fx: () => ({ happy: rnd(3, 6), health: 1 }), r: () => pick(["Bütün günü yatdın.", "Dəniz kənarında oturdun.", "Serial izlədin, rahatladın."]) }
 ];
+// shop: home items marked home:true remove rent; kind drives yearly effects (moneyTick)
 const SHOP = [
-  { id: "m1", type: "maşın", t: "İşlənmiş Lada (07)", price: 4500 }, { id: "m2", type: "maşın", t: "Toyota Corolla", price: 28000 },
-  { id: "m3", type: "maşın", t: "Mercedes E-klass", price: 75000 }, { id: "m4", type: "maşın", t: "Porsche 911", price: 260000 },
-  { id: "e1", type: "ev", t: "Köhnə tikili, 2 otaq (Sumqayıt)", price: 55000 }, { id: "e2", type: "ev", t: "Yeni tikili, 3 otaq (Bakı)", price: 140000 },
-  { id: "e3", type: "ev", t: "Bağ evi (Mərdəkan)", price: 220000 }, { id: "e4", type: "ev", t: "Villa (Novxanı)", price: 900000 }
+  { id: "i1", cat: "esya", kind: "esya", t: "Smartfon", price: 800, happy: 4 }, { id: "i2", cat: "esya", kind: "esya", t: "Noutbuk", price: 1500, happy: 4, smarts: 2 },
+  { id: "i3", cat: "esya", kind: "esya", t: "Yeni mebel dəsti", price: 4000, happy: 6 }, { id: "i4", cat: "esya", kind: "esya", t: "Qızıl bilərzik (hədiyyə)", price: 2500, happy: 5, rel: "həyat yoldaşı" },
+  { id: "m1", cat: "masin", kind: "masin", type: "maşın", t: "İşlənmiş Lada (07)", price: 4500 }, { id: "m5", cat: "masin", kind: "masin", type: "maşın", t: "İşlənmiş Opel Astra", price: 12000 },
+  { id: "m2", cat: "masin", kind: "masin", type: "maşın", t: "Toyota Corolla", price: 28000 }, { id: "m6", cat: "masin", kind: "masin", type: "maşın", t: "Hyundai Tucson", price: 42000 },
+  { id: "m3", cat: "masin", kind: "masin", type: "maşın", t: "Mercedes E-klass", price: 75000 }, { id: "m4", cat: "masin", kind: "masin", type: "maşın", t: "Porsche 911", price: 260000 },
+  { id: "e5", cat: "menzil", kind: "menzil", type: "ev", home: true, t: "Rayonda 2 otaqlı mənzil", price: 30000 }, { id: "e1", cat: "menzil", kind: "menzil", type: "ev", home: true, t: "Köhnə tikili, 2 otaq (Sumqayıt)", price: 55000 },
+  { id: "e6", cat: "menzil", kind: "menzil", type: "ev", home: true, t: "Yeni tikili, 2 otaq (Gəncə)", price: 70000 }, { id: "e2", cat: "menzil", kind: "menzil", type: "ev", home: true, t: "Yeni tikili, 3 otaq (Bakı)", price: 140000 },
+  { id: "e7", cat: "menzil", kind: "heyet", type: "ev", home: true, t: "Həyət evi (Bakı kəndləri)", price: 160000 }, { id: "e3", cat: "menzil", kind: "bag", type: "ev", home: true, t: "Bağ evi (Mərdəkan)", price: 220000 },
+  { id: "e4", cat: "menzil", kind: "heyet", type: "ev", home: true, t: "Villa (Novxanı)", price: 900000 },
+  { id: "t1", cat: "torpaq", kind: "torpaq", type: "torpaq", t: "6 sot torpaq sahəsi (rayon)", price: 9000 }, { id: "t2", cat: "torpaq", kind: "torpaq", type: "torpaq", t: "10 sot torpaq (Abşeron)", price: 45000 },
+  { id: "b1", cat: "torpaq", kind: "magaza", type: "mağaza", t: "Kiçik mağaza (kirayə gəliri)", price: 80000 }, { id: "b2", cat: "torpaq", kind: "magaza", type: "mağaza", t: "Kommersiya obyekti (Bakı)", price: 250000 }
 ];
+const SHOP_CATS = { esya: "Əşyalar", masin: "Nəqliyyat", menzil: "Mənzil və ev", torpaq: "Torpaq və biznes" };
+const LOAN = { rate: 0.12, down: 0.2, years: { masin: 5, menzil: 15, torpaq: 10 } }; // simplified bank terms (game config)
+function annuity(principal, rate, years) { const r = rate; return Math.round(principal * r / (1 - Math.pow(1 + r, -years))); }
+// banks lend only if the yearly payment fits in 40% of the yearly salary
+function loanAffordable(it) { const yrs = LOAN.years[it.cat] || 10; return annuity(it.price * (1 - LOAN.down), LOAN.rate, yrs) <= salaryMonthly() * 12 * 0.4; }
+function canLoan() { return P.age >= 21 && !!P.job && !P.job.susp && !inPrison() && (P.loans || []).length < 3; }
+function buyItem(it, credit) {
+  const asset = { type: it.type || "əşya", kind: it.kind, home: !!it.home, t: it.t, value: it.price, since: P.age };
+  if (credit) {
+    const down = Math.round(it.price * LOAN.down), yrs = LOAN.years[it.cat] || 10;
+    P.money -= down;
+    (P.loans = P.loans || []).push({ t: it.t, left: it.price - down, yearly: annuity(it.price - down, LOAN.rate, yrs), years: yrs, since: P.age });
+  } else P.money -= it.price;
+  if (it.kind !== "esya") P.assets.push(asset);
+  const ch = apply({ happy: it.happy || (it.home ? 15 : it.kind === "masin" ? 8 : 6), smarts: it.smarts || 0 });
+  if (it.rel) relAdd(it.rel, 10);
+  return ch;
+}
 
 // ---------- save / load (js/db.js) ----------
 function save(now) { if (P && typeof DB !== "undefined") DB.saveLife(P, now); }

@@ -327,10 +327,34 @@ function showNextEvent() {
     recordChoice(e.id, i, res.outcome, res.text);
     if (res.text) log(`${e.icon || "•"} ${res.text}`);
     save();
-    s.el.innerHTML = `<div class="big" aria-hidden="true">${e.icon || "✨"}</div><p class="q">${esc(res.text || "Həyat davam edir.")}</p><div class="fx">${fxChips(res.changes)}</div><button class="btn close" id="ok">${P.yearEvents.length ? "Növbəti →" : "Davam"}</button>`;
+    const showResult = () => { s.el.innerHTML = `<div class="big" aria-hidden="true">${e.icon || "✨"}</div><p class="q">${esc(res.text || "Həyat davam edir.")}</p><div class="fx">${fxChips(res.changes)}</div><button class="btn close" id="ok">${P.yearEvents.length ? "Növbəti →" : "Davam"}</button>`;
     s.el.querySelector("#ok").onclick = () => { s.close(); if (!P.alive) return renderEnd(); renderGame(); };
-    s.el.querySelector("#ok").focus();
+    s.el.querySelector("#ok").focus(); };
+    if (P.pendingName) nameForm(s.el, (old, name) => { if (old) res.text = res.text.split(old).join(name); showResult(); });
+    else showResult();
   });
+}
+
+// ---------- naming a newborn ----------
+function nameForm(el, done) {
+  const p = P.people.find(x => x.id === P.pendingName);
+  if (!p) { delete P.pendingName; return done(null, null); }
+  const sugg = NAMES[p.g].filter(n => n !== p.name).sort(() => Math.random() - .5).slice(0, 4);
+  el.innerHTML = `<div class="big">👶</div><p class="q">${p.g === "k" ? "Oğlunuz" : "Qızınız"} dünyaya gəldi! Adını nə qoyursunuz?</p>
+    <input type="text" id="babyName" maxlength="20" value="${esc(p.name)}" autocomplete="off" style="width:100%;border:2px solid var(--line);background:var(--bg);color:var(--fg);border-radius:14px;padding:12px 14px;font:800 18px var(--f-body);text-align:center">
+    <div class="chips" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0 14px">${sugg.map(n => `<button type="button" class="btn ghost" style="padding:6px 12px" data-n="${esc(n)}">${esc(n)}</button>`).join("")}</div>
+    <button class="btn close" id="nameOk">Adı qoy</button>`;
+  const inp = el.querySelector("#babyName");
+  el.querySelectorAll("[data-n]").forEach(b => b.onclick = () => { inp.value = b.dataset.n; });
+  el.querySelector("#nameOk").onclick = () => {
+    const raw = inp.value.trim().replace(/\s+/g, " ");
+    if (!raw) { inp.focus(); return; }
+    const name = raw[0].toLocaleUpperCase("az") + raw.slice(1), old = p.name;
+    p.name = name; delete P.pendingName;
+    for (const y of P.log) y.items = y.items.map(t => t.split(old).join(name));
+    save(); done(old, name);
+  };
+  inp.focus();
 }
 
 // ---------- legend ----------
@@ -446,23 +470,43 @@ function jobPicker() {
     s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
   });
 }
+let shopCat = "esya";
 function shopPicker() {
-  const own = P.assets;
+  const loanOk = canLoan();
+  const icon = it => ({ esya: "🛍️", masin: "🚗", menzil: "🏠", heyet: "🏡", bag: "🌳", torpaq: "🌾", magaza: "🏪" }[it.kind] || "📦");
   const s = sheet(`<div class="big">🔑</div><p class="q">Alış-veriş · Pulun: ${fmtMoney(P.money)}</p>
-    <div class="choices">${SHOP.map(it => `<button data-id="${it.id}" ${P.money < it.price ? "disabled style='opacity:.45'" : ""}>${it.type === "ev" ? "🏠" : "🚗"} ${esc(it.t)} · ${fmtMoney(it.price)}</button>`).join("")}</div>
-    ${own.length ? `<p class="sec-h">Əmlakın</p><div class="choices">${own.map((a, i) => `<button data-sell="${i}">💱 Sat: ${esc(a.t)} · ${fmtMoney(a.value)}</button>`).join("")}</div>` : ""}
+    <div class="seg" id="shopCats" style="display:flex;flex-wrap:wrap;margin-bottom:10px">${Object.entries(SHOP_CATS).map(([k, t]) => `<button data-c="${k}" aria-pressed="${k === shopCat}" style="flex:1">${t}</button>`).join("")}</div>
+    <div class="choices" id="shopList"></div>
+    ${P.assets.length ? `<p class="sec-h">Əmlakın</p><div class="choices">${P.assets.map((a, i) => `<button data-sell="${i}">💱 Sat: ${esc(a.t)} · ${fmtMoney(a.value)}</button>`).join("")}</div>` : ""}
+    ${(P.loans || []).length ? `<p class="small muted">Kreditlər: ${P.loans.map(l => `${esc(l.t)} — qalıq ${fmtMoney(l.left)}, ildə ${fmtMoney(l.yearly)}`).join("; ")}</p>` : ""}
+    <p class="small muted">Kredit: ${Math.round(LOAN.down * 100)}% ilkin ödəniş, illik ${Math.round(LOAN.rate * 100)}%, illik ödəniş maaşın 40%-dən çox ola bilməz (sadələşdirilmiş bank şərtləri). ${loanOk ? "" : "Kredit üçün 21+ yaş və işin olmalıdır."}</p>
     <button class="btn ghost close">Bağla</button>`);
   s.el.querySelector(".close").onclick = s.close;
-  s.el.querySelectorAll("[data-id]").forEach(b => b.onclick = () => {
-    const it = SHOP.find(x => x.id === b.dataset.id); if (P.money < it.price || !useAct()) return;
-    P.money -= it.price; P.assets.push({ type: it.type, t: it.t, value: it.price }); const ch = apply({ happy: it.type === "ev" ? 15 : 8 });
-    log(`${it.type === "ev" ? "🏠" : "🚗"} ${it.t} aldı!`); save();
-    s.el.innerHTML = `<div class="big">${it.type === "ev" ? "🏠" : "🚗"}</div><p class="q">Təbriklər! ${esc(it.t)} artıq sənindir.</p><div class="fx">${fxChips([["money", -it.price], ...ch])}</div><button class="btn close">Yaxşı</button>`;
+  const draw = () => {
+    s.el.querySelectorAll("#shopCats button").forEach(b => b.setAttribute("aria-pressed", b.dataset.c === shopCat));
+    s.el.querySelector("#shopList").innerHTML = SHOP.filter(it => it.cat === shopCat).map(it => {
+      const cash = P.money >= it.price, creditable = it.cat !== "esya" && it.price >= 5000 && loanOk && P.money >= it.price * LOAN.down;
+      const credit = creditable && loanAffordable(it), yearly = annuity(it.price * (1 - LOAN.down), LOAN.rate, LOAN.years[it.cat] || 10);
+      return `<div style="display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center"><button data-id="${it.id}" ${cash ? "" : "disabled style='opacity:.45'"}>${icon(it)} ${esc(it.t)} · ${fmtMoney(it.price)}</button>${credit ? `<button data-credit="${it.id}" class="btn ghost" style="padding:10px;font-size:12.5px">Kreditlə<br>${fmtMoney(Math.round(it.price * LOAN.down))}</button>` : creditable ? `<span class="small muted" style="max-width:90px;text-align:center">Gəlir az: ildə ${fmtMoney(yearly)} ödəniş</span>` : ""}</div>`;
+    }).join("");
+    s.el.querySelectorAll("[data-id]").forEach(b => b.onclick = () => buy(b.dataset.id, false));
+    s.el.querySelectorAll("[data-credit]").forEach(b => b.onclick = () => buy(b.dataset.credit, true));
+  };
+  const buy = (id, credit) => {
+    const it = SHOP.find(x => x.id === id); if (!credit && P.money < it.price) return; if (!useAct()) return;
+    const before = P.money, ch = buyItem(it, credit);
+    const loan = credit ? P.loans[P.loans.length - 1] : null;
+    log(`${icon(it)} ${it.t} aldı${credit ? " (kreditlə)" : ""}!`); save();
+    s.el.innerHTML = `<div class="big">${icon(it)}</div><p class="q">Təbriklər! ${esc(it.t)} artıq sənindir.${loan ? ` Kredit: ${loan.years} il, ildə ${fmtMoney(loan.yearly)}.` : ""}</p><div class="fx">${fxChips([["money", P.money - before], ...ch])}</div><button class="btn close">Yaxşı</button>`;
     s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
-  });
+  };
+  s.el.querySelectorAll("#shopCats button").forEach(b => b.onclick = () => { shopCat = b.dataset.c; draw(); });
   s.el.querySelectorAll("[data-sell]").forEach(b => b.onclick = () => {
-    const a = P.assets[+b.dataset.sell]; P.assets.splice(+b.dataset.sell, 1); P.money += a.value; log(`💱 ${a.t} satıldı: ${fmtMoney(a.value)}.`); save(); s.close(); renderGame(); toast("Satıldı: +" + fmtMoney(a.value));
+    const a = P.assets[+b.dataset.sell]; P.assets.splice(+b.dataset.sell, 1); P.money += a.value;
+    const li = (P.loans || []).findIndex(l => l.t === a.t); if (li >= 0) { P.money -= P.loans[li].left; log(`🏦 Satışdan kredit qalığı ödəndi: ${fmtMoney(P.loans[li].left)}.`); P.loans.splice(li, 1); }
+    log(`💱 ${a.t} satıldı: ${fmtMoney(a.value)}.`); save(); s.close(); renderGame(); toast("Satıldı: +" + fmtMoney(a.value));
   });
+  draw();
 }
 function findLove() {
   if (!useAct()) return;
@@ -522,10 +566,11 @@ function personSheet(p) {
       if (ok) { const m = Math.max(1, Math.min(max, Math.round(rnd(1, max) * (0.6 + means / 10)))); P.money += m; ch = [["money", m]]; text = max > 10 ? `${p.name} gizlicə cibinə ${m} ₼ qoydu: “Anana demə.”` : `${p.name} sənə ${m} ₼ verdi. “Bax ha, dondurmaya xərcləmə!”`; }
       else { text = max > 10 ? `${p.name} başını sığalladı: “Pensiyam gələndə, bala. Get, sənə çay süzüm.”` : means <= 1 ? `${p.name} köks ötürdü: “Bu ay pul çox azdır, bala.”` : `${p.name}: “Pul ağacda bitmir!”`; }
     }
-    if (id === "baby") { if (chance(.6)) { const g = pick(["k", "q"]); const k = addPerson("uşaq", g, 0); P.stats.kids++; ch = apply({ happy: 15, money: -1500 }); text = `${g === "k" ? "Oğlunuz" : "Qızınız"} oldu! Adını ${k.name} qoydunuz 🍼`; } else { text = "Bu il alınmadı. Səbr…"; } }
+    if (id === "baby") { if (chance(.6)) { const g = pick(["k", "q"]); const k = addPerson("uşaq", g, 0, { last: surname(P.fam, g) }); P.stats.kids++; P.pendingName = k.id; ch = apply({ happy: 15, money: -1500 }); text = `${g === "k" ? "Oğlunuz" : "Qızınız"} oldu! Adını ${k.name} qoydunuz 🍼`; } else { text = "Bu il alınmadı. Səbr…"; } }
     log("💬 " + text); save();
-    s.el.innerHTML = `<div class="big">${ROLE_ICON[p.role] || "🙂"}</div><p class="q">${esc(text)}</p><div class="fx">${fxChips(ch)}</div><button class="btn close">Yaxşı</button>`;
-    s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
+    const show = () => { s.el.innerHTML = `<div class="big">${ROLE_ICON[p.role] || "🙂"}</div><p class="q">${esc(text)}</p><div class="fx">${fxChips(ch)}</div><button class="btn close">Yaxşı</button>`;
+      s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); }; };
+    if (P.pendingName) nameForm(s.el, (old, name) => { if (old) text = text.split(old).join(name); show(); }); else show();
   });
 }
 
@@ -551,7 +596,8 @@ function panelMe() {
       <dt>Sürücülük</dt><dd>${P.flags.vesiqe && P.flags.vesiqe <= P.age ? "Var" : "Yoxdur"}</dd></dl></div>
     <p class="sec-h">Xarakter (qərarlarından formalaşır)</p><div class="card tal">${Object.entries(TRAITS).map(([k, t]) => `<div><span>${t}</span><span class="tbar" role="meter" aria-label="${t}" aria-valuenow="${P.tr[k]}" aria-valuemin="0" aria-valuemax="100"><i style="width:${P.tr[k]}%"></i></span></div>`).join("")}</div>
     ${P.age >= 8 ? `<p class="sec-h">İstedadlar (müəllimlərin fikrincə)</p><div class="card tal">${[["sport", "⚽ İdman"], ["music", "🎶 Musiqi"], ["acting", "🎭 Aktyorluq"], ["science", "🔬 Elm"], ["social", "🗣️ Ünsiyyət"]].map(([k, t]) => `<div><span>${t}</span><span class="stars" aria-label="${Math.round(P.tal[k] / 20)} ulduz">${stars(P.tal[k])}</span></div>`).join("")}</div>` : ""}
-    <p class="sec-h">Əmlak</p><div class="card">${P.assets.length ? P.assets.map(a => `<div>${{ ev: "🏠", "maşın": "🚗", depozit: "🏦", sehm: "📈", kiraye: "🏢" }[a.type] || "📦"} ${esc(a.t)} · <span class="muted">${fmtMoney(a.value)}</span></div>`).join("") : '<span class="muted">Hələ heç nə yoxdur.</span>'}</div>
+    <p class="sec-h">Əmlak</p><div class="card">${P.assets.length ? P.assets.map(a => `<div>${{ ev: "🏠", "maşın": "🚗", depozit: "🏦", sehm: "📈", kiraye: "🏢", torpaq: "🌾", "mağaza": "🏪" }[a.type] || "📦"} ${esc(a.t)} · <span class="muted">${fmtMoney(a.value)}</span></div>`).join("") : '<span class="muted">Hələ heç nə yoxdur.</span>'}</div>
+    ${(P.loans || []).length ? `<p class="sec-h">Kreditlər</p><div class="card small">${P.loans.map(l => `<div>🏦 ${esc(l.t)} — qalıq ${fmtMoney(l.left)}, ildə ${fmtMoney(l.yearly)}</div>`).join("")}</div>` : ""}
     ${(P.careerHist || []).length ? `<p class="sec-h">Karyera tarixçəsi</p><div class="card small">${P.careerHist.slice(-10).reverse().map(h => `<div style="padding:3px 0">${h.age} yaş · ${esc(h.text)}${h.sal ? ` <span class="muted">(${fmtMoney(h.sal)})</span>` : ""}</div>`).join("")}</div>` : ""}
     ${P.jobs.length ? `<p class="sec-h">Keçmiş işlər</p><div class="card">${P.jobs.map(j => `<div>${CAREERS[j.id].icon} ${esc(j.title)} <span class="muted small">(${j.from}–${j.to} yaş, ${esc(j.reason)})</span></div>`).join("")}</div>` : ""}
     <div style="display:grid;gap:8px;margin-top:18px"><button class="btn ghost" id="home">🏠 Əsas menyu</button><button class="btn ghost" id="quit" style="color:var(--bad)">Bu həyatı bitir</button></div>`;

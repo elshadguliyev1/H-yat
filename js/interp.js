@@ -88,7 +88,7 @@ const Interp = (() => {
       const p = addPerson(o.role, g, Math.max(0, age), o.last ? { last: surname(P.fam, g) } : {});
       if (o.npc_flag) { P.npcFlags = P.npcFlags || {}; P.npcFlags[o.npc_flag] = p.id; }
       ctx.vars.new = p.name; ctx.vars.new_g = g;
-      if (o.role === "uşaq") { P.stats.kids++; ctx.vars.child = g === "k" ? "Oğlunuz" : "Qızınız"; }
+      if (o.role === "uşaq") { P.stats.kids++; ctx.vars.child = g === "k" ? "Oğlunuz" : "Qızınız"; P.pendingName = p.id; } // the player names the baby
     },
     remove_role(o) { removeRole(o.role, o.note); },
     remove_if_low(o) { const p = person(o.role); if (p && p.rel < o.below) removeRole(o.role, o.note); },
