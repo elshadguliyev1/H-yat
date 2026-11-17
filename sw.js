@@ -1,6 +1,6 @@
 // Offline: app files network-first (so updates arrive), fonts cache-first.
-const CACHE = "heyat-v1";
-const FILES = ["./", "index.html", "engine.js", "events.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
+const CACHE = "heyat-v2";
+const FILES = ["./", "index.html", "engine.js", "js/core.js", "js/db.js", "js/interp.js", "data/rules.json", "data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", e => {

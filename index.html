@@ -121,6 +121,8 @@ nav.tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg) 
 .tal { display: grid; gap: 6px }
 .tal div { display: grid; grid-template-columns: 110px 1fr; gap: 8px; align-items: center; font-size: 13px }
 .stars { letter-spacing: 2px; color: var(--gold) }
+.tbar { display: block; height: 9px; border-radius: 99px; background: var(--surface-2); overflow: hidden }
+.tbar i { display: block; height: 100%; border-radius: 99px; background: var(--accent) }
 /* social */
 .prof { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: center }
 .prof .pic { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-size: 36px; background: linear-gradient(135deg, #ff9a7a, #d94f8b, #7c5cff); }
@@ -168,8 +170,10 @@ nav.tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg) 
 <body>
 <div id="app"></div>
 <div class="toast" id="toast" hidden></div>
+<script src="js/core.js"></script>
+<script src="js/db.js"></script>
 <script src="engine.js"></script>
-<script src="events.js"></script>
+<script src="js/interp.js"></script>
 <script>
 "use strict";
 const $ = s => document.querySelector(s);
@@ -188,23 +192,30 @@ function avatar(p = P) {
   if (p.age < 3) return "👶"; if (p.age < 13) return k ? "👦" : "👧"; if (p.age < 18) return k ? "🧑" : "👧";
   if (p.age < 40) return k ? "👨" : "👩"; if (p.age < 65) return k ? "🧔" : "👩‍🦱"; return k ? "👴" : "👵";
 }
-const ROLE_ICON = { ana: "👩", ata: "👨", "qardaş": "👦", "bacı": "👧", dost: "🤝", sevgili: "💕", "həyat yoldaşı": "💍", "uşaq": "🧒", "müəllim": "🧑‍🏫", "məşqçi": "🧢", "nəvə": "👶" };
+const ROLE_ICON = { ana: "👩", ata: "👨", "qardaş": "👦", "bacı": "👧", dost: "🤝", sevgili: "💕", "həyat yoldaşı": "💍", "uşaq": "🧒", "müəllim": "🧑‍🏫", "məşqçi": "🧢", "nəvə": "👶", "tanış": "🙂" };
 
 // ---------- start ----------
-function renderStart() {
-  const saved = load();
-  const lives = JSON.parse(localStorage.getItem(BEST_KEY) || "[]");
+const MAX_SLOTS = 5;
+async function renderStart() {
+  const all = await DB.listLives();
+  const active = all.filter(l => l.alive);
+  const arch = await DB.listArchive();
   app.innerHTML = `<section id="start" class="wrap"><div style="width:100%">
     <div class="logo"><span class="sun" aria-hidden="true">🌻</span><h1>Həyat, sən<br><em>nə qəribəsən</em></h1>
     <p class="muted">5 yaşından başla. Xəyal qur. Seçim et. Həyat isə öz bildiyini edəcək.</p></div>
     <div class="start-btns">
-      ${saved && saved.alive ? `<button class="btn" id="cont">Davam et · ${esc(saved.name)}, ${saved.age} yaş</button>` : ""}
-      <button class="btn ${saved && saved.alive ? "ghost" : ""}" id="new">Yeni həyat başlat</button>
+      ${active.map(l => `<button class="btn ${l === active[0] ? "" : "ghost"}" data-id="${esc(l.id)}">${l.g === "k" ? "👦" : "👧"} Davam et · ${esc(l.name)}, ${l.age} yaş</button>`).join("")}
+      <button class="btn ${active.length ? "ghost" : ""}" id="new">+ Yeni həyat başlat</button>
     </div>
-    ${lives.length ? `<div class="card lives"><h3 style="font-size:16px;margin-bottom:6px">Keçmiş həyatlar</h3>${lives.slice(0, 8).map(l => `<div class="life-row"><span class="e">${l.g === "k" ? "👴" : "👵"}</span><div><b>${esc(l.name)}</b> · ${l.age} yaş<br><span class="muted">Xəyal: ${esc(l.dream || "?")} → Oldu: ${esc(l.became)}</span></div></div>`).join("")}</div>` : ""}
+    ${active.length >= MAX_SLOTS ? `<p class="small muted" style="text-align:center">Eyni anda ən çox ${MAX_SLOTS} həyat saxlanılır.</p>` : ""}
+    ${arch.length ? `<div class="card lives"><h3 style="font-size:16px;margin-bottom:6px">Tamamlanmış həyatlar</h3>${arch.slice(0, 10).map(l => `<div class="life-row"><span class="e">${l.g === "k" ? "👴" : "👵"}</span><div><b>${esc(l.name)}</b> · ${l.age} yaş<br><span class="muted">Xəyal: ${esc(l.dream || "?")} → Oldu: ${esc(l.became)}</span></div></div>`).join("")}</div>` : ""}
+    ${DB.usingFallback ? `<p class="small muted" style="text-align:center">Brauzer verilənlər bazasına icazə vermədi: yaddaş məhdud rejimdədir.</p>` : ""}
   </div></section>`;
-  const c = $("#cont"); if (c) c.onclick = () => { load(); renderGame(); };
-  $("#new").onclick = () => { if (saved && saved.alive && !confirm("Hazırkı həyat silinəcək. Davam edək?")) return; renderCreate(); };
+  app.querySelectorAll("[data-id]").forEach(b => b.onclick = async () => { await loadLife(b.dataset.id); DB.setMeta("active", P.id); tab = "life"; renderGame(); });
+  $("#new").onclick = async () => {
+    if (active.length >= MAX_SLOTS) { const old = active[active.length - 1]; if (!confirm(`Yer yoxdur. Ən köhnə həyat (${old.name}, ${old.age} yaş) silinsin?`)) return; await DB.deleteLife(old.id); }
+    renderCreate();
+  };
 }
 
 function renderCreate() {
@@ -223,7 +234,7 @@ function renderCreate() {
   $("#gen").querySelectorAll("button").forEach(b => b.onclick = () => { g = b.dataset.g; $("#gen").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); $("#nm").placeholder = "Məs. " + pick(NAMES[g]); });
   $("#dr").querySelectorAll("button").forEach(b => b.onclick = () => { dream = b.dataset.d; $("#dr").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); upd(); });
   $("#back").onclick = renderStart;
-  $("#go").onclick = () => { const n = $("#nm").value.trim().replace(/\s+/g, " "); const name = n[0].toLocaleUpperCase("az") + n.slice(1); newLife(name, g, $("#city").value, dream); tab = "life"; renderGame(); };
+  $("#go").onclick = () => { const n = $("#nm").value.trim().replace(/\s+/g, " "); const name = n[0].toLocaleUpperCase("az") + n.slice(1); newLife(name, g, $("#city").value, dream); save(true); DB.setMeta("active", P.id); tab = "life"; renderGame(); };
 }
 
 // ---------- main game ----------
@@ -236,6 +247,7 @@ function statusLine() {
   if (e.stage === "bagca") return "Bağça";
   if (e.stage === "mekteb") return ord(e.grade) + " sinif şagirdi";
   if (e.stage === "uni") return "Tələbə · " + FACULTIES[e.fac].t;
+  if (e.stage === "magistr") return "Magistrant";
   if (P.flags.teqaud) return "Təqaüdçü";
   return P.age < 18 ? "Məzun" : "İşsiz";
 }
@@ -269,22 +281,6 @@ function nextYear() {
 }
 
 // ---------- events ----------
-function evalP(p) { return typeof p === "function" ? p(P) : p; }
-function resolve(c) {
-  let o = c;
-  if (c.odds) {
-    const ps = c.odds.map(x => Math.max(0, evalP(x.p)));
-    let roll = R();
-    if (ps.length === 2) { const p0 = clamp(ps[0], 0.03, 0.97) ; o = roll < p0 ? c.odds[0] : c.odds[1]; }
-    else { const s = ps.reduce((a, b) => a + b, 0); for (let i = 0; i < ps.length; i++) { roll -= ps[i] / s; if (roll <= 0 || i === ps.length - 1) { o = c.odds[i]; break; } } }
-  }
-  const fx = typeof o.fx === "function" ? o.fx(P) : o.fx;
-  const changes = apply(fx);
-  const extra = o.go ? o.go(P) : null;
-  if (c.fx && c !== o) changes.push(...apply(c.fx));
-  if (c.go && c !== o) { const x = c.go(P); if (x) return { text: [o.r, x].filter(Boolean).map(fill).join(" "), changes }; }
-  return { text: [o.r, extra].filter(Boolean).map(fill).join(" "), changes };
-}
 function fxChips(changes) {
   return changes.filter(([k, d]) => d).map(([k, d]) => { const v = k === "money" ? fmtMoney(d) : k === "followers" ? (d > 0 ? "+" : "") + fmtNum(d) : (d > 0 ? "+" : "") + d; return `<span class="${d > 0 ? "up" : "dn"}">${STAT_ICONS[k]} ${k === "money" && d > 0 ? "+" : ""}${v}</span>`; }).join("");
 }
@@ -295,20 +291,22 @@ function sheet(html) {
   return { el: m.firstChild, close };
 }
 function showNextEvent() {
-  const id = P.yearEvents[0];
-  const e = EVENTS.find(x => x.id === id);
+  const ev = P.yearEvents[0];
+  const e = Interp.byId(ev.id);
   if (!e || !eventOk(e)) { P.yearEvents.shift(); save(); return P.yearEvents.length ? showNextEvent() : renderGame(); } // situation changed earlier this year
-  const text = fill(typeof e.t === "function" ? e.t(P) : e.t);
-  const choices = (typeof e.ch === "function" ? e.ch(P) : e.ch || [{ t: "Davam" }]).filter(c => !c.if || c.if(P));
-  const s = sheet(`<div class="big" aria-hidden="true">${e.icon || "✨"}</div><div class="age-tag">${P.age} yaş</div><p class="q">${esc(text)}</p><div class="choices">${choices.map((c, i) => `<button data-i="${i}">${esc(fill(c.t))}</button>`).join("")}</div>`);
+  P.day = Math.max(P.day, ev.day); // the calendar moves to the event's date (never backwards)
+  const text = Interp.text(e.t);
+  const choices = Interp.choicesOf(e);
+  const s = sheet(`<div class="big" aria-hidden="true">${e.icon || "✨"}</div><div class="age-tag">${Cal.fmtMonth(P.day)} · ${P.age} yaş</div><p class="q">${esc(text)}</p><div class="choices">${choices.map((c, i) => `<button data-i="${i}">${esc(Interp.text(c.t))}</button>`).join("")}</div>`);
   s.el.querySelectorAll(".choices button").forEach(b => b.onclick = () => {
-    const c = choices[+b.dataset.i];
+    const i = +b.dataset.i, c = choices[i];
     P.seen[e.id] = P.age; P.yearEvents.shift();
-    const res = resolve(c);
+    const res = Interp.choose(e, c);
+    recordChoice(e.id, i, res.outcome, res.text);
     if (res.text) log(`${e.icon || "•"} ${res.text}`);
     save();
     s.el.innerHTML = `<div class="big" aria-hidden="true">${e.icon || "✨"}</div><p class="q">${esc(res.text || "Həyat davam edir.")}</p><div class="fx">${fxChips(res.changes)}</div><button class="btn close" id="ok">${P.yearEvents.length ? "Növbəti →" : "Davam"}</button>`;
-    s.el.querySelector("#ok").onclick = () => { s.close(); if (!P.alive) return renderEnd(); if (P.yearEvents.length) { renderGame(); } else renderGame(); };
+    s.el.querySelector("#ok").onclick = () => { s.close(); if (!P.alive) return renderEnd(); renderGame(); };
     s.el.querySelector("#ok").focus();
   });
 }
@@ -460,13 +458,16 @@ function panelMe() {
       <dt>Xəyalı</dt><dd>${d ? d.icon + " " + d.t : "–"}</dd>
       <dt>Təhsil</dt><dd>${esc(P.edu.degree ? FACULTIES[Object.keys(FACULTIES).find(k => FACULTIES[k].opens === P.edu.degree)].t + " (diplom)" : P.edu.stage === "uni" ? FACULTIES[P.edu.fac].t + `, ${ord(P.edu.uniYear + 1)} kurs` : P.edu.stage === "mekteb" ? statusLine() : P.age >= 17 ? "Orta məktəb" : statusLine())}</dd>
       ${job ? `<dt>İş</dt><dd>${job.icon} ${esc(jobTitle())}</dd><dt>Maaş</dt><dd>${fmtMoney(salaryMonthly())}/ay</dd><dt>İş göstəricisi</dt><dd>${P.job.perf}/100 · ${P.job.years} il</dd>` : ""}
-      ${P.army ? `<dt>Hərbi xidmət</dt><dd>${P.army.done ? "Keçib ✔︎" : "Davam edir"}</dd>` : ""}
+      <dt>Doğum tarixi</dt><dd>${Cal.fmt(P.birth)}</dd>
+      ${P.edu.master ? `<dt>Magistr</dt><dd>Var ✔︎</dd>` : ""}
+      ${P.army ? `<dt>Hərbi xidmət</dt><dd>${P.army.months} ay · ${P.army.done ? "keçib ✔︎" : "bitir: " + Cal.fmt(P.army.end)}</dd>` : ""}
       <dt>Sürücülük</dt><dd>${P.flags.vesiqe && P.flags.vesiqe <= P.age ? "Var" : "Yoxdur"}</dd></dl></div>
+    <p class="sec-h">Xarakter (qərarlarından formalaşır)</p><div class="card tal">${Object.entries(TRAITS).map(([k, t]) => `<div><span>${t}</span><span class="tbar" role="meter" aria-label="${t}" aria-valuenow="${P.tr[k]}" aria-valuemin="0" aria-valuemax="100"><i style="width:${P.tr[k]}%"></i></span></div>`).join("")}</div>
     ${P.age >= 8 ? `<p class="sec-h">İstedadlar (müəllimlərin fikrincə)</p><div class="card tal">${[["sport", "⚽ İdman"], ["music", "🎶 Musiqi"], ["acting", "🎭 Aktyorluq"], ["science", "🔬 Elm"], ["social", "🗣️ Ünsiyyət"]].map(([k, t]) => `<div><span>${t}</span><span class="stars" aria-label="${Math.round(P.tal[k] / 20)} ulduz">${stars(P.tal[k])}</span></div>`).join("")}</div>` : ""}
     <p class="sec-h">Əmlak</p><div class="card">${P.assets.length ? P.assets.map(a => `<div>${a.type === "ev" ? "🏠" : "🚗"} ${esc(a.t)} · <span class="muted">${fmtMoney(a.value)}</span></div>`).join("") : '<span class="muted">Hələ heç nə yoxdur.</span>'}</div>
     ${P.jobs.length ? `<p class="sec-h">Keçmiş işlər</p><div class="card">${P.jobs.map(j => `<div>${CAREERS[j.id].icon} ${esc(j.title)} <span class="muted small">(${j.from}–${j.to} yaş, ${esc(j.reason)})</span></div>`).join("")}</div>` : ""}
     <div style="display:grid;gap:8px;margin-top:18px"><button class="btn ghost" id="home">🏠 Əsas menyu</button><button class="btn ghost" id="quit" style="color:var(--bad)">Bu həyatı bitir</button></div>`;
-  $("#home").onclick = () => { save(); renderStart(); };
+  $("#home").onclick = async () => { await DB.saveLife(P, true); P = null; renderStart(); };
   $("#quit").onclick = () => { if (confirm("Bu həyat bitsin? Geri qaytarmaq olmayacaq.")) { die("oyunçu bitirdi"); renderEnd(); } };
 }
 
@@ -477,7 +478,7 @@ function renderEnd() {
   const lines = [];
   lines.push(`${P.age} yaş yaşadı`);
   app.innerHTML = `<section class="wrap end" style="padding-block:calc(30px + env(safe-area-inset-top)) 40px">
-    <div class="big" aria-hidden="true">🕊️</div><h2>${esc(s.name)}</h2><p class="muted" style="margin:0">${P.born} – ${P.born + P.age} · ${P.age} yaş · ${esc(P.city)}</p>
+    <div class="big" aria-hidden="true">🕊️</div><h2>${esc(s.name)}</h2><p class="muted" style="margin:0">${Cal.fmt(P.birth)} – ${Cal.fmt(P.deathDay || P.day)} · ${P.age} yaş · ${esc(P.city)}</p>
     <div class="vs"><div><small>Xəyal</small>${esc(s.dream || "?")}</div><span style="font-size:22px">→</span><div><small>Oldu</small>${esc(s.became)}</div></div>
     <p class="motto">${same ? "Xəyalını gerçəkləşdirdi! 🌟" : "Həyat, sən nə qəribəsən!"}</p>
     <div class="grid2"><div><span class="muted small">Sərvət</span><b>${fmtMoney(s.money)}</b></div><div><span class="muted small">İzləyici</span><b>${fmtNum(s.followers)}</b></div>
@@ -485,12 +486,26 @@ function renderEnd() {
       <div><span class="muted small">Səyahət</span><b>${P.stats.countries} dəfə</b></div><div><span class="muted small">Paylaşım</span><b>${P.stats.posts}</b></div></div>
     <button class="btn" id="again" style="width:100%">Yeni həyat başlat 🌱</button>
     <button class="btn ghost" id="story" style="width:100%;margin-top:8px">Həyat hekayəsinə bax</button></section>`;
-  $("#again").onclick = () => { wipe(); renderCreate(); };
+  $("#again").onclick = () => renderCreate();
   $("#story").onclick = () => { const x = sheet(`<h3 style="margin-bottom:10px">Həyat hekayəsi</h3>${P.log.map(y => `<div class="yr"><h3>${y.age} yaş</h3>${y.items.map(t => `<p>${esc(t)}</p>`).join("")}</div>`).join("")}<button class="btn close">Bağla</button>`); x.el.querySelector(".close").onclick = x.close; };
 }
 
 // ---------- boot ----------
-if (load() && P.alive) renderGame(); else renderStart();
+// ---------- boot: content library, rules, database ----------
+const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json"];
+(async function boot() {
+  app.innerHTML = '<p class="wrap muted" style="padding-top:40vh;text-align:center">Yüklənir…</p>';
+  try {
+    const [rules, ...lists] = await Promise.all(["data/rules.json", ...EVENT_FILES].map(f => fetch(f).then(r => { if (!r.ok) throw new Error(f); return r.json(); })));
+    RULES = rules; Interp.load(lists);
+    const errs = Interp.validate(lists); if (errs.length) console.warn("Hadisə kitabxanasında xəta:", errs);
+    await DB.open();
+    const imported = await DB.importLegacy(migrateLife);
+    const active = imported || await DB.getMeta("active");
+    if (active) { await loadLife(active); if (P && P.alive) { renderGame(); return; } P = null; }
+    renderStart();
+  } catch (err) { app.innerHTML = `<div class="wrap" style="padding-top:30vh;text-align:center"><p>Oyun yüklənmədi.</p><p class="small muted">${esc(err.message)}</p><button class="btn" onclick="location.reload()">Yenidən yoxla</button></div>`; }
+})();
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
 </body>

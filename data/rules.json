@@ -1,0 +1,21 @@
+{
+  "version": "2026-11-17",
+  "military": {
+    "source": "Oyunçunun verdiyi qayda (2026-11-17). Rəsmi qanunvericiliklə yoxlanılmalıdır; dəyişsə yalnız bu faylı yeniləyin.",
+    "verified": false,
+    "applies_to_gender": "k",
+    "call_age": 18,
+    "months_without_higher_education": 18,
+    "months_after_bachelor": 12,
+    "months_after_master": 12,
+    "deferment_while_studying": true
+  },
+  "education": {
+    "source": "Oyun konfiqurasiyası (sadələşdirilmiş).",
+    "school_start_age": 6,
+    "school_grades": 11,
+    "bachelor_years": 4,
+    "medical_years": 6,
+    "master_years": 2
+  }
+}

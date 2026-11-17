@@ -3,7 +3,7 @@
 "use strict";
 
 // ---------- helpers ----------
-const R = Math.random;
+const R = () => RNG.next(); // seeded per life (js/core.js)
 const rnd = (a, b) => a + Math.floor(R() * (b - a + 1));
 const pick = a => a[Math.floor(R() * a.length)];
 const clamp = (v, a = 0, b = 100) => Math.max(a, Math.min(b, v));
@@ -56,18 +56,25 @@ const FACULTIES = {
 
 // ---------- state ----------
 let P = null;
-const SAVE_KEY = "heyat-save-v1", BEST_KEY = "heyat-lives";
+let RULES = null; // data/rules.json (military, education)
+const LIFE_VERSION = 2;
+const TRAITS = { empathy: "Empatiya", honesty: "Dürüstlük", courage: "Cəsarət", discipline: "İntizam", independence: "Müstəqillik", family: "Ailəyə bağlılıq", social: "Ünsiyyətcillik" };
 
 function newPerson(role, gender, age, extra = {}) {
   const used = new Set(P ? [P.name, ...P.people.map(x => x.name)] : []);
   const free = NAMES[gender].filter(n => !used.has(n));
-  return Object.assign({ id: Math.random().toString(36).slice(2, 9), role, g: gender, name: pick(free.length ? free : NAMES[gender]), age, rel: rnd(55, 85), alive: true }, extra);
+  return Object.assign({ id: "n" + Math.floor(R() * 2176782336).toString(36), role, g: gender, name: pick(free.length ? free : NAMES[gender]), age, rel: rnd(55, 85), alive: true }, extra);
 }
-function newLife(name, gender, city, dream) {
+function newLife(name, gender, city, dream, seed) {
+  seed = seed == null ? RNG.newSeed() : seed >>> 0;
+  P = { rng: seed }; // so the very first draws are already seeded
   const fam = pick(SURN);
-  const year = new Date().getFullYear();
+  const t = Cal.toYMD(Cal.today());
+  const birth = Cal.fromYMD(t.y - 5, rnd(1, 12), rnd(1, 28));
   P = {
-    v: 1, name, g: gender, city, fam, dream, born: year - 5, age: 5, alive: true, cause: null,
+    v: LIFE_VERSION, id: "L" + Date.now().toString(36) + seed.toString(36), seed, rng: seed,
+    birth, day: Cal.addYears(birth, 5), tr: Object.fromEntries(Object.keys(TRAITS).map(k => [k, 50])), sched: [], hist: [], npcFlags: {},
+    name, g: gender, city, fam, dream, born: t.y - 5, age: 5, alive: true, cause: null,
     st: { health: rnd(70, 95), happy: rnd(65, 90), smarts: rnd(25, 70), fitness: rnd(25, 70), looks: rnd(25, 80) },
     money: 0, fame: 0,
     tal: { sport: rnd(5, 95), music: rnd(5, 95), acting: rnd(5, 95), science: rnd(5, 95), social: rnd(5, 95) },
@@ -239,39 +246,12 @@ function feedTick() {
 }
 
 // ---------- year loop ----------
-// conditions that can change during the year (re-checked right before an event is shown)
-function eventOk(e) {
-    if (e.g && e.g !== P.g) return false;
-    if (e.job && (!P.job || ![].concat(e.job).includes(P.job.id))) return false;
-    if (e.stage && ![].concat(e.stage).includes(P.edu.stage)) return false;
-    if (e.need && !e.need.every(r => person(r))) return false;
-    try { if (e.if && !e.if(P)) return false; } catch (err) { return false; }
-    return true;
-}
-function eligibleEvents() {
-  return EVENTS.filter(e => {
-    if (e.age && (P.age < e.age[0] || P.age > e.age[1])) return false;
-    if (e.once !== false && P.seen[e.id]) return false;
-    if (e.cool && P.seen[e.id] && P.age - P.seen[e.id] < e.cool) return false;
-    return eventOk(e);
-  });
-}
-function pickEvents(n) {
-  const out = [];
-  // forced events first (milestones)
-  for (const e of eligibleEvents()) if (e.force) out.push(e);
-  let pool = eligibleEvents().filter(e => !e.force);
-  while (out.length < n && pool.length) {
-    const tot = pool.reduce((a, e) => a + (e.w || 1), 0);
-    let r = R() * tot, e = pool[0];
-    for (const x of pool) { r -= (x.w || 1); if (r <= 0) { e = x; break; } }
-    out.push(e); pool = pool.filter(x => x !== e);
-  }
-  return out;
-}
+// event selection lives in js/interp.js; this re-check is used by the UI right before showing an event
+const eventOk = e => Interp.stillOk(e);
 function ageUp() {
   const msgs = [];
   P.age++; P.acts = 3; P.yearDone = {};
+  P.day = Math.max(P.day, Cal.addYears(P.birth, P.age));
   for (const p of P.people) if (p.alive) p.age++;
   // natural stat drift
   if (P.age > 45) P.st.health = clamp(P.st.health - rnd(0, Math.ceil((P.age - 40) / 12)));
@@ -284,7 +264,7 @@ function ageUp() {
   // education
   eduTick(msgs);
   // army
-  if (P.army && !P.army.done) { P.army.left--; if (P.army.left <= 0) { P.army.done = true; log("🎖️ Hərbi xidməti bitirib evə qayıtdı."); apply({ fitness: 8, happy: 10, rel: { ana: 8 } }); } }
+  if (P.army && !P.army.done) { if (P.day >= P.army.end) { P.army.done = true; log("🎖️ Hərbi xidməti bitirib evə qayıtdı."); apply({ fitness: 8, happy: 10, rel: { ana: 8 } }); } }
   // money: allowance, salary, costs
   moneyTick(msgs);
   // job performance
@@ -301,7 +281,11 @@ function ageUp() {
   deathCheck();
   // events
   const n = P.age < 12 ? rnd(1, 2) : rnd(2, 3);
-  P.yearEvents = P.alive ? pickEvents(n).map(e => e.id) : [];
+  // events happen on dates spread across the coming year; time only moves forward
+  const ids = P.alive ? Interp.pickYear(n) : [];
+  const next = Cal.addYears(P.birth, P.age + 1) - 1;
+  const days = ids.map(() => rnd(P.day, next)).sort((a, b) => a - b);
+  P.yearEvents = ids.map((id, i) => ({ id, day: days[i] }));
   save();
   return msgs;
 }
@@ -315,6 +299,11 @@ function eduTick() {
     e.grade++;
     if (e.grade === 5) { const m = person("müəllim"); if (m) m.role = "keçmiş müəllim"; addPerson("müəllim", pick(["q", "k"]), rnd(26, 58)); }
   }
+  if (e.stage === "magistr") {
+    e.uniYear++;
+    if (e.uniYear >= RULES.education.master_years) { e.stage = "bitdi"; e.master = true; log("🎓 Magistraturanı bitirdi!"); apply({ happy: 10, smarts: 4 }); }
+    return;
+  }
   if (e.stage === "uni") {
     e.uniYear++;
     e.gpa = clamp(Math.round(e.gpa * 0.6 + (P.st.smarts * 0.8 + rnd(-10, 15)) * 0.4));
@@ -322,6 +311,7 @@ function eduTick() {
     if (e.uniYear >= f.years) {
       e.stage = "bitdi"; e.degree = f.opens; log(`🎓 ${f.t}-ni bitirdi! Diplom aldı.`); P.flags.diplom = P.age; apply({ happy: 12, smarts: 5, rel: { ana: 6, ata: 6 } });
       if (f.opens === "polis" && !P.job) startJob("polis", 0, "Akademiyadan sonra təyinat aldı");
+      else if (e.fac !== "tibb") { e.pendingMaster = true; P.flags.pendingMasterQ = P.age; }
     }
   }
 }
@@ -330,7 +320,7 @@ function moneyTick() {
   if (P.age < 16) { const fam = 50 + rnd(0, 100); P.money += fam; return; }
   if (P.job) P.money += sal;
   if (P.edu.stage === "uni" && P.flags.odenisli) P.money -= 2500;
-  if (P.age >= 18 && !(P.edu.stage === "uni" && P.age < 23) && !(P.army && !P.army.done)) {
+  if (P.age >= 18 && !(["uni", "magistr"].includes(P.edu.stage) && P.age < 26) && !(P.army && !P.army.done)) {
     const ownHouse = P.assets.some(a => a.type === "ev");
     const living = 3000 + (ownHouse ? 0 : 3600) + (person("həyat yoldaşı") ? 1500 : 0) + people("uşaq").filter(k => k.age < 18).length * 1800;
     const livingWithParents = !ownHouse && P.age < 30 && !person("həyat yoldaşı") && person("ana");
@@ -376,11 +366,10 @@ function deathCheck() {
   if (chance(p)) die(P.st.health < 20 ? "xəstəlik" : "qocalıq");
 }
 function die(cause) {
-  P.alive = false; P.cause = cause;
+  P.alive = false; P.cause = cause; P.deathDay = P.day;
   log(`🕊️ ${P.name} ${P.age} yaşında dünyasını dəyişdi (${cause}).`);
-  const lives = JSON.parse(localStorage.getItem(BEST_KEY) || "[]");
-  lives.unshift(lifeSummary()); try { localStorage.setItem(BEST_KEY, JSON.stringify(lives.slice(0, 30))); } catch (e) {}
-  save();
+  if (typeof DB !== "undefined") DB.archive(Object.assign({ id: P.id, birth: P.birth, deathDay: P.day, city: P.city, log: P.log }, lifeSummary())).catch(() => {});
+  save(true);
 }
 function lifeSummary() {
   const dream = DREAMS.find(d => d.id === P.dream);
@@ -420,10 +409,53 @@ const SHOP = [
   { id: "e3", type: "ev", t: "Bağ evi (Mərdəkan)", price: 220000 }, { id: "e4", type: "ev", t: "Villa (Novxanı)", price: 900000 }
 ];
 
-// ---------- save ----------
-function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(P)); } catch (e) {} }
-function load() { try { P = JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); } catch (e) { P = null; } return P; }
-function wipe() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} P = null; }
+// ---------- save / load (js/db.js) ----------
+function save(now) { if (P && typeof DB !== "undefined") DB.saveLife(P, now); }
+async function loadLife(id) { const L = await DB.loadLife(id); P = L ? migrateLife(L) : null; return P; }
+// bring an older save up to the current life format (never loses data)
+function migrateLife(L) {
+  if (!L.v || L.v < 2) {
+    const seed = RNG.newSeed();
+    L.id = L.id || "L" + Date.now().toString(36) + seed.toString(36);
+    L.seed = seed; L.rng = seed;
+    const born = L.born || (new Date().getFullYear() - L.age);
+    L.birth = Cal.fromYMD(born, 6, 15); L.day = Cal.addYears(L.birth, L.age);
+    L.tr = L.tr || Object.fromEntries(Object.keys(TRAITS).map(k => [k, 50]));
+    L.sched = L.sched || []; L.hist = L.hist || []; L.npcFlags = L.npcFlags || {};
+    if (L.army && L.army.left != null) { L.army = { start: L.day, end: Cal.addMonths(L.day, Math.max(0, L.army.left) * 12), months: 18, done: !!L.army.done }; }
+    L.yearEvents = (L.yearEvents || []).map(x => typeof x === "string" ? { id: x, day: L.day } : x);
+    // legacy event ids that were renamed during the JSON move
+    if (L.seen && L.seen["fırıldaq"] != null) L.seen.firildaq = L.seen["fırıldaq"];
+    L.v = 2;
+  }
+  return L;
+}
+// record a decision (event_history)
+function recordChoice(eventId, choiceIdx, outcome, text) {
+  const row = { day: P.day, age: P.age, e: eventId, c: choiceIdx, o: outcome };
+  P.hist.push(row);
+  if (typeof DB !== "undefined") DB.addHistory(Object.assign({ lifeId: P.id, seq: P.hist.length, result: text }, row));
+}
+// university entrance exam (from the "imtahan" event)
+function examTry(fid) {
+  const f = FACULTIES[fid];
+  P.flags.imtahanVerdi = P.age;
+  const score = P.st.smarts * 0.6 + P.edu.gpa * 0.3 + (P.flags.repetitor ? 8 : 0) + (P.flags.olimpiada ? 6 : 0) + rnd(-10, 10);
+  const extra = (f.fit && P.st.fitness < f.fit) ? `fiziki hazırlıq yetərli deyil (${P.st.fitness}/${f.fit})` : (f.music && P.tal.music < f.music) ? "musiqi qabiliyyəti imtahanından keçmədin" : null;
+  if (score >= f.need && !extra) {
+    P.edu.stage = "uni"; P.edu.fac = fid; P.edu.uniYear = 0;
+    const free = score >= f.need + 12;
+    if (!free) P.flags.odenisli = 1; else delete P.flags.odenisli;
+    apply({ happy: 15, rel: { ana: 10, ata: 10 } });
+    log(`🎓 ${f.t}-nə qəbul oldu (${free ? "dövlət sifarişi" : "ödənişli"}).`);
+    return `Təbriklər! ${f.t}-nə qəbul oldun${free ? ", özü də pulsuz (dövlət sifarişi)!" : ". Ödənişli əsaslarla: ildə 2 500 ₼."}`;
+  }
+  P.edu.stage = "bitdi";
+  apply({ happy: -12 });
+  log(`📝 ${f.t}-nə qəbul ola bilmədi.`);
+  const M = RULES.military;
+  return `Təəssüf, ${extra || "bal çatmadı"}. Universitetə düşmədin.${P.g === M.applies_to_gender ? ` Qaydaya görə ${M.months_without_higher_education} aylıq hərbi xidmət gözləyir.` : " İndi yeni plan qurmaq vaxtıdır."}`;
+}
 
 // text placeholders: {ad} {ana} {ata} {dost} {sevgili} {yoldaş} {şəhər} {müəllim} {məşqçi} {müdir} {rəqib} {iş} {xəyal}
 function fill(t) {

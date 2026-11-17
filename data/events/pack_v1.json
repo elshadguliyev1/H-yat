@@ -1,0 +1,109 @@
+[
+{"id":"az_life_05","cat":"school","tone":"everyday","age":[5,6],"icon":"🧩","visual":"kindergarten","t":"Bağçada bir uşaq oyuncağını səndən istəyir. Gözləri dolub, deyəsən evdə oyuncağı yoxdur.","ch":[
+ {"t":"Oyuncağı paylaş","fx":{"happy":2},"trait":{"empathy":3},"r":"Uşaq sevincdən atılıb-düşdü. Tərbiyəçi bunu valideynlərinə danışdı."},
+ {"t":"Birlikdə oynamağı təklif et","fx":{"happy":4},"trait":{"empathy":2,"social":3},"do":[{"add_person":{"role":"dost","g":"any","age":"self","unless_has":true}}],"r":"Birlikdə qala tikdiniz. {new} ilə ilk dostluğun belə başladı."},
+ {"t":"Oyuncağı vermə","fx":{"happy":1},"trait":{"empathy":-1,"courage":1},"r":"Oyuncaq səndə qaldı. Amma o uşağın baxışı bir müddət yadından çıxmadı."}]},
+{"id":"az_life_06","cat":"family","tone":"everyday","age":[6,7],"icon":"🫖","visual":"family_kitchen","cond":{"has":["ata","ana"]},"t":"Atan bu axşam da işdən gec qayıdır. Anan yorğun görünür, çaynik ikinci dəfə soyuyub.","ch":[
+ {"t":"Atandan gününün necə keçdiyini soruş","fx":{"rel":{"ata":8}},"trait":{"family":3},"r":"Atan təəccübləndi, sonra gülümsədi: “Yaxşı keçdi, sən soruşdun deyə daha yaxşı oldu.”"},
+ {"t":"Anana kömək et","fx":{"rel":{"ana":8}},"trait":{"family":2,"empathy":2},"r":"Stəkanları birlikdə yudunuz. Anan səni bərk qucaqladı."},
+ {"t":"Öz otağına çəkil","trait":{"independence":2},"r":"Otağında rəsm çəkdin. Mətbəxdən gələn səslər yavaş-yavaş kəsildi."}]},
+{"id":"az_life_07","cat":"school","tone":"everyday","age":[7,8],"icon":"🪑","visual":"school_yard","t":"Sinfə yeni bir uşaq gəlib. Köhnə geyiminə gülürlər. O, arxa partada tək oturub.","ch":[
+ {"t":"Onun yanında otur","trait":{"empathy":3,"courage":2},"do":[{"add_person":{"role":"tanış","g":"any","age":"self","npc_flag":"defended_classmate"}},{"schedule":{"event":"az_chain_old_friend","after_years":[15,20]}}],"fx":{"happy":2},"r":"Adı {new} idi. Bütün günü səninlə danışdı. Gülənlər də bir müddət sonra susdu."},
+ {"t":"Sakitcə müəllimə xəbər ver","fx":{"rel":{"müəllim":4}},"trait":{"courage":1},"r":"{müəllim} müəllim sinifdə dostluq haqqında danışdı. Gülüşlər azaldı."},
+ {"t":"Heç nə etmə","trait":{"courage":-2},"fx":{"flag":"ignored_classmate"},"r":"Hamı kimi sən də susdun. Bir ay sonra o uşaq başqa məktəbə keçdi."}]},
+{"id":"az_chain_old_friend","cat":"friends","tone":"rare","age":[20,40],"scheduled_only":true,"icon":"🤝","cond":{"npc_flag_alive":"defended_classmate"},"t":"Pıçıltı-da tanış ad: {npc_old_friend}. Birinci sinifdə yanında oturduğun uşaq! İndi böyük şirkətdə rəhbərdir və sənə yazıb: “Səni heç unutmamışam.”","ch":[
+ {"t":"Görüşək, çay içək","fx":{"happy":10},"do":[{"add_person":{"role":"dost","g":"any","age":"self","unless_has":false}}],"r":"Saatlarla danışdınız. Ayrılanda dedi: “O gün sən olmasaydın, o məktəbdə qala bilməzdim.”"},
+ {"t":"İş təklifi varsa, maraqlıdır","cond":{"job":false},"fx":{"happy":8},"do":[{"start_job":{"id":"ofis","lv":0,"note":"Köhnə sinif yoldaşı işə götürdü"}}],"r":"Bir həftə sonra onun şirkətində işə başladın. Bəzən yaxşılıq 20 il sonra qayıdır."},
+ {"t":"Nəzakətlə cavab yaz","fx":{"happy":3},"r":"Bir-birinizə uğur arzuladınız. Bu xatirə ikiniz üçün də istidir."}]},
+{"id":"az_life_08","cat":"school","tone":"dramatic","age":[8,9],"icon":"🪙","visual":"school_yard","t":"Sinifdə müəllimin pulu itib. Hamı bir-birindən şübhələnir. Sən isə kimin götürdüyünü gördün.","ch":[
+ {"t":"Bildiklərini dürüst danış","trait":{"honesty":4,"courage":2},"fx":{"flag":"honest_kid"},"odds":[{"p":0.6,"fx":{"rel":{"müəllim":8}},"r":"Pul tapıldı. Müəllim sənə təşəkkür etdi, amma o uşaq səninlə bir il danışmadı."},{"p":0.4,"fx":{"happy":-5},"r":"Müəllim inandı, amma sinif səni “satqın” adlandırdı. Düz danışmaq bəzən ağır olur."}],"do":[{"schedule":{"event":"az_chain_trust","after_years":[20,30]}}]},
+ {"t":"Sübut olmadan heç kimi günahlandırma","trait":{"honesty":1,"empathy":1},"r":"Gizlicə o uşağa dedin ki, pulu qaytarsın. Ertəsi gün pul müəllimin masasında idi."},
+ {"t":"Söhbətdən uzaq dur","trait":{"courage":-2},"r":"Bütün sinif cəzalandırıldı: bir həftə teneffüs yoxdur."}]},
+{"id":"az_chain_trust","cat":"career","tone":"rare","age":[28,45],"scheduled_only":true,"icon":"🗝️","cond":{"job":true,"flag":"honest_kid"},"t":"Rəhbərin səni çağırdı: “Şirkətin kassasını kimə etibar edəcəyimi düşünürdüm. Hamı sənin adını çəkir. Deyirlər, sən heç vaxt yalan danışmırsan.”","ch":[
+ {"t":"Məsuliyyəti qəbul et","fx":{"perf":15,"happy":8},"do":[{"promote":true}],"r":"Yeni vəzifə, yeni etibar. Uşaqlıqdakı o çətin gün indi mükafat oldu."},
+ {"t":"Bu yük mənlik deyil","fx":{"perf":3},"r":"Rəhbər təəccübləndi, amma qərarına hörmət etdi."}]},
+{"id":"az_life_09","cat":"family","tone":"dramatic","age":[9,10],"icon":"🧳","visual":"family_kitchen","cond":{"has":["ana","ata"]},"t":"Atan başqa şəhərdə iş tapıb. Ailə köçməyi düşünür. Dostların, məktəbin, həyətin… hamısı burada qalacaq.","ch":[
+ {"t":"Narahatlığını valideynlərinə de","trait":{"family":3},"odds":[{"p":0.5,"fx":{"rel":{"ana":5,"ata":5}},"r":"Səni dinlədilər. Atan təklifdən imtina etdi: “Ailə birlikdə qərar verir.”"},{"p":0.5,"fx":{"happy":-6,"rel":{"ata":3}},"do":[{"move_city":"random"}],"r":"Səni dinlədilər, amma başqa yol yox idi. Ailəniz {city} şəhərinə köçdü."}]},
+ {"t":"Yeni yer haqqında sual ver","trait":{"independence":2},"do":[{"move_city":"random"}],"fx":{"happy":2},"r":"{city} haqqında hər şeyi öyrəndin. Köçəndə artıq maraqla gözləyirdin."},
+ {"t":"Sakit qal","fx":{"happy":-4},"do":[{"move_city":"random"}],"r":"Heç nə demədin. Yük maşını gələndə ağladın. İndi {city} sənin yeni evindir."}]},
+{"id":"az_life_10","cat":"school","tone":"everyday","age":[10,11],"icon":"📄","visual":"exam_hall","t":"Sınaq imtahanının nəticəsi gözlədiyindən çox aşağıdır. Valideynlər iclasa çağırılıb.","ch":[
+ {"t":"Müəllimdən kömək istə","fx":{"smarts":4,"rel":{"müəllim":5}},"trait":{"discipline":2},"r":"Müəllim dərsdən sonra səninlə məşğul oldu. Növbəti sınaqda xeyli irəlilədin."},
+ {"t":"Özün plan qur","fx":{"smarts":3},"trait":{"discipline":3,"independence":2},"r":"Divara cədvəl asdın. Hər gün bir mövzu. Yavaş-yavaş, amma özün."},
+ {"t":"Nəticəni gizlət","fx":{"flag":"hid_grade"},"trait":{"honesty":-3},"do":[{"schedule":{"event":"az_chain_hidden_grade","after_months":6}}],"r":"Kağızı çantanın dibinə gizlətdin. Hələlik heç kim bilmir…"}]},
+{"id":"az_chain_hidden_grade","cat":"family","tone":"dramatic","age":[10,13],"scheduled_only":true,"icon":"😶","cond":{"flag":"hid_grade"},"t":"Anan valideyn iclasından qayıtdı. Əlində həmin sınaq kağızının surəti var.","ch":[
+ {"t":"Üzr istə, doğrusunu de","fx":{"rel":{"ana":-3}},"trait":{"honesty":3},"r":"Anan uzun müddət susdu. Sonra dedi: “Qiymət yox, yalan məni incitdi.”"},
+ {"t":"Bəhanə gətir","fx":{"rel":{"ana":-10,"ata":-6},"happy":-6},"trait":{"honesty":-2},"r":"Bəhanə işləmədi. Bir ay telefon və kompüter yoxdur."}]},
+{"id":"az_life_11","cat":"friends","tone":"dramatic","age":[11,12],"icon":"🤫","visual":"park","cond":{"has":["dost"]},"t":"Dostun {dost} parkda sənə deyir ki, evdə valideynləri hər gün dava edir. Sirr saxlamağını istəyir.","ch":[
+ {"t":"Onu dinlə","fx":{"rel":{"dost":10}},"trait":{"empathy":3},"r":"Saatlarla danışdınız. Ayrılanda dedi: “Yaxşı ki, sən varsan.”"},
+ {"t":"Etibarlı böyüklə danışmağı təklif et","fx":{"rel":{"dost":4},"flag":"helped_friend_family"},"trait":{"empathy":2,"courage":2},"do":[{"schedule":{"event":"az_chain_friend_thanks","after_years":[6,10]}}],"r":"Əvvəl əsəbiləşdi, sonra məktəb psixoloquna getdi. Sən də yanında idin."},
+ {"t":"Mövzunu dəyiş","fx":{"rel":{"dost":-6}},"r":"Futboldan danışmağa başladın. O, bir də bu mövzunu açmadı."}]},
+{"id":"az_chain_friend_thanks","cat":"friends","tone":"dramatic","age":[17,25],"scheduled_only":true,"icon":"💌","cond":{"flag":"helped_friend_family"},"t":"Uşaqlıq dostundan uzun mesaj gəlib: “O gün məni psixoloqa apardığın üçün sağ ol. Valideynlərim ailə məsləhətçisinə getdilər. Hər şey düzəldi. Sənə borcluyam.”","ch":[
+ {"t":"Cavab yaz: “Dost buna görədir”","fx":{"happy":10,"rel":{"dost":10}},"r":"Bu mesajı illər sonra da saxlayacaqsan."}]},
+{"id":"az_life_12","cat":"school","tone":"everyday","age":[12,13],"icon":"⏳","visual":"family_kitchen","t":"Məşq saatın riyaziyyat əlavə dərsi ilə üst-üstə düşür. İkisinə birdən çatmaq olmur.","ch":[
+ {"t":"Həftəlik plan qur","fx":{"smarts":2,"fitness":2,"happy":-2},"trait":{"discipline":4},"r":"Bazar ertəsi məşq, çərşənbə dərs, cümə ikisi də. Yorucu, amma alınır."},
+ {"t":"Məşqi seç","fx":{"fitness":5,"tal":{"sport":2}},"r":"Komandada əsas heyətə düşdün. Riyaziyyat müəllimi isə qaşqabaqlıdır."},
+ {"t":"Dərsi seç","fx":{"smarts":5},"r":"Riyaziyyat qiymətin qalxdı. Məşqçi isə yerinə başqasını qoydu."}]},
+{"id":"az_life_13","cat":"school","tone":"dramatic","age":[13,14],"icon":"😈","visual":"school_yard","t":"Dostların sinifdəki sakit bir qıza qarşı “zarafat” hazırlayır: çantasını gizlədib videoya çəkəcəklər.","ch":[
+ {"t":"Qarşı çıx","trait":{"courage":4,"empathy":2},"fx":{"flag":"stood_up"},"odds":[{"p":0.6,"fx":{"happy":2},"r":"“Bu, zarafat deyil” dedin. Plan baş tutmadı. Bir neçə gün səndən küsdülər."},{"p":0.4,"fx":{"happy":-6,"rel":{"dost":-8}},"r":"Səni də ələ salmağa başladılar. Amma o qız sənə təşəkkür etdi."}],"do":[{"schedule":{"event":"az_chain_bully_post","after_years":[12,18]}}]},
+ {"t":"Oradan uzaqlaş","trait":{"courage":-1},"r":"Getdin. Video yenə çəkildi, amma sən orada yox idin."},
+ {"t":"Onlara qoşul","fx":{"happy":3,"flag":"joined_bullies"},"trait":{"empathy":-4},"do":[{"schedule":{"event":"az_chain_bully_post","after_years":[12,18]}}],"r":"Hamı güldü. O qız ağlaya-ağlaya sinfi tərk etdi. Video bütün məktəbə yayıldı."}]},
+{"id":"az_chain_bully_post","cat":"social","tone":"rare","age":[24,34],"scheduled_only":true,"icon":"📢","cond":{"social":true},"t":"Pıçıltı-da viral paylaşım: məktəbdə zorbalığa məruz qalmış bir qadın 8-ci sinifdəki o günü danışır. Adları da çəkir…","ch":[
+ {"t":"Paylaşımı oxu","cond":{"flag":"stood_up"},"fx":{"happy":10,"fame":3},"do":[{"followers_rand":[500,3000]}],"r":"“…və təkcə bir nəfər qarşı çıxdı.” O, sənin adını yazıb. Şərhlərdə yüzlərlə insan sənə təşəkkür edir."},
+ {"t":"Paylaşımı oxu","cond":{"flag":"joined_bullies"},"fx":{"happy":-12,"fame":-3,"followers":-0.1},"r":"Adın orada idi. Şərhlər amansızdır. İş yerində də hamı oxuyub."},
+ {"t":"Ona yaz və üzr istə","cond":{"flag":"joined_bullies"},"fx":{"happy":-4},"trait":{"honesty":3,"empathy":3},"r":"Cavab gəldi: “Üzrünü qəbul edirəm. Bunu yazmaq asan deyildi.” Yük bir az yüngülləşdi."}]},
+{"id":"az_life_14","cat":"family","tone":"dramatic","age":[14,15],"icon":"🧮","visual":"family_kitchen","cond":{"has_any":["ana","ata"]},"t":"Atan işdən ixtisara düşüb. Axşam süfrədə hamı susur. Anan deyir ki, bir müddət xərcləri azaltmaq lazımdır.","ch":[
+ {"t":"İstədiyin telefondan imtina et","fx":{"happy":-3,"rel":{"ana":6,"ata":6}},"trait":{"family":3,"empathy":2},"r":"Heç nə demədin, sadəcə “lazım deyil” dedin. Atanın gözləri doldu."},
+ {"t":"Kiçik işlərlə kömək et","fx":{"money":150,"rel":{"ata":5},"flag":"teen_initiative"},"trait":{"independence":3,"discipline":2},"r":"Qonşulara kompüter quraşdırdın, həyətdə maşın yudun. İlk qazandığın pulu anana verdin."},
+ {"t":"Etiraz et","fx":{"rel":{"ana":-6,"ata":-8}},"trait":{"empathy":-2},"r":"“Mən niyə əziyyət çəkməliyəm?” dedin. Atan qalxıb balkona çıxdı."}]},
+{"id":"az_life_15","cat":"love","tone":"everyday","age":[15,16],"icon":"🌸","visual":"school_yard","cond":{"has_not":["sevgili"]},"t":"Bir sinif yoldaşına qarşı hisslərin var. Teneffüsdə yanından keçəndə ürəyin döyünür.","ch":[
+ {"t":"Söhbətə başla","trait":{"courage":3},"odds":[{"p":{"of":"st.looks","div":220,"add":0.3},"fx":{"happy":10},"do":[{"add_person":{"role":"sevgili","g":"other","age":"self"}}],"r":"Kitabdan danışdınız, sonra musiqidən… {new} ilə hər teneffüs birlikdəsiniz."},{"p":0.5,"fx":{"happy":-4},"r":"Nəzakətlə danışdı, amma maraq göstərmədi. Olur."}]},
+ {"t":"Dost kimi tanımağa çalış","fx":{"happy":3},"do":[{"add_person":{"role":"dost","g":"other","age":"self","unless_has":true}}],"r":"Bir layihədə birlikdə işlədiniz. Hələlik dostsunuz… hələlik."},
+ {"t":"Hisslərini gizlət","fx":{"happy":-2},"r":"Gündəliyinə yazdın. Heç kim bilmədi."}]},
+{"id":"az_life_16","cat":"career","tone":"everyday","age":[16,17],"icon":"🧃","visual":"street","t":"Tanışın yayda bazarda işləmək təklif edir. Gündə 15 manat.","ch":[
+ {"t":"Ailə ilə məsləhətləş","fx":{"rel":{"ana":4,"ata":4},"money":600,"happy":3},"trait":{"family":2},"r":"Atan şərtləri özü yoxladı. Bütün yay işlədin, ilk dəfə öz pulunla anana hədiyyə aldın."},
+ {"t":"Təhlükəsizliyini və şərtləri yoxla","trait":{"discipline":2},"odds":[{"p":0.7,"fx":{"money":700},"r":"Hər şey qaydasında idi. Pul vaxtında ödənildi."},{"p":0.3,"fx":{"happy":2},"r":"Sən soruşanda tanış dolaşıq danışdı. İşə getmədin. Sonra eşitdin ki, pul verməyiblər."}]},
+ {"t":"Təklifi rədd et, dərsə hazırlaş","fx":{"smarts":4},"trait":{"discipline":1},"r":"Yay boyu imtahana hazırlaşdın."}]},
+{"id":"az_life_17","cat":"family","tone":"dramatic","age":[16,17],"icon":"🧭","visual":"family_kitchen","cond":{"has_any":["ana","ata"]},"t":"Valideynlərin həkim olmağını istəyir: “Həm hörmətli, həm çörəkli peşədir.” Sənin isə ürəyin başqa yerdədir: {xəyal}.","ch":[
+ {"t":"Öz maraqlarını izah et","trait":{"independence":3,"courage":2},"odds":[{"p":0.6,"fx":{"rel":{"ana":2,"ata":2}},"r":"Uzun söhbət oldu. Sonda atan dedi: “Yaxşı. Amma ən yaxşısı ol.”"},{"p":0.4,"fx":{"rel":{"ata":-8},"happy":-4},"r":"Razılaşmadılar. Qərar yenə də sənindir, amma evdə hava ağırdır."}]},
+ {"t":"Məsləhəti araşdır","fx":{"smarts":2},"trait":{"discipline":2},"r":"Hər iki ixtisası araşdırdın, tələbələrlə danışdın. Ən azından artıq nə seçdiyini bilirsən."},
+ {"t":"Mübahisə et","fx":{"rel":{"ana":-8,"ata":-8},"happy":-4},"trait":{"independence":2,"family":-3},"r":"Qapını çırpıb çıxdın. Gecə anan otağına çay gətirdi, heç nə demədi."}]},
+{"id":"az_life_18","cat":"school","tone":"dramatic","age":[17,20],"icon":"📉","visual":"exam_hall","cond":{"flag":"imtahanVerdi","stage":"bitdi","no_flag":["retake_used"]},"t":"Qəbul nəticələri gözlədiyin kimi olmadı. Dostların tələbə oldu, sən isə evdəsən.","ch":[
+ {"t":"Kollec və peşə təhsilinə bax","fx":{"smarts":2},"trait":{"independence":3},"do":[{"learn_code":1}],"r":"Peşə kursuna yazıldın. Həyatda bir yol bağlananda başqası açılır."},
+ {"t":"Bir il də hazırlaş, yenidən ver","fx":{"smarts":5,"happy":-4,"flag":"retake_used"},"trait":{"discipline":3},"do":[{"allow_retake":true}],"r":"Bir il də hazırlaşmaq qərarına gəldin. Gələn il yenidən imtahan verəcəksən."},
+ {"t":"İş axtar","fx":{"happy":1},"r":"Ailəyə kömək etmək üçün iş axtarmağa başladın. (Fəaliyyət → İş axtar)"}]},
+{"id":"az_life_19","cat":"friends","tone":"everyday","age":[19,22],"icon":"🪙","visual":"cafe","cond":{"has":["dost"]},"t":"Yaxın dostun {dost} kafedə borc istəyir. Nə vaxt qaytaracağını özü də bilmir.","ch":[
+ {"t":"İmkanın qədər kömək et","cond":{"money_gte":300},"fx":{"money":-300,"rel":{"dost":8},"flag":"lent_friend"},"trait":{"empathy":2},"do":[{"schedule":{"event":"az_chain_loan_return","after_years":[1,3]}}],"r":"300 manat verdin. “Bunu unutmayacağam” dedi."},
+ {"t":"Şərtləri açıq danış","fx":{"rel":{"dost":2}},"trait":{"honesty":2,"discipline":1},"r":"Nə qədər, nə vaxt — hamısını danışdınız. Dostluq aydınlıqla daha möhkəm olur."},
+ {"t":"Nəzakətlə imtina et","fx":{"rel":{"dost":-5}},"r":"Başa düşdüyünü dedi. Amma bir müddət az zəng etdi."}]},
+{"id":"az_chain_loan_return","cat":"friends","tone":"everyday","age":[20,30],"scheduled_only":true,"icon":"💐","cond":{"flag":"lent_friend"},"t":"Qapı döyülür. Dostun gəlib: işə düzəlib.","ch":[
+ {"t":"İçəri dəvət et","odds":[{"p":0.7,"fx":{"money":300,"happy":6},"r":"300 manatı və bir qutu şirniyyatı qoydu: “Dar gündə sən vardın.”"},{"p":0.3,"fx":{"happy":2},"r":"Pul gətirməyib, amma hər şey üçün təşəkkür etdi. Söz verdi: “Bu ay mütləq.”"}]}]},
+{"id":"az_life_20","cat":"military","tone":"everyday","age":[17,22],"icon":"🪪","visual":"office","cond":{"gender":"k","army":"none"},"t":"Hərbi komissarlıqdan bildiriş gəlib: hərbi qeydiyyat sənədlərini yeniləməlisən.","ch":[
+ {"t":"Rəsmi qaydaları araşdır","fx":{"smarts":2},"trait":{"discipline":2},"r":"Öyrəndin ki, universitetə qəbul olunmayanlar 18 ay, ali təhsilli məzunlar isə təhsil bitəndən sonra 12 ay xidmət edir."},
+ {"t":"Sənədləri hazırla, vaxtında get","trait":{"discipline":3},"r":"Hər şey qaydasındadır. Komissarlıqda işçi “belə gənclər az olur” dedi."},
+ {"t":"Məsələni sonraya saxla","fx":{"flag":"army_docs_late"},"do":[{"schedule":{"event":"az_chain_army_late","after_months":8}}],"r":"Kağızı bir kənara qoydun. Sonra baxarsan…"}]},
+{"id":"az_chain_army_late","cat":"military","tone":"everyday","age":[17,23],"scheduled_only":true,"icon":"📮","cond":{"flag":"army_docs_late"},"t":"İkinci bildiriş gəlib, bu dəfə xəbərdarlıqla.","ch":[
+ {"t":"Dərhal get, sənədləri ver","fx":{"happy":-2,"unflag":"army_docs_late"},"r":"Növbədə 3 saat gözlədin, amma məsələ həll olundu."},
+ {"t":"Yenə gecikdir","fx":{"money":-200,"happy":-5},"r":"Cərimə gəldi. İndi həm cərimə, həm növbə."}]},
+{"id":"az_life_21","cat":"career","tone":"everyday","age":[20,26],"icon":"🧑‍💼","visual":"office","cond":{"job":false,"stage":"bitdi","not":{"army":"active"}},"t":"Bir şirkət təcrübən az olsa da səni müsahibəyə çağırıb.","ch":[
+ {"t":"Dürüst cavab ver","trait":{"honesty":2},"odds":[{"p":0.55,"fx":{"happy":8},"do":[{"start_job":{"id":"ofis","note":"Müsahibədən keçdi"}}],"r":"“Bilmədiyimi öyrənərəm” dedin. Bu səmimiyyət xoşlarına gəldi. İşə götürüldün!"},{"p":0.45,"fx":{"happy":-3},"r":"Səmimi idin, amma başqasını seçdilər."}]},
+ {"t":"Bacarıqlarını nümunə ilə göstər","trait":{"courage":2},"odds":[{"p":{"of":"st.smarts","div":110,"add":0.1},"fx":{"happy":10},"do":[{"start_job":{"id":"ofis","note":"Müsahibədən keçdi"}}],"r":"Hazırladığın layihəni göstərdin. Elə həmin gün zəng etdilər: “Bazar ertəsi başlayırsan.”"},{"p":0.4,"fx":{"happy":-3},"r":"Layihə maraqlı idi, amma onlara başqa bacarıq lazım imiş."}]},
+ {"t":"Hazırlıqsız get","odds":[{"p":0.2,"do":[{"start_job":{"id":"ofis"}}],"r":"Şans üzünə güldü, götürdülər!"},{"p":0.8,"fx":{"happy":-5},"r":"Şirkət haqqında heç nə bilmədiyin bəlli oldu. Müsahibə 5 dəqiqə çəkdi."}]}]},
+{"id":"az_life_22","cat":"love","tone":"dramatic","age":[20,26],"icon":"🚌","visual":"bus_stop","cond":{"has":["sevgili"]},"t":"{sevgili} başqa şəhərdə iş tapıb. Avtovağzalda dayanmısınız. Avtobus 10 dəqiqəyə yola düşür.","ch":[
+ {"t":"Əlaqə üçün plan qur","fx":{"rel":{"sevgili":8}},"trait":{"family":1,"discipline":1},"r":"Hər həftə video zəng, ayda bir görüş. Çətin olacaq, amma razılaşdınız."},
+ {"t":"Münasibəti açıq müzakirə et","trait":{"honesty":2},"odds":[{"p":0.5,"fx":{"rel":{"sevgili":5}},"r":"Hər şeyi danışdınız. Sonda o dedi: “Gözləyəcəyəm.”"},{"p":0.5,"fx":{"happy":-10},"do":[{"remove_role":{"role":"sevgili","note":"ayrı şəhərlər"}}],"r":"Danışdıqca anladınız ki, yollarınız ayrılır. Sakit, kədərli bir vidalaşma."}]},
+ {"t":"Uzaqlaş","fx":{"happy":-8},"do":[{"remove_role":{"role":"sevgili","note":"uzaqlaşdı"}}],"r":"Avtobus getdi. Sən də arxana baxmadan evə qayıtdın."}]},
+{"id":"az_life_23","cat":"career","tone":"everyday","age":[22,30],"icon":"🎓","visual":"office","cond":{"job":true},"t":"Peşəkar kursa yazılmaq istəyirsən, amma bunun üçün iş saatını azaltmalısan. Maaş da azalacaq.","ch":[
+ {"t":"Büdcə qur və kursa yazıl","fx":{"money":-1500,"smarts":5,"flag":"course_done"},"trait":{"discipline":3},"do":[{"schedule":{"event":"az_chain_course_pays","after_years":[1,2]}}],"r":"Bir il qənaət, gecələr dərs. Ağır keçəcək."},
+ {"t":"İşdə qal","fx":{"perf":5},"r":"Sabit gəlir indi daha vacibdir."},
+ {"t":"Təqaüd imkanı axtar","trait":{"independence":2},"odds":[{"p":0.4,"fx":{"smarts":5,"flag":"course_done"},"do":[{"schedule":{"event":"az_chain_course_pays","after_years":[1,2]}}],"r":"Qrant qazandın! Kurs pulsuzdur."},{"p":0.6,"fx":{"happy":-2},"r":"Bu il qrant olmadı. Gələn il yenə yoxlayarsan."}]}]},
+{"id":"az_chain_course_pays","cat":"career","tone":"everyday","age":[23,35],"scheduled_only":true,"icon":"📈","cond":{"flag":"course_done","job":true},"t":"Kursda öyrəndiklərin işdə gözə çarpdı. Rəhbərin səni çağırdı.","ch":[
+ {"t":"Eşidirəm","fx":{"happy":8,"perf":10},"do":[{"promote":true}],"r":"Vəzifə artımı! O yuxusuz gecələr boşa getmədi."}]},
+{"id":"az_life_24","cat":"family","tone":"dramatic","age":[22,30],"icon":"🏥","visual":"hospital_corridor","cond":{"has_any":["ana","ata"]},"t":"{sick_parent} xəstəxanada müayinədədir. Həkimlər hələ heç nə demir. Sabah isə işdə vacib gündür.","ch":[
+ {"t":"Yanında ol","fx":{"rel":{"ana":10,"ata":10},"perf":-5},"trait":{"family":4},"r":"Bütün günü dəhlizdə oturdun. Axşam nəticə gəldi: təhlükəli deyil. Əlini tutmuşdun."},
+ {"t":"İş və ailə vaxtını bölüşdür","fx":{"rel":{"ana":4,"ata":4},"happy":-3},"trait":{"discipline":2},"r":"Səhər xəstəxana, günorta iş, axşam yenə xəstəxana. Yorğunsan, amma hər yerə çatdın."},
+ {"t":"Başqa qohumlardan dəstək istə","fx":{"rel":{"ana":-2,"ata":-2}},"r":"Bibin gəldi, sən işə getdin. Gecə zəng etdin, amma içində bir boşluq qaldı."}]},
+{"id":"az_life_25","cat":"career","tone":"everyday","age":[24,30],"icon":"🏙️","visual":"bus_stop","cond":{"job":true},"t":"Başqa şəhərdə daha yaxşı iş təklifi aldın: maaş iki dəfə çox, amma ailədən uzaq.","ch":[
+ {"t":"Təklifi qəbul et","fx":{"happy":4,"rel":{"ana":-4}},"trait":{"independence":3},"do":[{"move_city":"random"},{"promote":true}],"r":"Çamadanı yığdın. İndi {city} şəhərində yaşayırsan."},
+ {"t":"Yaxınlarınla müzakirə et","trait":{"family":3},"odds":[{"p":0.5,"do":[{"move_city":"random"},{"promote":true}],"r":"Ailə dedi: “Get, gələcəyin üçündür.” {city} şəhərinə köçdün."},{"p":0.5,"fx":{"rel":{"ana":5}},"r":"Birlikdə qərara gəldiniz ki, qalasan. Anan çox sevindi."}]},
+ {"t":"Yaşadığın yerdə qal","fx":{"happy":1},"r":"Burada evin, dostların, köklərin var."}]}
+]

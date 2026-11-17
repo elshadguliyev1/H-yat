@@ -1,0 +1,184 @@
+[
+{"id":"ordu","cat":"military","tone":"dramatic","age":[18,35],"force":true,"icon":"🎖️","cond":{"army_due":true},"t":"Hərbi komissarlıqdan çağırış vərəqəsi gəldi. Vətən borcunu ödəmək vaxtıdır.","ch":[
+ {"t":"Xidmətə get","fx":{"happy":-4},"do":[{"army_start":true}],"r":"{months} aylıq hərbi xidmətə yola düşdün. Anan suyu arxanca atdı 💧"}]},
+{"id":"ordu_hadise","cat":"military","tone":"everyday","age":[18,36],"icon":"🪖","cond":{"army":"active"},"t":"Hərbi hissədə komandir səni növbətçi təyin etdi, amma çox yorğunsan.","ch":[
+ {"t":"Ayıq qal, növbəni çək","fx":{"fitness":3,"smarts":1,"flag":"orduTerif"},"r":"Komandir intizamını təriflədi, məzuniyyət verdi!","trait":{"discipline":3}},
+ {"t":"Bir az mürgülə","odds":[{"p":0.5,"r":"Heç kim görmədi, şanslısan."},{"p":0.5,"fx":{"happy":-8,"fitness":2},"r":"Tutuldun. Bir həftə kartof soydun 🥔"}]}]},
+{"id":"ordu_dost","cat":"military","tone":"everyday","age":[18,36],"icon":"🫡","cond":{"army":"active"},"t":"Eyni çadırda yatdığın əsgər yoldaşı evdən məktub ala bilmir, çox darıxır.","ch":[
+ {"t":"Onunla danış, ürək-dirək ver","fx":{"happy":2},"do":[{"add_person":{"role":"dost","g":"same","age":[-1,1],"npc_flag":"army_friend"}}],"r":"{new} ilə ömürlük dost oldunuz. “Əsgər dostluğu” başqa olur.","trait":{"empathy":3}},
+ {"t":"Hər kəsin öz dərdi var","r":"Günlər keçdi. O, başqa bölüyə köçürüldü."}]},
+{"id":"uni_ilk","cat":"school","tone":"everyday","age":[17,20],"icon":"🏛️","cond":{"stage":"uni"},"t":"{fac}-də ilk gün! Tələbə həyatı başlayır.","ch":[
+ {"t":"Tələbə təşkilatına qoşul","fx":{"happy":5,"tal":{"social":5}},"do":[{"add_person":{"role":"dost","g":"any","age":"self"}}],"r":"Yeni dost: {new}."},
+ {"t":"Kitabxanada otur","fx":{"smarts":5},"r":"Müəllimlər adını tez öyrəndi.","trait":{"discipline":2}}]},
+{"id":"uni_sessiya","cat":"school","tone":"everyday","age":[18,26],"once":false,"cool":2,"icon":"📚","cond":{"stage":["uni","magistr"]},"t":"Sessiyadır. Sabah çətin imtahan var, amma dostlar ad gününə çağırır.","ch":[
+ {"t":"Oxu","fx":{"smarts":4,"happy":-3},"r":"Əla aldın!","trait":{"discipline":1}},
+ {"t":"Ad gününə get","odds":[{"p":0.5,"fx":{"happy":6},"r":"Bilet şanslı gəldi, “4” aldın 😅"},{"p":0.5,"fx":{"happy":-6},"r":"Kəsildin. Yay tətilində yenidən verəcəksən."}]},
+ {"t":"Müəllimə “hədiyyə” apar","odds":[{"p":0.3,"fx":{"money":-200},"r":"Qiymət yazıldı, amma özündən utandın."},{"p":0.7,"fx":{"money":-200,"happy":-12},"r":"Müəllim hədiyyəni rədd etdi və dekana bildirdi. Töhmət aldın!"}],"trait":{"honesty":-3}}]},
+{"id":"uni_tecrube","cat":"career","tone":"everyday","age":[19,24],"icon":"🧑‍💼","cond":{"stage":"uni"},"t":"Böyük şirkət tələbələr üçün təcrübə proqramı elan edib.","ch":[
+ {"t":"Müraciət et","odds":[{"p":{"of":"st.smarts","div":120},"fx":{"smarts":4,"money":600,"happy":5,"flag":"tecrube"},"r":"Qəbul olundun! Yay boyu ödənişli təcrübə."},{"p":0.4,"fx":{"happy":-3},"r":"Bu dəfə alınmadı."}]},
+ {"t":"Yayı dincəlməyə sərf et","fx":{"happy":6},"r":"Bütün yay Nabranda!"}]},
+{"id":"magistr_secim","cat":"school","tone":"everyday","age":[20,30],"force":true,"icon":"🎓","cond":{"flag":"pendingMasterQ"},"t":"Bakalavrı bitirdin! Magistraturaya davam edirsən, yoxsa iş həyatına başlayırsan?","ch":[
+ {"t":"Magistraturaya sənəd ver","odds":[{"p":{"of":"st.smarts","div":110},"fx":{"happy":8,"unflag":"pendingMasterQ"},"do":[{"master_start":true}],"r":"Magistraturaya qəbul olundun! İki il də oxuyacaqsan."},{"p":0.4,"fx":{"happy":-6,"unflag":"pendingMasterQ"},"do":[{"master_skip":true}],"r":"Bal çatmadı. İş axtarmaq vaxtıdır."}],"trait":{"discipline":2}},
+ {"t":"İşə başlayıram","fx":{"unflag":"pendingMasterQ"},"do":[{"master_skip":true}],"r":"Diplom əlində, iş axtarmağa başladın. (Fəaliyyət → İş axtar)"}]},
+{"id":"vesiqe","cat":"life","tone":"everyday","age":[18,30],"once":false,"cool":2,"icon":"🚗","cond":{"no_flag":"vesiqe"},"t":"Sürücülük vəsiqəsi almaq istəyirsən. Kurs 400 ₼-dır.","ch":[
+ {"t":"Kursa yazıl","cond":{"money_gte":400},"odds":[{"p":0.7,"fx":{"money":-400,"happy":6,"flag":"vesiqe"},"r":"İmtahanı ilk dəfədən verdin! 🎉"},{"p":0.3,"fx":{"money":-400,"happy":-4},"r":"Parkovkada dirəyə dəydin. Bir də verəcəksən."}]},
+ {"t":"Lazım deyil, metro var","r":"Hələlik piyada və metro."}]},
+{"id":"sevgili_tanis","cat":"love","tone":"everyday","age":[18,40],"w":2,"icon":"☕","cond":{"has_not":["sevgili","həyat yoldaşı"]},"t":"Kafedə yanındakı masada oturan biri gülümsədi.","ch":[
+ {"t":"Yaxınlaş, tanış ol","odds":[{"p":{"of":"st.looks","div":200,"add":0.3},"fx":{"happy":10},"do":[{"add_person":{"role":"sevgili","g":"other","age":[-3,3]}}],"r":"{new} ilə nömrə dəyişdiniz. Görüşməyə başladınız 💕"},{"p":0.5,"fx":{"happy":-4},"r":"Nişanlı imiş 😅"}],"trait":{"courage":2}},
+ {"t":"Utan, kofeni iç","r":"Bu da bir hekayə olaraq qaldı."}]},
+{"id":"sevgili_dava","cat":"love","tone":"dramatic","age":[16,50],"once":false,"cool":3,"icon":"😠","cond":{"has":["sevgili"]},"t":"{sevgili} deyir ki, ona az vaxt ayırırsan.","ch":[
+ {"t":"Haqlısan, dəyişəcəyəm","fx":{"rel":{"sevgili":8},"happy":1},"r":"Romantik şam yeməyi təşkil etdin."},
+ {"t":"Mənim də işim var!","odds":[{"p":0.5,"fx":{"rel":{"sevgili":-12}},"r":"Küsdü, amma iki gün sonra barışdınız."},{"p":0.5,"fx":{"happy":-10},"do":[{"remove_role":{"role":"sevgili","note":"ayrıldı"}}],"r":"Ayrıldınız. 💔"}]}]},
+{"id":"evlilik","cat":"love","tone":"dramatic","age":[20,50],"w":3,"icon":"💍","cond":{"has":["sevgili"],"rel_gt":{"sevgili":62}},"t":"{sevgili} ilə münasibətiniz çox ciddidir. Evlilik təklifi etmək vaxtı deyilmi?","ch":[
+ {"t":"Elçi göndər, toy et!","fx":{"money":-8000,"happy":18,"flag":"evli"},"do":[{"promote_role":{"from":"sevgili","to":"həyat yoldaşı","rel":10}}],"r":"🎉 Toyunuz oldu! 400 qonaq, səhərə qədər “Uzundərə”. {new} artıq həyat yoldaşındır."},
+ {"t":"Kiçik nikah, toysuz","fx":{"money":-1000,"happy":12,"flag":"evli","rel":{"ana":-5}},"do":[{"promote_role":{"from":"sevgili","to":"həyat yoldaşı"}}],"r":"Sadə nikah. Qohumlar bir az incidi, amma {new} ilə xoşbəxtsiniz."},
+ {"t":"Hələ tezdir","fx":{"rel":{"sevgili":-8}},"r":"Gözləyəcəksiniz…"}]},
+{"id":"usaq","cat":"family","tone":"dramatic","age":[21,45],"once":false,"cool":3,"w":2,"icon":"👶","cond":{"has":["həyat yoldaşı"],"count_lt":{"uşaq":4}},"t":"Ailənizə yeni üzv gəlir! Uşaq istəyirsinizmi?","ch":[
+ {"t":"Bəli! 🍼","fx":{"happy":15,"money":-1500},"do":[{"add_person":{"role":"uşaq","g":"any","age":0,"last":true}}],"r":"{child} dünyaya gəldi! Adını {new} qoydunuz."},
+ {"t":"Hələ yox","r":"Bir az gözləyəcəksiniz."}]},
+{"id":"usaq_mekteb","cat":"family","tone":"everyday","age":[27,60],"icon":"🎒","cond":{"kid_age_eq":6},"t":"{kid6} birinci sinfə gedir! Səni də valideyn iclasına çağırırlar.","ch":[
+ {"t":"Valideyn komitəsinə qoşul","fx":{"happy":3,"rel":{"uşaq":8}},"r":"İndi bütün sinif valideynlərinin WhatsApp qrupundasan 😅"},
+ {"t":"Sadəcə çiçək al, apar","fx":{"happy":2,"rel":{"uşaq":4}},"r":"Ən gözəl buket sizinki idi 💐"}]},
+{"id":"valideyn_xeste","cat":"family","tone":"dramatic","age":[25,60],"icon":"🏥","cond":{"parent_age_gt":62},"t":"{sick_parent} xəstələnib, xəstəxanaya yerləşdirilib. Müalicə bahalıdır.","ch":[
+ {"t":"Bütün xərcləri ödə","fx":{"money":-4000,"happy":-3,"rel":{"ana":10,"ata":10}},"r":"Vaxtında müalicə edildi və sağaldı. Sənə dua edir.","trait":{"family":3}},
+ {"t":"Qardaş-bacılarla böl","cond":{"has_any":["qardaş","bacı"]},"fx":{"money":-1500,"rel":{"ana":6,"ata":6,"qardaş":4,"bacı":4}},"r":"Hamı birləşdi, müalicə uğurlu oldu."},
+ {"t":"Pulum yoxdur","fx":{"happy":-10,"rel":{"ana":-4,"ata":-4}},"r":"Qohumlar kömək etdi, amma özünü çox pis hiss edirsən."}]},
+{"id":"dost_borc","cat":"friends","tone":"everyday","age":[18,60],"icon":"💸","cond":{"has":["dost"],"money_gt":1000},"t":"Dostun {dost} 1000 ₼ borc istəyir: “Bir aya qaytaracağam, söz verirəm.”","ch":[
+ {"t":"Ver","odds":[{"p":0.55,"fx":{"rel":{"dost":10}},"r":"Söz verdiyi kimi qaytardı və sənə şirniyyat gətirdi."},{"p":0.45,"fx":{"money":-1000,"rel":{"dost":-15},"happy":-6},"r":"Bir il keçdi, pul yoxdur. Telefonunu da açmır."}],"trait":{"empathy":2}},
+ {"t":"Yarısını ver","fx":{"money":-500,"rel":{"dost":3}},"r":"Başqasından tamamladı. Pul qayıtmadı, amma dostluq qaldı."},
+ {"t":"Bağışla, ola bilməz","fx":{"rel":{"dost":-8}},"r":"Başa düşdü… deyəsən."}]},
+{"id":"lotereya","cat":"money","tone":"rare","age":[18,80],"once":false,"cool":6,"icon":"🎟️","t":"Köşkdə lotereya bileti satırlar. 2 manatdır.","ch":[
+ {"t":"Bir dənə al","odds":[{"p":0.03,"fx":{"money":50000,"happy":25},"r":"İNANILMAZ! 50 000 ₼ uddun! 🎉"},{"p":0.17,"fx":{"money":18,"happy":3},"r":"20 manat uddun!"},{"p":0.8,"fx":{"money":-2},"r":"Heç nə çıxmadı."}]},
+ {"t":"Almaram","r":"Pulunu cibində saxladın."}]},
+{"id":"firildaq","cat":"money","tone":"everyday","age":[18,75],"icon":"📞","t":"Zəng gəlir: “Təbriklər! Siz maşın qazandınız. Sadəcə 300 ₼ vergi köçürün.”","ch":[
+ {"t":"Köçür!","fx":{"money":-300,"happy":-10},"r":"Təbii ki, maşın yox idi. Fırıldaqçılar 300 ₼-nı apardı."},
+ {"t":"Dəstəyi qoy","fx":{"smarts":1},"r":"Ağıllı qərar. Bu, fırıldaq idi."},
+ {"t":"Polisə xəbər ver","fx":{"happy":4},"r":"Polis bu nömrəni artıq axtarırmış. Təşəkkür etdilər."}]},
+{"id":"qonsu","cat":"life","tone":"everyday","age":[20,80],"once":false,"cool":8,"icon":"🔊","t":"Qonşu gecə saat 2-də yenə ucadan musiqi qoyub.","ch":[
+ {"t":"Qapısını döy","odds":[{"p":0.6,"r":"Üzr istədi, səsini azaltdı."},{"p":0.4,"fx":{"happy":-5},"r":"Söz-söhbət oldu. İndi bir-birinizə salam vermirsiniz."}]},
+ {"t":"Mən də ucadan musiqi qoyum","fx":{"happy":3},"r":"Səhərə qədər səs yarışı 😅"},
+ {"t":"Qulaqlıq tax, yat","fx":{"happy":-2},"r":"Pis yatdın."}]},
+{"id":"idman_zal","cat":"health","tone":"everyday","age":[18,55],"icon":"🏋️","t":"Yaxınlıqda yeni idman zalı açılıb, illik abunə 600 ₼.","ch":[
+ {"t":"Abunə ol, hər gün get","cond":{"money_gte":600},"fx":{"money":-600,"fitness":10,"health":5,"looks":3},"r":"Bir ildə tanınmaz oldun! 💪","trait":{"discipline":3}},
+ {"t":"Abunə ol… və getmə","cond":{"money_gte":600},"fx":{"money":-600,"happy":-2},"r":"Klassik. İki dəfə getdin 😅"},
+ {"t":"Parkda qaçaram","fx":{"fitness":5,"health":3},"r":"Pulsuz və təmiz hava!"}]},
+{"id":"xestelik","cat":"health","tone":"dramatic","age":[25,90],"once":false,"cool":7,"icon":"🩺","t":"Son vaxtlar tez-tez başın ağrıyır, yorğunsan.","ch":[
+ {"t":"Tam müayinədən keç","fx":{"money":-300,"health":8},"r":"Vaxtında tapıldı, müalicə başladı. Həkim sənə rejim yazdı."},
+ {"t":"Keçər, işim çoxdur","odds":[{"p":0.5,"fx":{"health":-6},"r":"Keçdi… amma yorğunluq qaldı."},{"p":0.5,"fx":{"health":-18},"r":"Bir gün işdə huşunu itirdin. Xəstəxanaya düşdün."}]}]},
+{"id":"qeza","cat":"life","tone":"dramatic","age":[18,80],"icon":"🚑","cond":{"asset":"maşın"},"t":"Yağışlı gecədə maşın sürürdün, qabaqdakı qəfil əyləc basdı.","ch":[
+ {"t":"Kəskin əyləc bas","odds":[{"p":0.6,"fx":{"happy":-2},"r":"Son anda dayandın. Ürəyin ağzına gəldi."},{"p":0.4,"fx":{"money":-2500,"health":-10},"r":"Toqquşdunuz. Maşın təmirdə, sən isə 2 həftə xəstəxanada."}]},
+ {"t":"Yan tərəfə dön","odds":[{"p":0.5,"r":"Ustalıqla yan keçdin! 🏎️"},{"p":0.5,"fx":{"money":-4000,"health":-15},"r":"Səki kənarına çıxdın. Ağır qəza…"}]}]},
+{"id":"miras","cat":"family","tone":"dramatic","age":[30,75],"icon":"📜","cond":{"parent_died_last_year":true},"t":"Valideyninin vəsiyyəti açıldı. Kənddəki ev və bir az pul sənə qalıb.","ch":[
+ {"t":"Evi sat, pulu götür","fx":{"money":25000},"r":"Ev satıldı. Amma uşaqlığın o evdə qaldı…"},
+ {"t":"Evi saxla, yay evi olsun","do":[{"add_asset":{"type":"ev","t":"Kənddəki ata evi","value":30000}}],"r":"Hər yay uşaqlarınla ora gedəcəksən 🏡","trait":{"family":3}}]},
+{"id":"pul_investisiya","cat":"money","tone":"everyday","age":[22,70],"once":false,"cool":5,"icon":"📈","cond":{"money_gt":5000},"t":"Tanışın kriptovalyutaya pul qoymağı təklif edir: “Bir ayda iki qat!”","ch":[
+ {"t":"5000 ₼ qoy","odds":[{"p":0.3,"fx":{"money":7000,"happy":10},"r":"Qiymət qalxdı! 12 000 ₼ ilə çıxdın."},{"p":0.7,"fx":{"money":-5000,"happy":-12},"r":"Bazar çökdü. Pul getdi."}]},
+ {"t":"Bankda depozit aç","fx":{"money":400},"r":"Sakit və etibarlı: illik 8%.","trait":{"discipline":1}},
+ {"t":"Heç nə etmə","r":"Pulun yerində qaldı."}]},
+{"id":"heyat_bohran","cat":"life","tone":"dramatic","age":[38,50],"icon":"🤔","t":"Bir səhər oyandın və düşündün: “Mən həyatımda nə edirəm?” Uşaqkən {xəyal} olmaq istəyirdin. İndi isə: {job_now}.","ch":[
+ {"t":"Yeni bir hobbi tap","fx":{"happy":8},"r":"Rəssamlıq kursuna yazıldın. Ruhun dincəldi 🎨"},
+ {"t":"Bahalı maşın al","cond":{"money_gt":60000},"fx":{"money":-60000,"happy":10,"looks":2},"do":[{"add_asset":{"type":"maşın","t":"Qırmızı kabriolet","value":60000}}],"r":"Qırmızı kabriolet! Klassik “orta yaş böhranı” 😎"},
+ {"t":"Həyatım yaxşıdır, şükür","fx":{"happy":5},"r":"Bəzən hər şeyin qədrini bilmək kifayətdir."}]},
+{"id":"mezun_gorus","cat":"friends","tone":"everyday","age":[27,50],"once":false,"cool":10,"icon":"🍽️","t":"Sinif yoldaşları ilə 10 illik görüş! Hamı uğurlarından danışır.","ch":[
+ {"t":"Get və danış","cond":{"job":true},"fx":{"happy":5},"r":"“{iş}” olduğunu eşidəndə hamı təəccübləndi."},
+ {"t":"Get və danış","cond":{"job":false},"fx":{"happy":2},"r":"İşsiz olduğunu deyəndə bir az utandın, amma köhnə dostlarla gülüşdünüz."},
+ {"t":"Getmə","r":"Fotolara Pıçıltı-dan baxdın."}]},
+{"id":"nevr","cat":"family","tone":"dramatic","age":[25,70],"icon":"🧓","cond":{"kid_age_gte":22,"no_flag":"neve"},"t":"Övladın deyir ki, ailə qurmaq istəyir!","ch":[
+ {"t":"Xeyir-dua ver, toy et","fx":{"money":-6000,"happy":15,"flag":"neve"},"r":"Gözəl toy oldu. Tezliklə nəvə gələcək!"},
+ {"t":"Hələ tezdir, oxusun","fx":{"rel":{"uşaq":-8}},"r":"Övladın səndən incidi."}]},
+{"id":"neve_geldi","cat":"family","tone":"dramatic","age":[40,90],"icon":"👶","cond":{"flag_since_gte":{"neve":1},"no_flag":"neveGeldi"},"t":"Nəvən dünyaya gəldi! Səni “baba” və ya “nənə” çağıracaq.","ch":[
+ {"t":"Sevincdən uç!","fx":{"happy":20,"flag":"neveGeldi"},"do":[{"add_person":{"role":"nəvə","g":"any","age":0}}],"r":"Həyatın ən gözəl anlarından biri 💛 Nəvənin adı: {new}."}]},
+{"id":"polis_rusvet","cat":"career","tone":"dramatic","age":[18,65],"icon":"💰","cond":{"job":"polis"},"t":"Yol polisi postundasan. Sürət həddini aşan sürücü qovluğa 200 ₼ qoyub uzadır.","ch":[
+ {"t":"Protokol yaz","fx":{"perf":10,"happy":3},"r":"Qanun hamı üçün birdir. Rəhbərlik səni təriflədi.","trait":{"honesty":3}},
+ {"t":"Pulu götür","odds":[{"p":0.6,"fx":{"money":200,"happy":-4},"do":[{"flag_inc":"rusvet"},{"count":"crimes"}],"r":"Heç kim bilmədi… hələlik."},{"p":0.4,"fx":{"happy":-25,"flag":"cinayet"},"do":[{"end_job":{"reason":"rüşvət"}},{"count":"crimes"}],"r":"Gizli kamera imiş! İşdən çıxarıldın və məhkəmə şərti cəza verdi."}],"trait":{"honesty":-5}}]},
+{"id":"polis_qacaq","cat":"career","tone":"dramatic","age":[18,60],"icon":"🚓","cond":{"job":"polis"},"t":"Bank soyğunu! Şübhəli qaçır, sən təqib edirsən.","ch":[
+ {"t":"Arxasınca qaç","odds":[{"p":{"of":"st.fitness","div":110},"fx":{"perf":20,"fame":4,"happy":10},"do":[{"followers_rand":[500,4000]}],"r":"Tutdun! Xəbərlərdə adın çəkildi."},{"p":0.4,"fx":{"health":-8},"r":"Hasardan atlayanda ayağını burxdun, qaçdı."}],"trait":{"courage":3}},
+ {"t":"Yoldaşlara xəbər ver, mühasirə et","fx":{"perf":12,"smarts":2},"r":"Plan işlədi, şübhəli tutuldu."}]},
+{"id":"polis_usaq","cat":"career","tone":"everyday","age":[18,60],"icon":"🧒","cond":{"job":"polis"},"t":"Parkda azmış balaca bir uşaq ağlayır.","ch":[
+ {"t":"Ailəsini tap","fx":{"happy":8,"perf":5},"r":"Anası səni qucaqlayıb ağladı. Bu iş üçün dəyər.","trait":{"empathy":2}},
+ {"t":"Növbətçi hissəyə apar","fx":{"perf":3},"r":"Ailə yarım saat sonra tapıldı."}]},
+{"id":"hekim_novbe","cat":"career","tone":"dramatic","age":[22,65],"icon":"🚨","cond":{"job":"hekim"},"t":"Gecə növbəsi. Eyni anda iki ağır xəstə gətirildi.","ch":[
+ {"t":"Daha ağır olanı əvvəl","odds":[{"p":{"of":"st.smarts","div":110},"fx":{"perf":15,"happy":8},"r":"İkisini də xilas etdin. Səhər evə yorğun, amma xoşbəxt getdin."},{"p":0.3,"fx":{"happy":-12},"r":"Birini xilas edə bilmədin. Bu peşənin ən ağır anı…"}]},
+ {"t":"Başqa həkimi çağır","fx":{"perf":5},"r":"Komanda işi. Hər şey yaxşı bitdi."}]},
+{"id":"hekim_hediyye","cat":"career","tone":"everyday","age":[22,65],"icon":"🎁","cond":{"job":"hekim"},"t":"Sağalan xəstənin ailəsi sənə zərf uzadır: “Zəhmətinizə görə.”","ch":[
+ {"t":"Qəbul etmə","fx":{"happy":4,"perf":4},"r":"Təşəkkür etdin və bir qutu şokoladı götürdün.","trait":{"honesty":2}},
+ {"t":"Götür","odds":[{"p":0.7,"fx":{"money":500},"r":"Zərfdə 500 ₼ var idi."},{"p":0.3,"fx":{"money":500,"perf":-30},"r":"Kimsə şikayət yazdı. Xəbərdarlıq aldın."}],"trait":{"honesty":-2}}]},
+{"id":"hekim_ad","cat":"career","tone":"rare","age":[28,65],"icon":"🏆","cond":{"job":"hekim","job_lv_gte":2},"t":"Mürəkkəb əməliyyatı uğurla etdin. Jurnalistlər müsahibə istəyir.","ch":[
+ {"t":"Müsahibə ver","fx":{"fame":8,"happy":6},"do":[{"followers_rand":[2000,15000]}],"r":"İndi səni “qızıl əllər” deyə tanıyırlar."},
+ {"t":"Təvazökar ol, imtina et","fx":{"perf":6},"r":"Sənin üçün xəstənin sağlığı kifayətdir."}]},
+{"id":"fut_derbi","cat":"career","tone":"dramatic","age":[17,36],"once":false,"cool":2,"icon":"🏟️","cond":{"job":"futbolcu"},"t":"Böyük derbi! Stadion doludur, son dəqiqədə penalti sənə tapşırıldı.","ch":[
+ {"t":"Küncə vur","odds":[{"p":{"of":"st.fitness","div":300,"add":0.45},"fx":{"fame":6,"happy":15,"perf":15},"do":[{"followers_rand":[5000,40000]}],"r":"QOOOL! Stadion partladı! 🔥"},{"p":0.35,"fx":{"happy":-12,"fame":-2,"perf":-10},"r":"Qapıçı tutdu… Azarkeşlər səni fit səsləri ilə yola saldı."}]},
+ {"t":"Ortaya, “Panenka”","odds":[{"p":0.45,"fx":{"fame":10,"happy":18},"do":[{"followers_rand":[20000,90000]}],"r":"Panenka! Bu qolu illərlə xatırlayacaqlar."},{"p":0.55,"fx":{"fame":-4,"happy":-18,"perf":-15},"r":"Qapıçı yerində qaldı və topu asanca tutdu. Mem oldun 😬"}],"trait":{"courage":3}}]},
+{"id":"fut_transfer","cat":"career","tone":"rare","age":[19,31],"w":2,"icon":"✈️","cond":{"job":"futbolcu","job_lv_gte":1,"job_lv_lt":4,"job_perf_gt":60},"t":"{country} klubu səninlə maraqlanır. Transfer təklifi gəldi!","ch":[
+ {"t":"Qəbul et, xaricə get","odds":[{"p":0.7,"fx":{"happy":12,"fame":8},"do":[{"promote":true}],"r":"Yeni klub, yeni ölkə! Ailən səninlə fəxr edir."},{"p":0.3,"fx":{"happy":-8},"r":"Tibbi yoxlamadan keçmədin. Transfer baş tutmadı."}]},
+ {"t":"Öz klubumda qalıram","fx":{"rel":{"məşqçi":10},"fame":3},"r":"Azarkeşlər sadiqliyini unutmayacaq."}]},
+{"id":"fut_zede","cat":"career","tone":"dramatic","age":[17,36],"icon":"🩼","cond":{"job":"futbolcu"},"t":"Məşqdə ağır zədə aldın: ön çarpaz bağ qırılıb.","ch":[
+ {"t":"Əməliyyat və uzun bərpa","fx":{"health":-10,"fitness":-10,"money":-3000},"r":"8 ay meydandan uzaq qaldın, amma tam sağaldın."},
+ {"t":"Ağrıkəsici ilə oyna","odds":[{"p":0.4,"fx":{"perf":10},"r":"Dişini sıxıb oynadın, komanda qazandı."},{"p":0.6,"fx":{"health":-25,"fitness":-20},"r":"Zədə ağırlaşdı. Karyeran təhlükədədir…"}]}]},
+{"id":"fut_milli","cat":"career","tone":"rare","age":[19,33],"icon":"🇦🇿","cond":{"job":"futbolcu","job_lv_gte":1,"stat_gt":{"fitness":65}},"t":"Milli komandaya çağırış aldın!","ch":[
+ {"t":"Fəxrlə qəbul et","fx":{"fame":10,"happy":15,"rel":{"ata":10},"flag":"milli"},"do":[{"followers_rand":[10000,50000]}],"r":"Himn çalınanda gözlərin doldu. Atan tribunada ağlayırdı. 🇦🇿"}]},
+{"id":"mug_toy","cat":"career","tone":"everyday","age":[16,60],"once":false,"cool":2,"icon":"💃","cond":{"job":"mugenni"},"t":"Böyük bir toya dəvət olunmusan. Toy sahibi “bir mahnı da, bir mahnı da” deyir, saat artıq gecə 2-dir.","ch":[
+ {"t":"Oxumağa davam et","fx":{"money":1500,"health":-3,"happy":2},"r":"Pullar başına yağdı 💸"},
+ {"t":"Nəzakətlə bitir","fx":{"money":600},"r":"Səsini qorudun, sabah konsert var."}]},
+{"id":"mug_klip","cat":"career","tone":"everyday","age":[16,55],"icon":"🎬","cond":{"job":"mugenni"},"t":"Yeni mahnına klip çəkmək istəyirsən. Prodüser 10 000 ₼ istəyir.","ch":[
+ {"t":"Çək","cond":{"money_gte":10000},"odds":[{"p":0.5,"fx":{"money":-10000,"fame":12,"happy":10},"do":[{"promote":true},{"followers_rand":[30000,150000]}],"r":"Klip trendlərdə 1-ci oldu!"},{"p":0.5,"fx":{"money":-10000,"happy":-8},"r":"Klipə heç kim baxmadı. Pul getdi."}]},
+ {"t":"Telefonla özüm çəkərəm","odds":[{"p":0.3,"fx":{"fame":6},"do":[{"followers_rand":[10000,50000]}],"r":"Səmimiliyi bəyənildi, viral oldu!"},{"p":0.7,"fx":{"happy":-2},"r":"Pis çıxdı, silmək məcburiyyətində qaldın."}]}]},
+{"id":"mug_reqib","cat":"career","tone":"dramatic","age":[18,55],"icon":"🎤","cond":{"job":"mugenni","fame_gt":25},"t":"Başqa bir müğənni Pıçıltı-da səni “səsi yoxdur” deyə ələ salıb.","ch":[
+ {"t":"Cavab ver, dava et","odds":[{"p":0.5,"fx":{"fame":6,"happy":3},"r":"Mübahisə bütün ölkəni bölüb. Mahnılarına baxış iki qat artdı!"},{"p":0.5,"fx":{"fame":-4,"happy":-8},"r":"Səni “qaba” adlandırdılar, konsert ləğv olundu."}]},
+ {"t":"Mahnı ilə cavab ver","fx":{"fame":4,"happy":5},"r":"Yeni mahnın hamıya cavab oldu 🎶"},
+ {"t":"Səssiz qal","fx":{"smarts":2},"r":"Böyüklük göstərdin."}]},
+{"id":"mue_sagird","cat":"career","tone":"everyday","age":[21,65],"icon":"🧑‍🎓","cond":{"job":"muellim"},"t":"Sinifdə çox istedadlı, amma kasıb ailədən olan bir şagird var. Repetitorluğa pulu yoxdur.","ch":[
+ {"t":"Pulsuz dərs ver","fx":{"happy":10,"perf":5,"flag":"sagirdUgur"},"r":"Hər həftə iki saat. Gözlərindəki işığı görmək kifayətdir.","do":[{"schedule":{"event":"chain_sagird_zeng","after_years":[5,9]}}],"trait":{"empathy":3}},
+ {"t":"Normal dərsdə kömək et","fx":{"perf":3},"r":"Əlindən gələni etdin."}]},
+{"id":"chain_sagird_zeng","cat":"career","tone":"dramatic","age":[26,80],"scheduled_only":true,"icon":"☎️","cond":{"flag":"sagirdUgur"},"t":"Tanımadığın nömrədən zəng: “Müəllim, məni xatırlayırsız? Pulsuz dərs verdiyiniz şagirdəm. Universiteti ən yüksək balla bitirdim.”","ch":[
+ {"t":"Kövrəl, təbrik et","fx":{"happy":15},"r":"Telefonu qoyandan sonra uzun müddət pəncərədən baxdın. Bu, həyatının ən böyük mükafatı idi."}]},
+{"id":"mue_valideyn","cat":"career","tone":"everyday","age":[21,65],"icon":"😤","cond":{"job":"muellim"},"t":"Bir valideyn qiymətə görə direktora şikayət edib: “Mənim uşağım əlaçıdır!”","ch":[
+ {"t":"Qiyməti dəyişmə, sübut göstər","fx":{"perf":8},"r":"Direktor səni müdafiə etdi.","trait":{"honesty":2}},
+ {"t":"Qiyməti qaldır","fx":{"perf":-5,"happy":-5},"r":"Problem qapandı, amma vicdanın narahatdır.","trait":{"honesty":-2}}]},
+{"id":"proq_bug","cat":"career","tone":"everyday","age":[18,65],"icon":"🐛","cond":{"job":"proqramci"},"t":"Cümə axşamı saat 18:00. Serverlər çökdü, şirkət hər dəqiqə pul itirir.","ch":[
+ {"t":"Gecə qal, düzəlt","odds":[{"p":{"of":"st.smarts","div":105},"fx":{"perf":18,"happy":4,"health":-3},"r":"Səhər 4-də tapdın: bir vergül! Hamı səni qəhrəman adlandırdı."},{"p":0.3,"fx":{"perf":-5,"health":-5},"r":"Səhərə qədər tapa bilmədin, başqası düzəltdi."}],"trait":{"discipline":2}},
+ {"t":"Mənim növbəm deyil","fx":{"perf":-10},"r":"Rəhbər bunu yadda saxladı."}]},
+{"id":"proq_startap","cat":"career","tone":"rare","age":[22,50],"icon":"🚀","cond":{"job":"proqramci","job_lv_gte":1},"t":"Dostunla öz startapınızı qurmaq istəyirsiniz. Bunun üçün işdən çıxmalısan.","ch":[
+ {"t":"Risk et!","odds":[{"p":0.35,"fx":{"happy":15,"fame":5,"money":20000},"do":[{"start_job":{"id":"biznes","lv":1,"note":"Startap qurdu"}}],"r":"İnvestor tapıldı! Şirkətin dəyəri artır."},{"p":0.65,"fx":{"happy":-12,"money":-5000},"do":[{"end_job":{"reason":"startap"}}],"r":"Bir il sonra startap bağlandı. Yenidən iş axtarmalısan."}],"trait":{"independence":4}},
+ {"t":"Stabil iş daha yaxşıdır","fx":{"happy":-2},"r":"Dostun tək başladı…"}]},
+{"id":"proq_xarici","cat":"career","tone":"rare","age":[22,45],"icon":"🌍","cond":{"job":"proqramci","job_lv_gte":2},"t":"Avropada böyük texnologiya şirkəti sənə uzaqdan iş təklif edir. Maaş indikindən 3 dəfə çoxdur.","ch":[
+ {"t":"Qəbul et","fx":{"happy":12,"perf":10},"do":[{"promote":true}],"r":"Evdən işləyirsən, maaş avro ilə!"},
+ {"t":"Komandamı tərk etmərəm","fx":{"perf":10,"money":3000},"r":"Rəhbər bunu bilib maaşını artırdı."}]},
+{"id":"biz_vergi","cat":"career","tone":"dramatic","age":[20,75],"icon":"🧾","cond":{"job":"biznes"},"t":"Vergi yoxlaması gəldi. Mühasibin “bir az düzəliş edək” deyir.","ch":[
+ {"t":"Hər şey qanuni olsun","fx":{"money":-3000},"r":"Bir az cərimə ödədin, amma rahat yatırsan.","trait":{"honesty":3}},
+ {"t":"Düzəliş et","odds":[{"p":0.5,"fx":{"money":2000},"r":"Yoxlama heç nə tapmadı."},{"p":0.5,"fx":{"money":-25000,"happy":-15},"r":"Tapdılar! Böyük cərimə və şirkətin adı xəbərlərdə."}],"trait":{"honesty":-3}}]},
+{"id":"biz_genislen","cat":"career","tone":"everyday","age":[22,70],"icon":"🏬","cond":{"job":"biznes","money_gt":30000,"job_lv_lt":4},"t":"Biznesini genişləndirmək üçün ikinci filial açmaq olar. 30 000 ₼ lazımdır.","ch":[
+ {"t":"Aç","odds":[{"p":{"of":"st.smarts","div":300,"add":0.4},"fx":{"money":-30000,"happy":10},"do":[{"promote":true}],"r":"Filial uğurlu oldu, gəlirlər artdı!"},{"p":0.4,"fx":{"money":-30000,"happy":-10},"r":"Yeri pis seçildi, filial bağlandı."}]},
+ {"t":"Gözlə","r":"Ehtiyatlı olmaq da strategiyadır."}]},
+{"id":"akt_rol","cat":"career","tone":"everyday","age":[17,70],"once":false,"cool":3,"icon":"🎬","cond":{"job":"aktyor"},"t":"Yeni serialda rol təklif olunur, amma ssenari çox zəifdir.","ch":[
+ {"t":"Razılaş, pul lazımdır","fx":{"money":5000,"fame":4,"happy":-2},"r":"Serial çox baxıldı, amma tənqidçilər səni ələ saldı."},
+ {"t":"Yaxşı rolu gözlə","odds":[{"p":0.4,"fx":{"fame":10,"happy":12},"do":[{"promote":true}],"r":"Kino rejissoru səni baş rola çağırdı!"},{"p":0.6,"fx":{"happy":-6,"money":-1000},"r":"Bir il heç bir təklif gəlmədi…"}]}]},
+{"id":"akt_festival","cat":"career","tone":"rare","age":[20,70],"icon":"🏆","cond":{"job":"aktyor","job_lv_gte":2},"t":"Filmin beynəlxalq kinofestivala seçilib!","ch":[
+ {"t":"Qırmızı xalçaya çıx","odds":[{"p":0.35,"fx":{"fame":18,"happy":20},"do":[{"promote":true},{"followers_rand":[50000,300000]}],"r":"Ən yaxşı aktyor mükafatı! 🏆"},{"p":0.65,"fx":{"fame":6,"happy":8},"r":"Mükafat almadın, amma bütün dünya səni gördü."}]}]},
+{"id":"is_musteri","cat":"career","tone":"everyday","age":[16,65],"icon":"😡","cond":{"job":["ofisiant","satici","kuryer","taksi"]},"t":"Əsəbi bir müştəri səni hamının qarşısında təhqir edir.","ch":[
+ {"t":"Səbirli ol","fx":{"happy":-3,"perf":8},"r":"Müdir səbrini gördü və təriflədi."},
+ {"t":"Cavab ver","odds":[{"p":0.5,"fx":{"happy":4},"r":"Haqqını müdafiə etdin."},{"p":0.5,"fx":{"perf":-25},"r":"Müdir səni danladı, xəbərdarlıq aldın."}],"trait":{"courage":2}}]},
+{"id":"is_gecikme","cat":"career","tone":"everyday","age":[18,65],"once":false,"cool":4,"icon":"⏰","cond":{"job":true},"t":"Səhər yatıb qaldın, işə 1 saat gecikirsən.","ch":[
+ {"t":"Taksi tut, tez çat","fx":{"money":-15},"r":"Cəmi 20 dəqiqə gecikdin."},
+ {"t":"Rəhbərə doğrusunu de","fx":{"perf":-3},"r":"Rəhbər başa düşdü, amma bir daha olmasın dedi.","trait":{"honesty":2}},
+ {"t":"Bəhanə uydur","odds":[{"p":0.6,"r":"“Tıxac idi” — inandı."},{"p":0.4,"fx":{"perf":-12},"r":"Rəhbər Pıçıltı-da səhər çəkdiyin selfini gördü 😬"}],"trait":{"honesty":-2}}]},
+{"id":"issiz","cat":"career","tone":"dramatic","age":[20,60],"once":false,"cool":3,"icon":"😔","cond":{"job":false,"stage_not":["uni","magistr"],"not":{"army":"active"},"no_flag":"teqaud"},"t":"Uzun müddətdir işsizsən. Pul azalır, ailə narahatdır.","ch":[
+ {"t":"Kuryer kimi müvəqqəti işlə","do":[{"start_job":{"id":"kuryer"}}],"r":"Ən azından gəlir var."},
+ {"t":"Kurs keç, yeni peşə öyrən","fx":{"money":-500,"smarts":6},"do":[{"learn_code":2}],"r":"Proqramlaşdırma kursunu bitirdin. İndi daha çox imkanın var.","trait":{"discipline":2}},
+ {"t":"Gözlə, yaxşı iş tapılar","fx":{"happy":-5},"r":"Bir il də keçdi…"}]},
+{"id":"borc_bank","cat":"money","tone":"dramatic","age":[18,90],"once":false,"cool":3,"icon":"🏦","cond":{"money_lt":-3000},"t":"Bankdan zəng: “Borcunuz {debt}-dır. Ödəniş gecikir!”","ch":[
+ {"t":"Əlavə iş götür","fx":{"happy":-6,"health":-3},"do":[{"money_rand":[2000,5000]}],"r":"Gecələr də işlədin, {amount} qaytardın."},
+ {"t":"Valideynlərdən kömək istə","cond":{"has_any":["ana","ata"]},"fx":{"rel":{"ana":-4,"ata":-4}},"do":[{"money_rand":[1000,4000]}],"r":"Valideynlərin {amount} verdi. “Axırıncı dəfədir!”"},
+ {"t":"Maşını sat","cond":{"asset":"maşın"},"do":[{"sell_asset":"maşın"}],"r":"{asset} satıldı, borcun bir hissəsi bağlandı."},
+ {"t":"Zəngləri cavabsız qoy","fx":{"happy":-10},"do":[{"money_mul":1.1}],"r":"Problem yox olmadı, faizlər artdı."}]},
+{"id":"teqaud_heyat","cat":"life","tone":"everyday","age":[63,90],"icon":"🌳","cond":{"flag":"teqaud"},"t":"Təqaüddəsən. Səhərlər parkda yaşıdların nərd oynayır.","ch":[
+ {"t":"Qoşul, nərd oyna","fx":{"happy":8},"r":"Hər gün “Şeşbeş!” səsləri. Həyat gözəldir 🎲"},
+ {"t":"Bağ sal, pomidor ək","fx":{"happy":6,"health":4},"r":"Ən dadlı pomidorlar səninkidir 🍅"},
+ {"t":"Nəvələrlə vaxt keçir","cond":{"flag":"neveGeldi"},"fx":{"happy":10},"r":"Onlara nağıl danışdın: “Biri vardı, biri yoxdu…”"}]},
+{"id":"xatire","cat":"life","tone":"dramatic","age":[65,100],"icon":"📷","t":"Köhnə fotoalbomu vərəqləyirsən. 5 yaşında {xəyal} olmaq istəyirdin. Həyat isə səni {became} etdi.","ch":[
+ {"t":"Gülümsə: Həyat, sən nə qəribəsən!","fx":{"happy":10},"r":"Hər şeyin bir səbəbi var idi."},
+ {"t":"Kədərlən","fx":{"happy":-5},"r":"Bəzi qapılar açılmadı… amma başqaları açıldı."}]},
+{"id":"qoca_saglik","cat":"health","tone":"everyday","age":[65,100],"once":false,"cool":3,"icon":"💊","t":"Təzyiqin qalxıb. Həkim deyir ki, duz və şirniyyatı azaltmalısan.","ch":[
+ {"t":"Həkimin sözünə bax","fx":{"health":8,"happy":-3},"r":"Rejim çətindir, amma özünü yaxşı hiss edirsən.","trait":{"discipline":1}},
+ {"t":"Bu yaşda nəyi azaldım?","fx":{"health":-8,"happy":5},"r":"Bayram şəkərbürası dəyərdi 😋"}]}
+]
