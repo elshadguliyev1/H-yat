@@ -127,7 +127,8 @@ function jobTick() {
   if (j.id === "biznes") { const base = [800, 3000, 9000, 25000, 80000][j.lv]; j.income = Math.round(base * (0.3 + R() * 1.4) * (P.st.smarts / 70)); if (chance(0.12)) { j.income = -Math.round(base * 0.8); log("📉 Biznes bu il ziyana düşdü."); } }
   if (j.id === "futbolcu" && P.age >= 33 && chance((P.age - 32) / 5)) { endJob("təqaüdə çıxdı"); log("⚽ Futbol karyerasını bitirdi. Stadion ayaq üstə alqışladı."); return; }
   // company in crisis → layoffs
-  if (j.company < 18 && !["military", "law", "rescue"].includes(c.track) && chance(0.35)) { const t = jobTitle(); endJob("ixtisar"); log(`📉 ${t}: şirkət böhrana düşdü, ixtisara düşdün.`); apply({ happy: -12 }); return; }
+  if (j.company < 18 && c.track === "business" && chance(0.35)) { j.income = -Math.round(Math.abs(j.income || 0) * 0.6 + 1000); log("📉 Bazar çökdü: biznes bu il ziyana işlədi."); apply({ happy: -8 }); }
+  if (j.company < 18 && !["military", "law", "rescue", "business", "politics"].includes(c.track) && chance(0.35)) { const t = jobTitle(); endJob("ixtisar"); log(`📉 ${t}: şirkət böhrana düşdü, ixtisara düşdün.`); apply({ happy: -12 }); return; }
   // military & police: promotions by years of service (if not a poor performer)
   const minY = (c.minYears || [])[j.lv] ?? 99;
   if (["military", "law", "rescue"].includes(c.track)) { if (j.lvYears >= minY && j.perf >= 45 && chance(0.6)) promote(); }

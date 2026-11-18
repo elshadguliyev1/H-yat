@@ -438,6 +438,21 @@ test("uzun hekayə xətləri (5 fəsil), emosional yaddaş, NPC-lərin öz həya
   console.log(`      (150 həyat: xətlərin son fəslinə çatanlar ${JSON.stringify(finals)}; həyat başına ${(mems / lives).toFixed(1)} xatirə; keçmişi xatırladan mətn ${recalled}; NPC səhnəsi ${npcScenes})`);
 });
 
+test("biznes sahibi işçi kimi ixtisara düşmür və işçi hadisələri ona gəlmir", () => {
+  const employeeOnly = ["ixtisar_soz", "ixtisar_netice", "az_chain_trust", "az_chain_course_pays", "dekret_secim", "dekret_qayit"];
+  let owners = 0, laidOff = 0, bizEvents = 0;
+  for (let i = 0; i < 60; i++) {
+    S.newLife("Sahibkar", i % 2 ? "q" : "k", "Bakı", "biznes", 160000 + i); while (S.P.age < 25 && S.P.alive) S.playYear(); if (!S.P.alive) continue;
+    S.P.legal = { record: [], case: null, prison: null, history: [] }; S.startJob("biznes", 1); owners++;
+    for (let y = 0; y < 15 && S.P.alive && S.P.job && S.P.job.id === "biznes"; y++) {
+      S.playYear(e => { if (S.P.job && S.P.job.id === "biznes") { ok(!employeeOnly.includes(e.id), "biznes sahibinə işçi hadisəsi: " + e.id); if (/^biznes_/.test(e.id)) bizEvents++; } });
+      if (S.P.jobs.some(j => j.id === "biznes" && j.reason === "ixtisar")) laidOff++;
+    }
+  }
+  ok(laidOff === 0, "biznes sahibi ixtisara düşdü: " + laidOff); ok(bizEvents > 0, "biznes hekayəsi gəlmədi");
+  console.log(`      (${owners} biznes sahibi: ixtisar 0, sahibkar hekayəsi ${bizEvents} dəfə)`);
+});
+
 test("erkən ölüm mümkündür, amma nadirdir; keçmiş futbolçuya məşqçilik açıqdır", () => {
   let under30 = 0, under40 = 0; const N2 = 3000;
   for (let s = 1; s <= N2; s++) { S.newLife("R", "k", "Bakı", "polis", 70000 + s); for (let a = 5; a < 40 && S.P.alive; a++) { const r = S.deathRisk(); if (Math.random() < r.natural + r.job) { if (S.P.age < 30) under30++; under40++; break; } S.P.age++; } }
