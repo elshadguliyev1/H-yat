@@ -17,7 +17,7 @@ function sandbox() {
   const ctx = { console, Math, Date, JSON, Object, Array, String, Number, Intl, Set, Map, Promise, isFinite,
     localStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } } };
   vm.createContext(ctx);
-  vm.runInContext(read("js/core.js") + "\n" + read("engine.js") + "\n" + read("js/career.js") + "\n" + read("js/justice.js") + "\n" + read("js/interp.js") + `
+  vm.runInContext(read("js/core.js") + "\n" + read("engine.js") + "\n" + read("js/career.js") + "\n" + read("js/justice.js") + "\n" + read("js/sport.js") + "\n" + read("js/interp.js") + `
     RULES = ${read("data/rules.json")};
     loadCareers(${read("data/careers.json")});
     globalThis.LISTS = [${EVENT_FILES.map(read).join(",")}];
@@ -54,7 +54,7 @@ function sandbox() {
     };
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
-    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial; globalThis.hasRecord = hasRecord; globalThis.everConvicted = everConvicted; globalThis.lockReason = lockReason;
+    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial; globalThis.hasRecord = hasRecord; globalThis.everConvicted = everConvicted; globalThis.lockReason = lockReason; globalThis.SPORTS = SPORTS;
     globalThis.playLife = function (name, g, dream, seed, maxAge, log) { newLife(name, g, "Bakı", dream, seed); while (P.alive && P.age < (maxAge || 130)) playYear(log); return P; };
   `, ctx);
   return ctx;
@@ -274,6 +274,24 @@ test("məhkumluq: cəza müddəti hökmə uyğundur, qeyd vaxtında silinir, pol
   console.log(`      (${checked} oğurluq işindən ${cleared}-də qeyd silindi)`);
 });
 
+test("idman: futboldan başqa növlər, cinsə uyğun bölmələr, medallar, zədə, peşəkar karyera, məşqçilik", () => {
+  let joined = 0, medals = 0, intl = 0, pros = 0, coaches = 0, injuredOut = 0, oly = 0; const kinds = {};
+  for (let i = 0; i < 300; i++) {
+    const g = i % 2 ? "q" : "k";
+    const P = S.playLife("İdman", g, "futbolcu", 70000 + i, 75);
+    const s = P.sport; if (!s) continue; joined++; kinds[s.id] = (kinds[s.id] || 0) + 1;
+    const sp = S.SPORTS[s.id]; ok(!sp.g || sp.g === g, `${g === "q" ? "qız" : "oğlan"} ${sp.t} bölməsinə düşdü`);
+    ok(s.start >= 6 && s.start <= 17, "bölməyə yaş " + s.start);
+    for (const m of s.medals) { medals++; if (m.comp >= 3 && !m.junior) intl++; if (m.comp === 5) oly++; ok(m.age >= s.start, "bölmədən əvvəl medal"); if (m.age < 11) ok(m.comp === 0, "10 yaşında rayondan yuxarı yarış"); }
+    if ([P.job && P.job.id, ...P.jobs.map(j => j.id)].includes("idmanci")) pros++;
+    if (P.flags.exIdmanci != null && [P.job && P.job.id, ...P.jobs.map(j => j.id)].includes("mesqci")) coaches++;
+    if (s.reason === "ağır zədə") injuredOut++;
+  }
+  ok(joined > 60, "bölməyə yazılan az: " + joined); ok(Object.keys(kinds).length >= 5, "növ az: " + Object.keys(kinds).join(","));
+  ok(medals > 50 && pros >= 3, `medal ${medals}, peşəkar ${pros}`);
+  console.log(`      (300 həyatdan ${joined} idmana yazıldı: ${Object.entries(kinds).map(([k, v]) => S.SPORTS[k].t + " " + v).join(", ")}; medal ${medals}, beynəlxalq ${intl}, olimpiya ${oly}; peşəkar ${pros}, sonra məşqçi ${coaches}, zədə ilə bitən ${injuredOut})`);
+});
+
 test("erkən ölüm mümkündür, amma nadirdir; keçmiş futbolçuya məşqçilik açıqdır", () => {
   let under30 = 0, under40 = 0; const N2 = 3000;
   for (let s = 1; s <= N2; s++) { S.newLife("R", "k", "Bakı", "polis", 70000 + s); for (let a = 5; a < 40 && S.P.alive; a++) { const r = S.deathRisk(); if (Math.random() < r.natural + r.job) { if (S.P.age < 30) under30++; under40++; break; } S.P.age++; } }
@@ -290,7 +308,7 @@ test("məktəb və futbol bitəndən sonra müəllim və məşqçi aktiv siyahı
       S.playYear();
       const school = ["bagca", "mekteb"].includes(S.P.edu.stage);
       if (!school) ok(!S.person("müəllim"), `${S.P.age} yaşında məktəbdən sonra müəllim siyahıdadır`);
-      const fb = (S.P.job && S.P.job.id === "futbolcu") || (S.P.flags.akademiya != null && !S.P.job && S.P.age < 22) || (S.P.flags.futbolBolme != null && S.P.age < 18);
+      const fb = (S.P.job && S.P.job.id === "futbolcu") || (S.P.flags.akademiya != null && !S.P.job && S.P.age < 22) || (S.P.flags.futbolBolme != null && S.P.age < 18) || (S.P.sport && S.P.sport.active);
       if (!fb) ok(!S.person("məşqçi"), `${S.P.age} yaşında futbolsuz məşqçi siyahıdadır`);
     }
   }

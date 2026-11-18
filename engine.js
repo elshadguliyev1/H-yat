@@ -244,6 +244,7 @@ function ageUp() {
   moneyTick(msgs);
   // job performance
   if (P.job) jobTick(msgs);
+  sportTick(msgs);
   // family members aging / death
   peopleTick(msgs);
   // fame slowly fades without activity
@@ -363,7 +364,7 @@ function moneyTick() {
 // people who belong to a period of life leave the active list when that period ends
 function contextTick() {
   const school = ["bagca", "mekteb"].includes(P.edu.stage);
-  const football = (P.job && P.job.id === "futbolcu") || (P.flags.akademiya != null && !P.job && P.age < 22) || (P.flags.futbolBolme != null && P.age < 18);
+  const football = (P.job && P.job.id === "futbolcu") || (P.flags.akademiya != null && !P.job && P.age < 22) || (P.flags.futbolBolme != null && P.age < 18) || sportActive();
   for (const p of P.people) {
     if (p.role === "müəllim" && !school) p.role = "keçmiş müəllim";
     if (p.role === "məşqçi" && !football) p.role = "keçmiş məşqçi";
@@ -582,6 +583,8 @@ function runInteraction(p, it) {
 // ---------- activities (3 per year) ----------
 const ACTIONS = [
   { id: "oxu", t: () => P.age < 18 ? "Dərs oxu" : "Kitab oxu", icon: "📖", min: 6, max: 45, fx: () => ({ smarts: rnd(2, 5), happy: -1 }), r: () => pick(["Saatlarla oxudun, beynin işləyir.", "Yeni bir kitab bitirdin.", "Riyaziyyat məsələləri artıq asan gəlir."]), after: () => { P.flags["oxudu" + P.age] = 1; } },
+  { id: "sport_join", t: "İdman bölməsinə yazıl", icon: "🏅", min: 6, max: 14, special: "sport", if: () => !sportActive() },
+  { id: "sport_train", t: "Məşqə get", icon: "🏅", min: 6, max: 70, if: () => sportActive() && !(P.army && !P.army.done) && !inPrison(), fx: () => { sportMsg = sportTrain(); return {}; }, r: () => sportMsg },
   { id: "idman", t: "İdmanla məşğul ol", icon: "🏃", min: 6, max: 25, fx: () => ({ fitness: rnd(3, 6), health: rnd(1, 3), happy: 1 }), r: () => pick(["Həyətdə top qovdun, tərlədin.", "Qaçışa çıxdın, nəfəsin açıldı.", "Zalda yaxşı məşq etdin."]), after: () => { if (P.age <= 17) P.tal.sport = clamp(P.tal.sport + 1); } },
   { id: "musiqi", t: "Musiqi ilə məşğul ol", icon: "🎸", min: 7, max: 35, fx: () => ({ happy: 3 }), r: () => P.tal.music > 65 ? "Müəllim deyir ki, səsin çox gözəldir!" : pick(["Gitarada yeni akkord öyrəndin.", "Mahnı oxudun, qonşular döyməyə başladı 😅", "Sintezatorda çalmağı öyrənirsən."]), after: () => { P.tal.music = clamp(P.tal.music + 2); } },
   { id: "dost", t: "Dostlarla vaxt keçir", icon: "🧑‍🤝‍🧑", min: 6, max: 25, fx: () => ({ happy: rnd(4, 8) }), r: () => person("dost") ? `${who("dost")} ilə gəzdiniz, çox güldünüz.` : "Həyətdə uşaqlarla oynadın.", after: () => { relAdd("dost", 8); if (!person("dost") && chance(0.6)) { const d = addPerson("dost", P.g, P.age + rnd(-1, 1)); log(`🤝 Yeni dost tapdı: ${d.name}.`); } } },

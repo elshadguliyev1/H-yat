@@ -28,9 +28,11 @@
 {"id":"olimpiada","cat":"school","tone":"everyday","age":[9,16],"icon":"🏅","cond":{"stat_gt":{"smarts":60}},"t":"Müəllimin səni riyaziyyat olimpiadasına yazmaq istəyir.","ch":[
  {"t":"Hazırlaş və iştirak et","odds":[{"p":{"of":"st.smarts","div":130},"fx":{"smarts":5,"happy":8,"rel":{"ana":6,"ata":6},"flag":"olimpiada"},"r":"Rayon olimpiadasında birinci yer! Adın məktəbin divar qəzetində."},{"p":0.4,"fx":{"smarts":3,"happy":-2},"r":"Yer tuta bilmədin, amma çox şey öyrəndin."}],"trait":{"discipline":2}},
  {"t":"İstəmirəm","fx":{"happy":1},"r":"Olimpiadaya başqası getdi."}]},
-{"id":"bedden_muellim","cat":"school","tone":"everyday","age":[8,13],"icon":"🏃","cond":{"tal_gt":{"sport":60}},"t":"Bədən tərbiyəsi müəllimi deyir: “Sən çox sürətlisən! İdman məktəbinə get.”","ch":[
+{"id":"bedden_muellim","cat":"school","tone":"everyday","age":[8,13],"icon":"🏃","cond":{"tal_gt":{"sport":60},"sport":false},"t":"Bədən tərbiyəsi müəllimi deyir: “Sən çox sürətlisən! İdman məktəbinə get.”","ch":[
  {"t":"Futbol bölməsinə yazıl","fx":{"fitness":6,"happy":4,"tal":{"sport":5},"flag":"futbolBolme"},"do":[{"add_person":{"role":"məşqçi","g":"k","age_abs":[35,55],"unless_has":true}}],"r":"{new} məşqçi səni komandaya götürdü."},
- {"t":"Güləşə get","fx":{"fitness":7,"health":2},"r":"Güləş məşqləri səni möhkəmlətdi."},
+ {"t":"Güləşə get","cond":{"gender":"k"},"fx":{"fitness":4,"health":2},"do":[{"sport_join":"gules"}],"r":"Güləş zalında ilk dəfə xalçaya çıxdın. Məşqçi əlini sıxdı: “Bərk tutursan. Alınacaq.”"},
+ {"t":"Gimnastikaya get","cond":{"gender":"q"},"fx":{"fitness":4,"looks":1},"do":[{"sport_join":"gimnastika"}],"r":"Gimnastika zalında hamı lentlə, topla fırlanırdı. Məşqçi dedi: “Elastiksən. İndi intizam lazımdır.”"},
+ {"t":"Yüngül atletikaya get","fx":{"fitness":4},"do":[{"sport_join":"atletika"}],"r":"Stadionda ilk 60 metr. Məşqçi saniyəölçənə baxıb qaşlarını qaldırdı."},
  {"t":"Dərslərimə fikir verim","fx":{"smarts":2},"r":"İdmanı sonraya saxladın."}]},
 {"id":"musiqi_mekteb","cat":"school","tone":"everyday","age":[6,12],"icon":"🎹","cond":{"tal_gt":{"music":55}},"t":"Musiqi müəllimi valideynlərinə deyir ki, səsin və eşitmə qabiliyyətin çox yaxşıdır.","ch":[
  {"t":"Musiqi məktəbinə get","fx":{"happy":3,"tal":{"music":8},"flag":"musiqiMekteb"},"r":"Hər axşam pianino… Barmaqların artıq özü çalır.","trait":{"discipline":2}},

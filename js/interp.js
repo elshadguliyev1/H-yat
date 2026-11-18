@@ -64,6 +64,10 @@ const Interp = (() => {
     army: v => v === "none" ? !P.army : v === "active" ? !!P.army && !P.army.done : !!P.army && P.army.done,
     army_due: v => armyDue() === v,
     npc_flag_alive: f => { const id = P.npcFlags && P.npcFlags[f]; const p = id && P.people.find(x => x.id === id); return !!p && p.alive; },
+    sport: v => v === true ? sportActive() : v === false ? !sportActive() : sportActive() && [].concat(v).includes(P.sport.id),
+    sport_best_gte: v => !!P.sport && P.sport.best >= v,
+    sport_level_gte: v => sportActive() && sportLevel() >= v,
+    sport_ever: v => !!P.sport === v,
     any: list => list.some(c => check(c)),
     not: c => !check(c)
   };
@@ -98,6 +102,9 @@ const Interp = (() => {
     remove_if_low(o) { const p = person(o.role); if (p && p.rel < o.below) removeRole(o.role, o.note); },
     promote_role(o, ctx) { const p = person(o.from); if (!p) return; p.role = o.to; p.rel = clamp(p.rel + (o.rel || 0)); ctx.vars.new = p.name; },
     start_job(o) { startJob(o.id, o.lv || 0, o.note); },
+    sport_join(id) { sportJoin(id); },
+    sport_end(reason) { sportEnd(reason); },
+    sport_skill(n) { if (P.sport) P.sport.skill = clamp(P.sport.skill + n); },
     end_job(o) { endJob(o.reason || "bitdi"); },
     promote() { promote(); },
     // service is counted from the start of the current year of age, so 12 months = exactly one "+1 yaş"
@@ -159,6 +166,9 @@ const Interp = (() => {
   const COUNTRIES = ["Türkiyənin", "Rusiyanın", "Portuqaliyanın", "Belçikanın", "Almaniyanın", "İngiltərənin"];
   const TV = {
     sick_parent: () => person("ata") && person("ata").age > 62 ? "Atan" : "Anan",
+    sport: () => sportName(),
+    sport_l: () => sportName().toLowerCase(),
+    sport_icon: () => P.sport ? SPORTS[P.sport.id].icon : "🏅",
     kid6: () => (people("uşaq").find(k => k.age === 6) || {}).name || "Övladın",
     fac: () => P.edu.fac ? FACULTIES[P.edu.fac].t : "Universitet",
     gpa: () => (2 + P.edu.gpa / 33.4).toFixed(1),

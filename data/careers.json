@@ -307,6 +307,10 @@
         "hire": 0.75
       },
       {
+        "flag": "exIdmanci",
+        "hire": 0.7
+      },
+      {
         "tal": {
           "sport": 70
         },
@@ -317,7 +321,9 @@
     "employers": [
       "Xəzər FK akademiyası",
       "Rayon idman məktəbi",
-      "Abşeron FK"
+      "Abşeron FK",
+      "Olimpiya İdman Mərkəzi",
+      "Uşaq-gənclər idman məktəbi"
     ],
     "work": "Taktika üzərində işlə"
   },
@@ -1249,5 +1255,67 @@
       "Sığorta şirkəti",
       "Dövlət idarəsi"
     ]
+  },
+  "idmanci": {
+    "t": "Peşəkar idmançı",
+    "icon": "🏅",
+    "track": "sport",
+    "lv": [
+      "Klub idmançısı",
+      "Yığma komandaya namizəd",
+      "Milli komandanın üzvü",
+      "Beynəlxalq medalçı",
+      "Olimpiya medalçısı"
+    ],
+    "sal": [
+      [
+        500,
+        900
+      ],
+      [
+        900,
+        1600
+      ],
+      [
+        1600,
+        3500
+      ],
+      [
+        3500,
+        9000
+      ],
+      [
+        9000,
+        25000
+      ]
+    ],
+    "minYears": [
+      1,
+      2,
+      2,
+      2
+    ],
+    "key": "fitness",
+    "fame": 3,
+    "sport": true,
+    "risk": 0.0001,
+    "paths": [
+      {
+        "flag": "idmanPro",
+        "age": [
+          16,
+          27
+        ],
+        "hire": 0.7
+      }
+    ],
+    "employers": [
+      "Neftçi İdman Klubu",
+      "Bakı İdman Klubu",
+      "Atəşgah İdman Klubu",
+      "Qəbələ İdman Mərkəzi"
+    ],
+    "work": "Əlavə məşq et",
+    "_doc": "Növ P.sport.id-dədir. Yüksəliş yarış nəticələri ilə (sportTick)."
   }
 }

@@ -181,6 +181,7 @@ nav.tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg) 
 <script src="engine.js"></script>
 <script src="js/career.js"></script>
 <script src="js/justice.js"></script>
+<script src="js/sport.js"></script>
 <script src="js/interp.js"></script>
 <script>
 "use strict";
@@ -422,6 +423,7 @@ function doAction(a) {
   if (a.special === "shop") return shopPicker();
   if (a.special === "bank") return bankSheet();
   if (a.special === "side") return sidePicker();
+  if (a.special === "sport") return sportPicker();
   if (a.special === "love") return findLove();
   if (!useAct()) return;
   const changes = apply(a.fx ? a.fx() : {});
@@ -536,6 +538,18 @@ function sidePicker() {
     s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
   });
 }
+function sportPicker() {
+  const list = sportsFor(P.g);
+  const s = sheet(`<div class="big">🏅</div><p class="q">Hansı idman bölməsinə yazılırsan?</p><div class="choices">${list.map(id => `<button data-s="${id}">${SPORTS[id].icon} ${SPORTS[id].t}</button>`).join("")}</div><button class="btn ghost close">Bağla</button>`);
+  s.el.querySelector(".close").onclick = s.close;
+  s.el.querySelectorAll("[data-s]").forEach(b => b.onclick = () => {
+    if (!useAct()) return;
+    sportJoin(b.dataset.s); const c = person("məşqçi"); const t = `${SPORTS[b.dataset.s].icon} İlk məşq! ${c ? c.name + " məşqçi" : "Məşqçi"} səni diqqətlə izlədi və dedi: “Əllərin-ayaqların yerindədir. Həftədə üç dəfə gəl.”`;
+    const ch = apply({ happy: 4 }); save();
+    s.el.innerHTML = `<div class="big">${SPORTS[b.dataset.s].icon}</div><p class="q">${esc(t)}</p><div class="fx">${fxChips(ch)}</div><button class="btn close">Yaxşı</button>`;
+    s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
+  });
+}
 function findLove() {
   if (!useAct()) return;
   const ok = chance(.25 + P.st.looks / 220 + P.tal.social / 450 + (P.fame / 300));
@@ -622,6 +636,7 @@ function panelMe() {
       ${job ? `<dt>İş</dt><dd>${job.icon} ${esc(jobTitle())}${P.job.susp ? " (dayandırılıb)" : ""}</dd><dt>İş yeri</dt><dd>${esc(P.job.employer || "—")}</dd><dt>Maaş</dt><dd>${fmtMoney(salaryMonthly())}/ay</dd>
         <dt>Staj</dt><dd>${P.job.years} il (bu vəzifədə ${P.job.lvYears || 0})</dd><dt>İş göstəricisi</dt><dd>${P.job.perf}/100</dd><dt>Rəhbərlə münasibət</dt><dd>${P.job.boss ?? "—"}/100</dd>
         <dt>Şirkətin vəziyyəti</dt><dd>${P.job.company == null ? "—" : P.job.company >= 70 ? "güclü" : P.job.company >= 40 ? "normal" : P.job.company >= 20 ? "çətin" : "böhran"}</dd>` : ""}
+      ${P.sport ? `<dt>İdman</dt><dd>${SPORTS[P.sport.id].icon} ${SPORTS[P.sport.id].t} · ${P.sport.start} yaşdan${P.sport.active ? ` · səviyyə ${sportLevel()}/100${P.sport.inj ? " · 🩹 zədəli" : ""}` : ` · ${P.sport.ended} yaşda bitirdi (${esc(P.sport.reason || "")})`}${P.sport.medals.length ? `<br><small>Medallar: ${["🥇", "🥈", "🥉"].map((m, i) => { const n = P.sport.medals.filter(x => x.place === i).length; return n ? m + "×" + n : ""; }).filter(Boolean).join(" ")} · ən yaxşı nəticə: ${P.sport.best >= 0 ? SPORT_COMP[P.sport.best][0] : "—"}</small>` : ""}</dd>` : ""}
       ${P.lic && (P.lic.cpl || P.lic.atpl || P.lic.surucu) ? `<dt>Lisenziyalar</dt><dd>${[P.lic.surucu ? "Sürücülük" : "", P.lic.ppl ? "PPL" : "", P.lic.cpl ? "CPL" : "", P.lic.atpl ? "ATPL" : ""].filter(Boolean).join(" · ")}</dd>` : ""}
       ${P.hours ? `<dt>Uçuş saatı</dt><dd>${P.hours.toLocaleString("az")}</dd>` : ""}
       ${P.flags.phd != null ? `<dt>Elmi dərəcə</dt><dd>Fəlsəfə doktoru</dd>` : ""}
