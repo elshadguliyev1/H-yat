@@ -71,7 +71,8 @@
       "Rayon Polis Şöbəsi",
       "Yol Polisi İdarəsi"
     ],
-    "work": "Əlavə növbə götür"
+    "work": "Əlavə növbə götür",
+    "never_convicted": true
   },
   "hekim": {
     "t": "Həkim",
@@ -792,7 +793,8 @@
     "employers": [
       "Hərbi Hava Qüvvələri"
     ],
-    "work": "Əlavə uçuş təlimi"
+    "work": "Əlavə uçuş təlimi",
+    "never_convicted": true
   },
   "herbci": {
     "t": "Hərbçi",
@@ -895,7 +897,8 @@
       "Hərbi Hava Qüvvələri",
       "Hərbi Dəniz Qüvvələri"
     ],
-    "work": "Əlavə təlimə çıx"
+    "work": "Əlavə təlimə çıx",
+    "never_convicted": true
   },
   "xilasedici": {
     "t": "Xilasedici",

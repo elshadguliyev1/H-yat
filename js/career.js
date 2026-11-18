@@ -11,7 +11,9 @@ const bandOf = (c, lv) => c.sal[Math.min(lv, c.sal.length - 1)];
 const inBand = (c, lv, pos) => { const [a, b] = bandOf(c, lv); return Math.round(a + (b - a) * pos); };
 
 // ---------- requirements ----------
-function hasRecord() { return !!(P.legal && P.legal.record && P.legal.record.length); }
+// an active (not yet expunged) conviction; some careers require never having been convicted at all
+function hasRecord() { return !!(P.legal && P.legal.record && P.legal.record.some(r => !r.expunged)); }
+function everConvicted() { return !!(P.legal && P.legal.record && P.legal.record.length); }
 function medicalOk() { return P.st.health >= 65 && !P.flags.medical_fail; }
 // does the player meet one hiring path / level requirement?
 function reqOk(r) {
@@ -33,7 +35,8 @@ function reqOk(r) {
 // why a career is closed (shown to the player instead of silently hiding it)
 function lockReason(id) {
   const c = CAREERS[id];
-  if (c.record_ok === false && hasRecord()) return "məhkumluq qeydi olduğu üçün qəbul edilmir";
+  if (c.never_convicted && everConvicted()) return "keçmişdə məhkum olunanlar bu xidmətə qəbul edilmir";
+  if (c.record_ok === false && hasRecord()) return "məhkumluq qeydi olduğu üçün qəbul edilmir (ödənildikdən sonra mümkündür)";
   const p = (c.paths || [])[0]; if (!p) return "bu yola yalnız hadisə ilə düşmək olar";
   if (p.deg) return `${(Object.values(FACULTIES).find(f => f.opens === p.deg) || {}).t || "uyğun"} diplomu lazımdır`;
   if (p.lic === "cpl") return "kommersiya pilotu lisenziyası (CPL) və tibbi uyğunluq lazımdır";
@@ -92,6 +95,7 @@ function jobOptions() {
   for (const [id, c] of Object.entries(CAREERS)) {
     if (P.job && P.job.id === id) continue;
     if (c.record_ok === false && hasRecord()) continue;
+    if (c.never_convicted && everConvicted()) continue;
     if (P.age < 18 && !c.plain) continue;
     const path = (c.paths || []).find(reqOk); if (!path) continue;
     let odds = path.hire;

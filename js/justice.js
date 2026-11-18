@@ -38,18 +38,22 @@ function trial(lawyer, plea) {
   }
   L.case = null;
   if (verdict === "bəraət") { log("⚖️ Məhkəmə bəraət verdi."); return `Məhkəmə sübutları yetərli saymadı: bəraət! ${cost ? "Vəkilə " + fmtMoney(cost) + " ödədin." : ""}`; }
-  L.record.push({ day: P.day, age: P.age, type: cs.type, verdict, years });
+  const X = J.expunge;
+  const exp = verdict === "cərimə" ? X.fine : verdict === "şərti" ? years + X.suspended_after_probation : null; // prison: set on release
+  L.record.push({ day: P.day, age: P.age, type: cs.type, verdict, years, expires: exp != null ? Cal.addMonths(P.day, Math.round(exp * 12)) : null });
   if (fine) P.money -= fine;
-  if (verdict === "cərimə") { log(`⚖️ Məhkəmə: ${fmtMoney(fine)} cərimə.`); return `Cərimə: ${fmtMoney(fine)}. Məhkumluq qeydi qaldı.`; }
-  if (verdict === "şərti") { P.flags.probation = P.age; log(`⚖️ Məhkəmə: ${years} il şərti cəza${juvenile ? " (yetkinlik yaşına çatmayan)" : ""}.`); return `${years} il şərti cəza${fine ? " və " + fmtMoney(fine) + " cərimə" : ""}. Bu müddətdə yenidən səhv etsən, həbs olunacaqsan. Məhkumluq qeydi ömürlük qalacaq.`; }
+  if (verdict === "cərimə") { log(`⚖️ Məhkəmə: ${fmtMoney(fine)} cərimə.`); return `Cərimə: ${fmtMoney(fine)}. Məhkumluq qeydi 1 il qalacaq.`; }
+  if (verdict === "şərti") { P.flags.probation = P.age; log(`⚖️ Məhkəmə: ${years} il şərti cəza${juvenile ? " (yetkinlik yaşına çatmayan)" : ""}.`); return `${years} il şərti cəza${fine ? " və " + fmtMoney(fine) + " cərimə" : ""}. Bu müddətdə yenidən səhv etsən, həbs olunacaqsan. Məhkumluq qeydi sınaq müddətindən sonra daha 1 il qalacaq.`; }
   imprison(years, cs.type);
-  return `${years} il azadlıqdan məhrumetmə. Zalda anan huşunu itirdi. Qandalı taxanda pəncərədən son dəfə şəhərə baxdın.`;
+  const L2 = L;
+  return `${years} il azadlıqdan məhrumetmə (${Cal.fmt(L2.prison.start)} → ${Cal.fmt(L2.prison.end)}). Yaxşı davranışla müddətin 2/3-dən sonra şərti azad oluna bilərsən. Zalda anan huşunu itirdi. Qandalı taxanda pəncərədən son dəfə şəhərə baxdın.`;
 }
 function imprison(years, type) {
   const L = legal();
   if (P.job) endJob("həbs");
   if (P.edu.stage === "uni" || P.edu.stage === "magistr") { P.edu.stage = "bitdi"; log("🎓 Universitetdən xaric edildi."); }
   L.prison = { start: P.day, end: Cal.addMonths(P.day, Math.round(years * 12)), years, type, behavior: 50, released: false };
+  (L.terms = L.terms || []).push(L.prison);
   P.flags.prison = P.age;
   log(`🔒 Həbsxanaya göndərildi: ${years} il.`);
   relAdd("ana", -6); relAdd("ata", -10); relAdd("həyat yoldaşı", -15); relAdd("sevgili", -20);
@@ -65,9 +69,19 @@ function prisonTick() {
 }
 function release(early) {
   const L = legal(), pr = L.prison; pr.released = true; pr.out = P.day;
+  const X = RULES.justice.expunge, rec = [...L.record].reverse().find(r => r.verdict === "həbs" && !r.expires);
+  if (rec) rec.expires = Cal.addYears(P.day, pr.years <= 3 ? X.prison_upto_3 : pr.years <= 10 ? X.prison_upto_10 : X.prison_over_10);
   delete P.flags.prison; P.flags.released = P.age;
   log(early ? `🕊️ Yaxşı davranışa görə şərti olaraq vaxtından əvvəl azad edildi.` : `🕊️ Cəza müddəti bitdi. Azadlığa çıxdı.`);
   apply({ happy: 15 });
+}
+// yearly: convictions expire after the configured period (the record is "cleared")
+function expungeTick() {
+  const L = P.legal; if (!L || !L.record) return;
+  for (const r of L.record) if (!r.expunged && r.expires && P.day >= r.expires && !inPrison()) {
+    r.expunged = P.day; log(`📜 Məhkumluq ödənildi: ${RULES.justice.crimes[r.type] ? RULES.justice.crimes[r.type].t.toLowerCase() : r.type} üzrə qeyd silindi.`);
+    P.sched.push({ event: "mehkumluq_silindi", day: P.day }); P.sched.sort((a, b) => a.day - b.day);
+  }
 }
 // prison activities (replace normal ones while inside)
 const PRISON_ACTIONS = [

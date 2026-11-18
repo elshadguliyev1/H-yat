@@ -54,7 +54,7 @@ function sandbox() {
     };
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
-    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial;
+    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial; globalThis.hasRecord = hasRecord; globalThis.everConvicted = everConvicted; globalThis.lockReason = lockReason;
     globalThis.playLife = function (name, g, dream, seed, maxAge, log) { newLife(name, g, "Bakı", dream, seed); while (P.alive && P.age < (maxAge || 130)) playYear(log); return P; };
   `, ctx);
   return ctx;
@@ -249,10 +249,29 @@ test("ədliyyə: həbsdə zaman axır, ailə qocalır, azadlıq və qeyd qalır"
       S.P.yearEvents = [];
     }
     if (ana && ana.alive && S.P.alive) ok(ana.age > a0, `ana həbs müddətində qocalmadı (seed ${60000 + s}, ${a0} → ${ana.age}, oyunçu ${start} → ${S.P.age})`);
-    if (!S.inPrison() && S.P.alive) { released++; ok(S.P.legal.record.length > 0, "qeyd silindi"); ok(!S.jobOptions().some(o => o.id === "polis"), "azadlıqdan sonra polis ola bildi"); }
+    if (!S.inPrison() && S.P.alive) { released++; ok(S.P.legal.record.length > 0 && S.hasRecord(), "qeyd dərhal silindi"); ok(!S.jobOptions().some(o => o.id === "polis"), "azadlıqdan sonra polis ola bildi"); }
   }
   ok(jailed > 10 && released > 5, `həbs ${jailed}, azadlıq ${released}`);
   console.log(`      (60 narkotik işindən: həbs ${jailed}, azad edildi ${released})`);
+});
+
+test("məhkumluq: cəza müddəti hökmə uyğundur, qeyd vaxtında silinir, polis/ordu bağlı qalır", () => {
+  let checked = 0, cleared = 0;
+  for (let s = 1; s <= 60; s++) {
+    S.newLife("Qeyd", s % 2 ? "k" : "q", "Bakı", "polis", 61000 + s); while (S.P.age < 22) S.playYear(); S.P.yearEvents = [];
+    S.P.legal = { record: [], case: { type: "ogurluq", day: S.P.day, age: S.P.age }, prison: null, history: [] };
+    S.trial("dovlet", true); const rec = S.P.legal.record[0]; if (!rec) continue;
+    const t0 = S.P.age;
+    for (let y = 0; y < 15 && S.P.alive; y++) { S.ageUp(); S.P.yearEvents = []; if (rec.expunged) break; }
+    if (!S.P.alive) continue; checked++;
+    const term = (S.P.legal.terms || [])[0];
+    if (term) ok(term.out && term.out <= term.end + 400, `həbs hökmdən uzun çəkdi (seed ${61000 + s})`);
+    ok(rec.expires, "silinmə tarixi yoxdur");
+    if (rec.expunged) { cleared++; ok(!S.hasRecord(), "silinmədən sonra aktiv qeyd qaldı"); ok(S.everConvicted(), "keçmiş unudulmamalıdır"); ok(S.lockReason("polis"), "keçmiş məhkum polis ola bilməz"); }
+    ok(S.P.age - t0 <= 15, "çox uzun");
+  }
+  ok(checked > 20 && cleared >= checked * 0.8, `yoxlanan ${checked}, silinən ${cleared}`);
+  console.log(`      (${checked} oğurluq işindən ${cleared}-də qeyd silindi)`);
 });
 
 test("erkən ölüm mümkündür, amma nadirdir; keçmiş futbolçuya məşqçilik açıqdır", () => {

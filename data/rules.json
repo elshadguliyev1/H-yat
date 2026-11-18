@@ -83,8 +83,8 @@
         "t": "Narkotik vasitələrin daşınması",
         "caught": 0.55,
         "years": [
-          5,
-          12
+          3,
+          8
         ],
         "lawyer_cost": 5000
       },
@@ -114,6 +114,14 @@
         ],
         "lawyer_cost": 1000
       }
+    },
+    "expunge": {
+      "_doc": "Məhkumluğun ödənilməsi (illər). Sadələşdirilmiş oyun konfiqurasiyası, real qanunla yoxlanılmalıdır.",
+      "fine": 1,
+      "suspended_after_probation": 1,
+      "prison_upto_3": 3,
+      "prison_upto_10": 6,
+      "prison_over_10": 8
     }
   },
   "pension": {

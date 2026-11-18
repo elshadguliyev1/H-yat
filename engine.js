@@ -52,7 +52,7 @@ const FACULTIES = {
 // ---------- state ----------
 let P = null;
 let RULES = null; // data/rules.json (military, education)
-const LIFE_VERSION = 7;
+const LIFE_VERSION = 8;
 const TRAITS = { empathy: "Empatiya", honesty: "Dürüstlük", courage: "Cəsarət", discipline: "İntizam", independence: "Müstəqillik", family: "Ailəyə bağlılıq", social: "Ünsiyyətcillik" };
 
 function newPerson(role, gender, age, extra = {}) {
@@ -237,6 +237,7 @@ function ageUp() {
   if (P.army && !P.army.done) { if (P.army.end <= P.day + 31) { P.army.done = true; log(`🏠 Hərbi xidmət (${P.army.months} ay) başa çatdı. Evə qayıtdı.`); apply({ fitness: 8, happy: 10, rel: { ana: 8 } }); } }
   // prison, licences, investments
   prisonTick();
+  expungeTick();
   licenceTick();
   investTick();
   // money: allowance, salary, costs
@@ -716,11 +717,16 @@ function migrateLife(L) {
     L.careerHist = L.careerHist || [];
     L.v = 6;
   }
+  if (L.v < 8) {
+    // v8: convictions get an expunge date (prison: counted from release)
+    const L8 = L.legal; if (L8 && L8.record) { const keep = P; P = L; for (const r of L8.record) if (!r.expires) { const X = RULES.justice.expunge; const term = (L8.terms || []).find(t => t.start >= r.day - 400) || (L8.prison && L8.prison.start >= r.day - 400 ? L8.prison : null); const base = r.verdict === "həbs" ? (term && term.out) : r.day; if (base != null) r.expires = Cal.addMonths(base, Math.round(12 * (r.verdict === "cərimə" ? X.fine : r.verdict === "şərti" ? (r.years || 1) + X.suspended_after_probation : r.years <= 3 ? X.prison_upto_3 : r.years <= 10 ? X.prison_upto_10 : X.prison_over_10))); } if (L8.prison && !(L8.terms || []).length) L8.terms = [L8.prison]; P = keep; }
+  }
   if (L.v < 7) {
     // v7: teachers and coaches leave the active list once school / football is over
     const keep = P; P = L; contextTick(); P = keep;
     L.v = 7;
   }
+  if (L.v < 8) L.v = 8;
   return L;
 }
 // record a decision (event_history)
