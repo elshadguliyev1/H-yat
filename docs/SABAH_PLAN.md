@@ -51,6 +51,7 @@ Vəziyyət: son işlək versiya `fddf1f6`, 18/18 test keçir. Aşağıdakılar h
 13. **Qız və oğlan həyatı fərqli olmalıdır:**
    - Ssenarilər, fəaliyyətlər və ailə gözləntiləri cinsə görə fərqlənməlidir. Uşaqlıq oyunları, yeniyetməlikdə ailə nəzarəti, elçilik və toy (qız tərəfi / oğlan tərəfi), cehiz və ev-maşın, hamiləlik və analıq, əsgərlik (yalnız oğlanlar).
    - Hər iki tərəf üçün eyni dərinlik olmalıdır. Stereotipləri məcburi etmək yox, mühitin real təzyiqlərini və oyunçunun onlara qarşı seçim imkanını göstərmək lazımdır.
+   - Konkret nümunə: qız həyatında “Yumruq at”, “Dava et” kimi seçimlər olmamalıdır. Məsələn `crime_dava` (toyda dava) və `sinif_dava` hadisələri qız üçün başqa reaksiyalarla (sözlə cavab, böyüklərə demək, araya girmək və s.) ayrıca versiyada olmalıdır. Bütün hadisələrdə fiziki zorakılıq seçimləri yoxlanmalıdır.
    - Hadisələrdə `gender` şərti və fərqli versiyalar; test: hər cins üçün xüsusi hadisələrin payı.
 
 ## B. KRİTİK: dramaturgiya (növbəti işin əsası)
