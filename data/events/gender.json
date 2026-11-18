@@ -1,0 +1,84 @@
+[
+{"id":"hamile_skrininq","once":false,"cat":"family","tone":"everyday","age":[16,60],"scheduled_only":true,"force":true,"icon":"🩺","cond":{"preg":true},"t":"Hamiləliyin {preg_month}-cü ayı. USM otağında həkim ekrana baxıb gülümsəyir: “Bilmək istəyirsiniz? Oğlandır, yoxsa qız?”","ch":[
+ {"t":"Bəli, deyin!","fx":{"happy":6},"do":[{"preg_reveal":true}],"r":"{baby_reveal}"},
+ {"t":"Yox, sürpriz qalsın","fx":{"happy":4},"r":"“Doğum günü biləcəksiniz.” Bütün qohumlar indi mərc gəlir: oğlan, yoxsa qız? Bibin oğlan deyir, xalan qız. Sən isə gözləyirsən."}]},
+
+{"id":"hamile_risk","once":false,"cat":"family","tone":"dramatic","age":[16,60],"scheduled_only":true,"force":true,"icon":"🏥","cond":{"preg":true},"t":"Həkimin üzü ciddidir: “Təzyiq yüksəkdir. Növbəti aylar çox ehtiyatlı olmaq lazımdır.” Qapıdan çıxanda dizlərin əsir.","ch":[
+ {"t":"Hər şeyi kənara qoy, yataq rejimi","cond":{"preg_self":true},"fx":{"happy":-3,"health":4},"r":"Günlər pəncərədən baxmaqla keçir. Hər təpik bir sevinc, hər ağrı bir qorxu. Qalan aylar sakit keçəcəkmi?"},
+ {"t":"İşləməyə davam et, hələ ki yaxşıyam","cond":{"preg_self":true},"odds":[{"p":0.65,"fx":{"health":-3},"r":"Yorğun idin, amma hər şey qaydasındadır. Həkim yenə də başını bulayır."},{"p":0.35,"fx":{"health":-8,"happy":-6},"do":[{"preg_early":true}],"r":"İş yerində qəfil ağrı başladı. Təcili yardım… Həkim: “Doğuş vaxtından əvvəl başlayır.”"}]},
+ {"t":"Hər şeyi at, onun yanında ol","cond":{"preg_self":false},"fx":{"happy":-2,"rel":{"həyat yoldaşı":10},"perf":-8},"r":"İşdən icazə aldın. Gecələr onun əlini tutub yatırsan. Rəhbər narazıdır, amma bu, sonranın işidir."},
+ {"t":"Anası baxsın, iş də vacibdir","cond":{"preg_self":false},"fx":{"money":800,"rel":{"həyat yoldaşı":-8}},"r":"Gecə növbələrini götürdün. Evə gələndə o, səssizcə arxasını çevirdi."}]},
+
+{"id":"dogum","once":false,"cat":"family","tone":"dramatic","age":[16,60],"scheduled_only":true,"force":true,"icon":"🍼","cond":{"preg":true},"t":"Gecə saat üç. Çanta qapının ağzında hazır idi, amma yenə də hər şey birdən oldu. Doğum evinin dəhlizində saat sanki dayanıb.","ch":[
+ {"t":"Nəfəs al. Dözürsən.","cond":{"preg_self":true},"do":[{"birth":true}],"r":"Saat 05:12. Kiçik bir səs bütün otağı doldurdu. Mama gülümsədi: “{birth_result}” Onu sinənə qoyanda dünyada başqa heç nə qalmadı."},
+ {"t":"Doğuş otağına gir, əlini tut","cond":{"preg_self":false},"fx":{"rel":{"həyat yoldaşı":6}},"do":[{"birth":true}],"r":"Onun əli əlində idi, ikiniz də ağlayırdınız. Sonra o səs gəldi. Həkim: “{birth_result}” Körpəni qucağına verəndə əllərin titrəyirdi."},
+ {"t":"Dəhlizdə gözlə, dua et","cond":{"preg_self":false},"do":[{"birth":true}],"r":"Dörd saat dəhlizdə var-gəl etdin. Qapı açıldı, tibb bacısı gülümsədi: “Təbrik edirəm! {birth_result}”"}]},
+
+{"id":"dekret_secim","once":false,"cat":"career","tone":"dramatic","age":[16,60],"scheduled_only":true,"force":true,"icon":"👶","cond":{"job":true},"t":"Körpə iki həftəlikdir. İş yerindən zəng: “Təbrik edirik! Bəs nə vaxt qayıdırsınız? Layihəni kimə verək?”","ch":[
+ {"t":"4 aydan sonra (ödənişli məzuniyyət)","do":[{"dekret":4}],"r":"Dörd ay. Sonra körpəni nənəyə və ya bağçaya verməli olacaqsan. Hələ ki, hər gün onun yeni bir hərəkətini kəşf edirsən."},
+ {"t":"1,5 il uşaqla qal","do":[{"dekret":18}],"r":"İş gözləyə bilər, ilk addımlar gözləməz. Amma bir il yarımdan sonra masan səni gözləyəcəkmi?"},
+ {"t":"3 il uşaqla qal","do":[{"dekret":36}],"r":"Üç il. Qanun yerini saxlamalıdır, amma ofisdə hər şey dəyişəcək. Qorxu var, sevinc daha böyükdür."},
+ {"t":"İşdən çıx, uşaqla qal","fx":{"happy":4},"do":[{"end_job":"uşaqla qalmaq qərarı"}],"r":"Ərizəni yazanda ürəyin sıxıldı. Evdə isə kimsə sənə ilk dəfə gülümsədi."}]},
+
+{"id":"ata_mezuniyyet","once":false,"cat":"family","tone":"everyday","age":[16,70],"scheduled_only":true,"force":true,"icon":"🍼","cond":{"job":true,"has":["həyat yoldaşı"]},"t":"Körpə evdədir. Gecələr yuxu yoxdur. İşdə isə ən vacib layihə məhz indi yanır.","ch":[
+ {"t":"İki həftə məzuniyyət götür","fx":{"rel":{"həyat yoldaşı":8},"perf":-5,"happy":5},"r":"Uşaq bezini dəyişməyi öyrəndin. Layihə səsiz getdi, amma evdə sənə başqa gözlə baxırlar."},
+ {"t":"Əlavə növbə götür, pul lazımdır","fx":{"money":1500,"rel":{"həyat yoldaşı":-6},"happy":-3},"r":"Pul lazımdır, düzdür. Amma gecə evə gələndə körpə artıq yatmış olur. Hər gecə."},
+ {"t":"Gecələr körpəyə sən oyan","fx":{"health":-3,"rel":{"həyat yoldaşı":10},"happy":3},"r":"Gecə saat dörddə körpə ilə pəncərənin önündə layla oxuyursan. Səhər iclasında isə gözlərin bağlanır."}]},
+
+{"id":"dekret_qayit","once":false,"cat":"career","tone":"dramatic","age":[16,70],"scheduled_only":true,"force":true,"icon":"💼","cond":{"dekret":true},"t":"{dekret_months} ay sonra yenidən iş yerinə gəlirsən. Masanın üstünə kimsə gül qoyub. Amma qonşu otaqda tanımadığın bir nəfər sənin layihənlə məşğuldur.","ch":[
+ {"t":"İşə qayıt","cond":{"dekret_long":false},"fx":{"happy":4},"do":[{"dekret_end":true}],"r":"Hamı sevindi. İlk iclasda bir az geri qaldığını hiss etdin, amma bir ayda çatarsan. Bağçadan isə hər saat zəng gözləyirsən."},
+ {"t":"İşə qayıt və yerini geri al","cond":{"dekret_long":true},"fx":{"happy":-2},"do":[{"dekret_end":true}],"r":"Rəhbər “Sən olmayanda hər şey dəyişdi” dedi. Yerin qalıb, amma yüksəliş sırası səni gözləməyib. Yenidən sübut etməli olacaqsan."},
+ {"t":"Qayıtma, işdən çıx","fx":{"happy":2},"do":[{"dekret_end":true},{"end_job":"uşaqlarla qalmaq qərarı"}],"r":"Ərizəni masaya qoyub çıxdın. Bağçanın qapısında uşaq sənə qaçdı və bu, cavab idi."}]},
+
+{"id":"elci_gelir","once":false,"cool":3,"p":0.3,"cat":"family","tone":"everyday","age":[18,28],"icon":"🍬","cond":{"gender":"q","has_not":["həyat yoldaşı"],"has":["ana"],"stage_not":["mekteb"]},"t":"Axşam qapı döyüldü. Qonşu məhəllədən elçilər gəlib: oğlanın anası, xalası və bir qutu şirniyyat. Anan qapının arxasından sənə işarə edir: “Gəl, çay gətir.”","ch":[
+ {"t":"Çay gətir, görüşməyə razılaş","fx":{"happy":2},"do":[{"schedule":{"event":"elci_gorus","after_months":2}}],"r":"Çay stəkanları cingildədi, xala səni başdan-ayağa süzdü. Görüş gələn aya təyin olundu. Görəsən necə adamdır?"},
+ {"t":"Anandan yox deməsini xahiş et","fx":{"happy":2,"rel":{"ana":-3}},"r":"Anan qaşqabağını salladı: “Bu, üçüncüdür. Qızım, kimi gözləyirsən?” Sualın cavabı sənin də yadında deyil."},
+ {"t":"“Mənim sevdiyim var” de","cond":{"has":["sevgili"]},"fx":{"rel":{"ana":-4}},"do":[{"schedule":{"event":"elci_sevgili","after_months":3}}],"r":"Otaqda sükut. Anan: “Kimdir? Ailəsi kimdir? Niyə indiyə qədər deməmisən?” Bu söhbət burada bitmədi. Atan hələ bilmir…"}]},
+
+{"id":"elci_gorus","once":false,"cat":"family","tone":"everyday","age":[18,30],"scheduled_only":true,"force":true,"icon":"☕","cond":{"gender":"q","has_not":["həyat yoldaşı"]},"t":"Kafedə görüş. Qarşında oturan oğlan çayı iki dəfə dağıdıb. {elci_trait}","ch":[
+ {"t":"Razılaş, nişan olsun","fx":{"happy":6,"rel":{"ana":8}},"do":[{"add_person":{"role":"sevgili","g":"k","age":[2,7]}},{"schedule":{"event":"elci_nisan","after_months":6}}],"r":"Ailələr razılaşdı. Barmağına üzük taxılanda {new} sənə baxıb pıçıldadı: “Qorxma, mən də qorxuram.” Toy altı aydan sonradır."},
+ {"t":"Yox, ürəyimə yatmadı","fx":{"rel":{"ana":-2}},"r":"Nəzakətlə “yox” dedin. Anan bir həftə səninlə az danışdı. Amma sən bilirsən ki, düz etdin… yoxsa?"}]},
+
+{"id":"elci_sevgili","once":false,"cat":"family","tone":"dramatic","age":[18,32],"scheduled_only":true,"force":true,"icon":"🏠","cond":{"has":["sevgili"],"has_not":["həyat yoldaşı"]},"t":"Bu axşam {sevgili} ailənlə tanış olmağa gəlir. Atan səhərdən susur. Anan üç növ dolma bişirib, amma əlləri titrəyir.","ch":[
+ {"t":"Hər şeyin yaxşı keçəcəyinə inan","odds":[{"p":0.6,"fx":{"happy":10,"rel":{"ata":4,"sevgili":8}},"r":"Atan əvvəl sərt sual verdi: “Nə işlə məşğulsan?” Axırda isə çayı özü süzdü. Gecə anan pıçıldadı: “Atanın xoşuna gəldi.”"},{"p":0.4,"fx":{"happy":-8,"rel":{"ata":-6}},"r":"Söhbət alınmadı. Qapı bağlananda atan dedi: “Bu evə bir də gəlməsin.” Sən isə otağında telefonun ekranına baxırsan. Nə yazacaqsan?"}]},
+ {"t":"Görüşü təxirə sal","fx":{"happy":-2,"rel":{"sevgili":-6}},"r":"“Hələ tezdir” dedin. {sevgili} başını tərpətdi, amma gözlərində nəsə söndü."}]},
+
+{"id":"elci_nisan","once":false,"cat":"family","tone":"dramatic","age":[18,40],"scheduled_only":true,"force":true,"icon":"💍","cond":{"has":["sevgili"],"has_not":["həyat yoldaşı"]},"t":"Toy günü yaxınlaşır. Xonçalar hazırdır, qohumlar siyahı yazır. Son sual qalıb: necə toy?","ch":[
+ {"t":"Böyük toy, 400 qonaq (25 000 ₼)","cond":{"money_gte":20000},"fx":{"money":-25000,"happy":12},"do":[{"promote_role":{"from":"sevgili","to":"həyat yoldaşı","rel":10}}],"r":"Bütün gecə rəqs etdiniz. Səhər hesabı gördün: borcların toydan da uzun olacaq."},
+ {"t":"Kiçik toy, yalnız yaxınlar (6 000 ₼)","fx":{"money":-6000,"happy":10},"do":[{"promote_role":{"from":"sevgili","to":"həyat yoldaşı","rel":12}}],"r":"Kiçik zal, əziz adamlar. Bibin “Bu nə toydur?” dedi, amma sizin üçün mükəmməl idi."},
+ {"t":"Son anda fikrini dəyiş","fx":{"happy":-10,"rel":{"ana":-10}},"do":[{"remove_role":{"role":"sevgili","note":"nişan pozuldu"}}],"r":"Üzüyü geri qaytardın. Məhəllədə bir ay bundan danışdılar. Sən isə ilk dəfə öz qərarını verdin."}]},
+
+{"id":"elci_ana","once":false,"cool":3,"p":0.3,"cat":"family","tone":"everyday","age":[24,33],"icon":"🍬","cond":{"gender":"k","has_not":["həyat yoldaşı","sevgili"],"has":["ana"]},"t":"Anan çay süzür, amma gözü səndədir: “Qonşunun qızını görmüsən? Təhsilli, ağıllı, ailəsi də yaxşı. Elçiliyə gedək?”","ch":[
+ {"t":"Gedək, baxaq","fx":{"rel":{"ana":6}},"do":[{"schedule":{"event":"elci_cavab","after_months":2}}],"r":"Anan dərhal xalana zəng etdi. Şənbə günü əlində şirniyyat qutusu, ürəyində həyəcan qonşu qapını döydünüz. Cavabı gözləyirsiniz."},
+ {"t":"Özüm tapacağam, ana","fx":{"rel":{"ana":-3}},"r":"Anan ah çəkdi: “Mən də nəvə görmək istəyirəm.” Söhbət hələlik qapandı."},
+ {"t":"Hələ tezdir, işim qaydasında deyil","fx":{"rel":{"ana":-1}},"r":"“Kişi əvvəl ayağa durmalıdır” dedin. Anan razılaşdı, amma xalanın nömrəsi hələ telefonundadır."}]},
+
+{"id":"elci_cavab","once":false,"cat":"family","tone":"dramatic","age":[24,40],"scheduled_only":true,"force":true,"icon":"📞","cond":{"gender":"k","has_not":["həyat yoldaşı"]},"t":"Axşam anan telefonu qulağından ayırıb sənə baxdı. Qız evindən zəng idi.","ch":[
+ {"t":"“Nə dedilər?”","odds":[{"p":0.5,"fx":{"happy":10,"rel":{"ana":6}},"do":[{"add_person":{"role":"sevgili","g":"q","age":[-6,-1]}},{"schedule":{"event":"elci_nisan","after_months":6}}],"r":"“Razıdırlar!” Anan sevincdən ağladı. {new} ilə ilk görüşünüz sabahdır. Nişan isə altı aydan sonra."},{"p":0.3,"fx":{"happy":-2},"do":[{"schedule":{"event":"elci_cavab","after_months":2}}],"r":"“Fikirləşmək üçün vaxt istəyiblər.” Gözləmək yenə də gözləməkdir."},{"p":0.2,"fx":{"happy":-6},"r":"“Qız başqasını sevirmiş.” Anan susdu. Sən isə nədənsə rahatlıq hiss etdin."}]}]},
+
+{"id":"qiz_gec","cat":"family","tone":"everyday","age":[15,18],"icon":"🕙","cond":{"gender":"q","has":["ata"]},"t":"Rəfiqənin ad günündən saat 22:30-da qayıtdın. Atan qapıda dayanıb: “Saat neçədir?” Qardaşın da otaq qapısından baxır.","ch":[
+ {"t":"Üzr istə, telefon sönmüşdü","fx":{"happy":-1,"rel":{"ata":-1}},"r":"Atan bir şey demədi, amma bir həftə hər axşam saat 8-də zəng etdi."},
+ {"t":"“Mən artıq uşaq deyiləm!” de","odds":[{"p":0.5,"fx":{"happy":-6,"rel":{"ata":-8}},"r":"Səsin titrədi. Atan qapını çırpdı: “Bu evdə qaydanı mən qoyuram.” Bir ay rəfiqələrinlə görüşmək yoxdur."},{"p":0.5,"fx":{"happy":5,"rel":{"ata":3}},"r":"Atan bir anlıq susdu. Ertəsi gün səhər: “Növbəti dəfə zəng et, gəlib götürərəm.” Bu, kiçik bir qələbə idi."}]},
+ {"t":"Ananı köməyə çağır","cond":{"has":["ana"]},"fx":{"rel":{"ana":3}},"r":"Anan atanı mətbəxə apardı. Qapının arxasından pıçıltılar gəldi. Axırda atan çay içib yatdı."}]},
+
+{"id":"qiz_uni_seher","cat":"education","tone":"dramatic","age":[17,18],"icon":"🏫","cond":{"gender":"q","has":["ata"],"stage":["mekteb","mezun"]},"t":"Başqa şəhərdəki universitetdən təqaüdlü yer təklif olunur. Atan qəti danışır: “Qız uşağı başqa şəhərdə tək yaşamaz.”","ch":[
+ {"t":"İsrar et","odds":[{"p":0.55,"fx":{"happy":8,"rel":{"ata":-5}},"r":"Atan stansiyada ayrılanda heç nə demədi. Amma qatar tərpənəndə pəncərədən əl yellədi. Sən də yellədin."},{"p":0.45,"fx":{"happy":-8,"rel":{"ata":-8}},"r":"“Yox dedim, yox!” Sənədləri geri götürdün. Bu söhbət hələ çox illər yadına düşəcək."}]},
+ {"t":"Nənəni araya sal","cond":{"has_any":["nənə","baba"]},"fx":{"happy":6,"rel":{"nənə":6,"ata":-1}},"r":"Nənən atanı yanına çağırdı: “Mən də sənin yaşında arzularımı başqasına verdim.” Atan razılaşdı, amma hər gün zəng etmək şərti ilə."},
+ {"t":"Burada qal","fx":{"happy":-4,"rel":{"ata":4}},"r":"Yerli universitetə sənəd verdin. Atan razıdır. Sən isə hərdən o şəhərin xəritəsinə baxırsan."}]},
+
+{"id":"oglan_kisi","cat":"family","tone":"everyday","age":[12,16],"icon":"💧","cond":{"gender":"k","has":["ata"]},"t":"Dostunun köçdüyünü eşidəndə gözün doldu. Atan gördü: “Kişi ağlamaz!”","ch":[
+ {"t":"Göz yaşını gizlət","fx":{"happy":-3},"r":"Otağına keçib qapını örtdün. Ağlamaq olmaz. Amma ürəyin niyə bu qədər ağırdır?"},
+ {"t":"“Kişi də ağlayar, ata” de","odds":[{"p":0.5,"fx":{"happy":3,"rel":{"ata":4}},"r":"Atan bir az susdu, sonra çiynindən tutdu: “Mən də babam öləndə ağlamışdım.” Bunu ilk dəfə eşidirdin."},{"p":0.5,"fx":{"happy":-4,"rel":{"ata":-4}},"r":"“Məni öyrətmə!” Atan otaqdan çıxdı. Bu söhbət illərlə yarımçıq qalacaq."}]},
+ {"t":"Anana danış","cond":{"has":["ana"]},"fx":{"happy":2,"rel":{"ana":4}},"r":"Anan heç bir söz demədi, sadəcə başını sığalladı. Bu kifayət idi."}]},
+
+{"id":"oglan_pul","cat":"family","tone":"dramatic","age":[16,20],"icon":"💸","cond":{"gender":"k","has":["ana"],"means_lt":3,"stage_not":["uni","magistr"]},"t":"Atanın işi bağlandı. Anan gecə mətbəxdə hesab-kitab edir. Qonşular da deyir: “Artıq böyük oğlansan, evə əl tutmalısan.”","ch":[
+ {"t":"Dərsdən sonra işlə","fx":{"money":600,"smarts":-2,"rel":{"ana":6},"happy":-2},"r":"Bazarda yük daşıyırsan. İlk maaşı anana verəndə o, pulu yox, sənin əllərini öpdü."},
+ {"t":"Oxu, sonra kömək edəcəyəm","fx":{"smarts":2,"rel":{"ata":-3}},"r":"Atan heç nə demədi. Amma axşamlar onun pəncərə önündə necə susduğunu görürsən. Bu qərar düzdürmü?"}]},
+
+{"id":"qadin_musahibe","cat":"career","tone":"everyday","age":[24,42],"icon":"🗂️","cond":{"gender":"q","job":false,"kid_age_gte":0},"t":"İş müsahibəsi yaxşı gedir. Sonra kadrlar şöbəsinin müdiri soruşur: “Uşaqlarınız var? Xəstələnəndə kim baxacaq?”","ch":[
+ {"t":"Sakit cavab ver: hər şey planlıdır","odds":[{"p":0.6,"fx":{"happy":3},"r":"Müdir başını tərpətdi. Bir həftə sonra zəng gəldi: “Sizi gözləyirik.”"},{"p":0.4,"fx":{"happy":-5},"r":"“Sizə qayıdarıq” dedilər. Qayıtmadılar."}]},
+ {"t":"“Kişi namizədə də bunu soruşursunuz?” de","odds":[{"p":0.35,"fx":{"happy":6},"r":"Otaqda bir anlıq sükut. Sonra rəhbər güldü: “Haqlısınız. Bizə belə adam lazımdır.”"},{"p":0.65,"fx":{"happy":-2},"r":"Müsahibə nəzakətlə bitdi. İş getdi, amma özünə hörmətin qaldı."}]}]},
+{"id":"usaq_istek","once":false,"cool":2,"p":0.35,"cat":"family","tone":"everyday","age":[21,42],"icon":"🤍","cond":{"has":["həyat yoldaşı"],"preg":false,"count_lt":{"uşaq":3}},"t":"Axşam {yoldaş} çay stəkanını fırladır, sonra birdən: “Bəlkə artıq vaxtıdır? Evdə uşaq səsi olsun.”","ch":[
+ {"t":"Hə, vaxtıdır","fx":{"happy":6,"rel":{"həyat yoldaşı":6}},"do":[{"preg_start":true}],"r":"Bir neçə ay sonra səhər vanna otağından səs gəldi: iki zolaq! Doqquz ay. Oğlan, yoxsa qız? Bu sual indi hər gün soruşulacaq."},
+ {"t":"Bir az gözləyək, əvvəl ayağa duraq","fx":{"rel":{"həyat yoldaşı":-3}},"r":"“Haqlısan” dedi, amma səsində bir az kədər vardı. Bu söhbət yenə açılacaq."}]}
+]

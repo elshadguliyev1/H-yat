@@ -228,7 +228,7 @@ function advanceQuarter() {
   moneyTick(false);
   P.q = (P.q || 0) + 1; P.acts = QUARTER_ACTS;
   P.day = Math.max(P.day, quarterStart(P.q));
-  const msgs = []; armyTick(msgs);
+  const msgs = []; armyTick(msgs); familyTick();
   if (P.alive) { P.yearEvents.push(...Interp.takeScheduled(quarterEnd())); P.yearEvents.sort((a, b) => a.day - b.day); }
   save(); return { birthday: false, msgs };
 }
@@ -254,6 +254,7 @@ function ageUp() {
   // army
   // discharge when the service period is over (service starts on a birthday: 12 months = one year, 18 months = two)
   armyTick();
+  familyTick();
   // prison, licences, investments
   prisonTick();
   expungeTick();
@@ -342,6 +343,7 @@ function moneyTick(yearly) {
     if (c.track === "military") P.lastMilSal = salaryMonthly();
   }
   if (onPension()) add(inc, "Təqaüd", pensionMonthly() * 12);
+  if (P.dekret && !P.dekret.back) add(inc, P.day < P.dekret.paid ? "Analıq müavinəti" : "Uşağa qulluq müavinəti", P.day < P.dekret.paid ? P.dekret.sal * 12 : 600);
   for (const a of P.assets) {
     if (a.type === "mağaza") add(inc, "Kirayə gəliri", a.value * 0.06);
     if (a.type === "kiraye") add(inc, "Kirayə gəliri", a.value * 0.05);
@@ -363,7 +365,7 @@ function moneyTick(yearly) {
       add(exp, "Kommunal", 600);
       add(exp, "Nəqliyyat", P.assets.some(a => a.type === "maşın") ? 0 : 360);
     }
-    const kids = people("uşaq").filter(k => k.age < 18).length; if (kids) add(exp, "Uşaqlar (geyim, məktəb, dərnək)", kids * 1500);
+    const kids = people("uşaq").filter(k => k.age < 18).length; if (kids) add(exp, "Uşaqlar (geyim, məktəb, dərnək)", kids * (tight ? 700 : 1500));
     const sal = salaryMonthly() * 12; if (sal > 0 && P.money > 0) add(exp, "Geyim və əyləncə", sal * 0.3);
   }
   if (P.age >= 55) add(exp, "Dərman və müayinə", (P.age - 50) * 40 + Math.max(0, 70 - P.st.health) * 15);

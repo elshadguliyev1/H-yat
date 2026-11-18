@@ -81,6 +81,11 @@ const Interp = (() => {
     means_lt: v => familyMeans() < v,
     owns: v => owns(v),
     owns_not: v => !owns(v),
+    preg: v => pregnant() === v,
+    preg_self: v => pregnant() && P.preg.self === v,
+    preg_known: v => pregnant() && P.preg.known === v,
+    dekret: v => (!!P.dekret && !P.dekret.back) === v,
+    dekret_long: v => !!P.dekret && (P.dekret.months > 12) === v,
     any: list => list.some(c => check(c)),
     not: c => !check(c)
   };
@@ -116,6 +121,12 @@ const Interp = (() => {
     promote_role(o, ctx) { const p = person(o.from); if (!p) return; p.role = o.to; p.rel = clamp(p.rel + (o.rel || 0)); ctx.vars.new = p.name; },
     start_job(o) { startJob(o.id, o.lv || 0, o.note); },
     sport_join(id) { sportJoin(id); },
+    preg_reveal(v, ctx) { if (P.preg) { P.preg.known = true; ctx.vars.baby_reveal = P.preg.twins ? "“İki ürək döyüntüsü eşidirəm… Əkizlərdir!” Otaqda bir anlıq sükut, sonra gülüş." : P.preg.g === "k" ? "“Oğlandır!” Atası artıq futbol formasından danışır." : "“Qızdır!” Nənə dərhal qızıl sırğa üçün pul yığmağa başladı."; } },
+    preg_early(v) { if (pregnant()) { P.preg.due = Math.min(P.preg.due, P.day + 20); P.preg.early = true; for (const s of P.sched) if (s.event === "dogum") s.day = P.preg.due; } },
+    preg_start(v, ctx) { ctx.vars.preg_ok = pregStart() ? "1" : ""; },
+    birth(v, ctx) { ctx.vars.birth_result = giveBirth(); },
+    dekret(m) { dekretStart(m); },
+    dekret_end() { dekretEnd(); },
     own(k) { (P.owned = P.owned || {})[k] = { age: P.age, day: P.day }; },
     pol_join(party) { polJoin(party); },
     pol_run(o, ctx) { polRun(o.office, o.spend || 0, ctx); },
@@ -127,7 +138,7 @@ const Interp = (() => {
     pres_end(reason) { presEnd(reason); },
     sport_end(reason) { sportEnd(reason); },
     sport_skill(n) { if (P.sport) P.sport.skill = clamp(P.sport.skill + n); },
-    end_job(o) { endJob(o.reason || "bitdi"); },
+    end_job(o) { endJob(typeof o === "string" ? o : o.reason || "bitdi"); },
     promote() { promote(); },
     // service is counted from the start of the current year of age, so 12 months = exactly one "+1 yaş"
     army_start(o, ctx) { const m = armyMonths(); const start = P.day; P.army = { start, end: Cal.addMonths(start, m), months: m, basis: P.edu.master ? "master" : P.edu.degree ? "bachelor" : "none", done: false }; if (P.job && !P.job.susp) endJob("hərbi xidmət"); ctx.vars.months = m; },
@@ -196,6 +207,10 @@ const Interp = (() => {
     camp_p1: () => fmtMoney(RULES.politics.campaign.prezident[1]), camp_p2: () => fmtMoney(RULES.politics.campaign.prezident[2]),
     pres_term: () => P.pres ? String(P.pres.term) : "1",
     approval: () => P.ctry ? P.ctry.approval + "%" : "",
+    preg_month: () => String(pregMonth()),
+    baby_word: () => babyWord(),
+    dekret_months: () => P.dekret ? String(P.dekret.months) : "",
+    elci_trait: () => pick(["Gülərüzlüdür, zarafatları da yerindədir. Söhbət özü axıb gedir.", "Çox ciddidir. Bütün söhbət boyu işindən danışdı. Bəlkə də sadəcə həyəcanlıdır?", "Nəzakətlidir, amma bir sözü yadında qaldı: “Evlənəndən sonra işləməyə ehtiyac olmayacaq.”"]),
     sport: () => sportName(),
     sport_l: () => sportName().toLowerCase(),
     sport_icon: () => P.sport ? SPORTS[P.sport.id].icon : "🏅",
@@ -238,7 +253,7 @@ const Interp = (() => {
     let s = String(t ?? "").replace(/\{(\w+)\}/g, (m, k) => ctx && ctx.vars && ctx.vars[k] != null ? ctx.vars[k] : TV[k] ? TV[k]() : m);
     return fill(s);
   }
-  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "pol_result", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", "sal_new", "kid_m", "kid_b", "biz_value", "kid_m_gen", "kid_m_dat", "yoldas_dat", "kid_m_word", "kid_partner", "grand_name", "grand_word", "grand_parent", "granny_word", "wcost_full", "wcost_part", "wcost_toy", "crime", "caught", "verdict", ...Object.keys(TV)]);
+  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "pol_result", "baby_reveal", "birth_result", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", "sal_new", "kid_m", "kid_b", "biz_value", "kid_m_gen", "kid_m_dat", "yoldas_dat", "kid_m_word", "kid_partner", "grand_name", "grand_word", "grand_parent", "granny_word", "wcost_full", "wcost_part", "wcost_toy", "crime", "caught", "verdict", ...Object.keys(TV)]);
 
   // ---------------- dynamic choice lists ----------------
   const GEN = {

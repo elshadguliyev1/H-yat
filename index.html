@@ -188,6 +188,7 @@ nav.tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg) 
 <script src="js/sport.js"></script>
 <script src="js/politics.js"></script>
 <script src="js/items.js"></script>
+<script src="js/family.js"></script>
 <script src="js/interp.js"></script>
 <script>
 "use strict";
@@ -683,7 +684,7 @@ function personSheet(p) {
       if (ok) { const m = Math.max(1, Math.min(max, Math.round(rnd(1, max) * (0.6 + means / 10)))); P.money += m; ch = [["money", m]]; text = max > 10 ? `${p.name} gizlicə cibinə ${m} ₼ qoydu: “Anana demə.”` : `${p.name} sənə ${m} ₼ verdi. “Bax ha, dondurmaya xərcləmə!”`; }
       else { text = max > 10 ? `${p.name} başını sığalladı: “Pensiyam gələndə, bala. Get, sənə çay süzüm.”` : means <= 1 ? `${p.name} köks ötürdü: “Bu ay pul çox azdır, bala.”` : `${p.name}: “Pul ağacda bitmir!”`; }
     }
-    if (id === "baby") { if (chance(.6)) { const g = pick(["k", "q"]); const k = addPerson("uşaq", g, 0, { last: surname(P.fam, g) }); P.stats.kids++; P.pendingName = k.id; ch = apply({ happy: 15, money: -1500 }); text = `${g === "k" ? "Oğlunuz" : "Qızınız"} oldu! Adını ${k.name} qoydunuz 🍼`; } else { text = "Bu il alınmadı. Səbr…"; } }
+    if (id === "baby") { if (pregnant()) text = "Artıq körpə gözləyirsiniz."; else if (chance(.5) && pregStart()) { ch = apply({ happy: 12 }); text = P.g === "q" ? "Test: iki zolaq! Əlində tutub uzun-uzun baxırsan. Doqquz ay sonra hər şey dəyişəcək. Oğlan, yoxsa qız?" : `${p.name} vanna otağından çıxdı, əlində test: iki zolaq! Doqquz ay sonra ata olursan. Oğlan, yoxsa qız?`; } else { text = "Bu dəfə alınmadı. Səbr… Həkim deyir ki, hər şey qaydasındadır."; } }
     log("💬 " + text); save();
     const show = () => { s.el.innerHTML = `<div class="big">${ROLE_ICON[p.role] || "🙂"}</div><p class="q">${esc(text)}</p><div class="fx">${fxChips(ch)}</div><button class="btn close">Yaxşı</button>`;
       s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); }; };
@@ -760,7 +761,7 @@ function renderEnd() {
 
 // ---------- boot ----------
 // ---------- boot: content library, rules, database ----------
-const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json"];
+const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json", "data/events/gender.json"];
 (async function boot() {
   app.innerHTML = '<p class="wrap muted" style="padding-top:40vh;text-align:center">Yüklənir…</p>';
   try {

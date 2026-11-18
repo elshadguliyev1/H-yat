@@ -7,7 +7,7 @@
 const fs = require("fs"), path = require("path"), vm = require("vm");
 const ROOT = path.join(__dirname, "..");
 const read = f => fs.readFileSync(path.join(ROOT, f), "utf8");
-const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json"];
+const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json", "data/events/gender.json"];
 
 // strict JSON check first (the browser uses JSON.parse; the sandbox below would forgive trailing commas)
 for (const f of ["data/rules.json", "data/careers.json", ...EVENT_FILES]) { try { JSON.parse(read(f)); } catch (e) { console.log("✗ JSON xətası: " + f + " — " + e.message); process.exit(1); } }
@@ -17,7 +17,7 @@ function sandbox() {
   const ctx = { console, Math, Date, JSON, Object, Array, String, Number, Intl, Set, Map, Promise, isFinite,
     localStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } } };
   vm.createContext(ctx);
-  vm.runInContext(read("js/core.js") + "\n" + read("engine.js") + "\n" + read("js/career.js") + "\n" + read("js/justice.js") + "\n" + read("js/sport.js") + "\n" + read("js/politics.js") + "\n" + read("js/items.js") + "\n" + read("js/interp.js") + `
+  vm.runInContext(read("js/core.js") + "\n" + read("engine.js") + "\n" + read("js/career.js") + "\n" + read("js/justice.js") + "\n" + read("js/sport.js") + "\n" + read("js/politics.js") + "\n" + read("js/items.js") + "\n" + read("js/family.js") + "\n" + read("js/interp.js") + `
     RULES = ${read("data/rules.json")};
     loadCareers(${read("data/careers.json")});
     globalThis.LISTS = [${EVENT_FILES.map(read).join(",")}];
@@ -43,6 +43,7 @@ function sandbox() {
       for (const k of STAT_KEYS) if (!isFinite(P.st[k])) throw new Error("NaN göstərici " + k);
       if (!isFinite(P.money)) throw new Error("NaN pul");
     };
+    globalThis.playYear.quarter = function (log) { playDue(log); advanceQuarter(); playDue(log); };
     function playDue(log) {
       for (const ev of dueEvents()) {
         P.yearEvents.splice(P.yearEvents.indexOf(ev), 1);
@@ -63,7 +64,7 @@ function sandbox() {
     }
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
-    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial; globalThis.hasRecord = hasRecord; globalThis.everConvicted = everConvicted; globalThis.lockReason = lockReason; globalThis.SPORTS = SPORTS; globalThis.RULES = RULES; globalThis.polJoin = polJoin; globalThis.setOffice = setOffice; globalThis.polRun = polRun; globalThis.isPres = isPres; globalThis.govAvailable = govAvailable; globalThis.doGov = doGov; globalThis.CTRY_KEYS = CTRY_KEYS; globalThis.pick = pick; globalThis.itemsFor = itemsFor; globalThis.ITEMS = ITEMS; globalThis.askParents = askParents; globalThis.familyMeans = familyMeans; globalThis.owns = owns; globalThis.itemsTick = itemsTick;
+    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial; globalThis.hasRecord = hasRecord; globalThis.everConvicted = everConvicted; globalThis.lockReason = lockReason; globalThis.SPORTS = SPORTS; globalThis.RULES = RULES; globalThis.polJoin = polJoin; globalThis.setOffice = setOffice; globalThis.polRun = polRun; globalThis.isPres = isPres; globalThis.govAvailable = govAvailable; globalThis.doGov = doGov; globalThis.CTRY_KEYS = CTRY_KEYS; globalThis.pick = pick; globalThis.itemsFor = itemsFor; globalThis.ITEMS = ITEMS; globalThis.askParents = askParents; globalThis.familyMeans = familyMeans; globalThis.owns = owns; globalThis.itemsTick = itemsTick; globalThis.pregStart = pregStart; globalThis.addPerson = addPerson;
     globalThis.playLife = function (name, g, dream, seed, maxAge, log) { newLife(name, g, "Bakı", dream, seed); while (P.alive && P.age < (maxAge || 130)) playYear(log); return P; };
   `, ctx);
   return ctx;
@@ -363,6 +364,40 @@ test("əşyalar: yaşa və cinsə uyğun, valideyn imkanına görə hədiyyə, t
   const kod = S.ACTIONS.find(a => a.id === "kod"); kod.after(); const slow = S.P.flags.kodSaat; S.P.owned.komputer = { age: 14 }; kod.after();
   ok(slow === 0.5 && S.P.flags.kodSaat === 1.5, "kompüter fərqi yoxdur: " + slow + " / " + S.P.flags.kodSaat);
   console.log(`      (hədiyyə: varlı ailə ${rich}, kasıb ailə ${poor} dəfə "hə" dedi; 14 yaşda telefonu olan ${withPhone}/80, köhnələn telefon ${worn})`);
+});
+
+test("qız və oğlan həyatı: hamiləlik rüblərlə, doğum, analıq məzuniyyəti, elçilik, cinsə uyğun hadisələr", () => {
+  // pregnancy: about 9 months, a check-up with an open question, the birth gives the expected baby
+  let births = 0, leave = 0, back = 0, moms = 0, asked = 0;
+  for (let s = 0; s < 40; s++) {
+    const g = s % 2 ? "q" : "k";
+    S.newLife("Ailə", g, "Bakı", "muellim", 94000 + s); while (S.P.age < 26) S.playYear(); if (!S.P.alive) continue;
+    S.P.yearEvents = []; S.P.legal = { record: [], case: null, prison: null, history: [] };
+    if (!S.person("həyat yoldaşı")) S.addPerson("həyat yoldaşı", g === "k" ? "q" : "k", 25);
+    if (!S.P.job) S.startJob("ofis", 0);
+    const kids0 = S.P.people.filter(p => p.role === "uşaq").length;
+    if (!(S.P.preg && !S.P.preg.done)) ok(S.pregStart(), "hamiləlik başlamadı"); const pg = S.P.preg.g, start = S.P.preg.start;
+    let born = null;
+    for (let q = 0; q < 8 && !born && S.P.alive; q++) { S.playYear.quarter(); if (S.P.preg.done) born = S.P.day; }
+    if (!born) continue; births++;
+    const days = born - start; ok(days >= 200 && days <= 300, "hamiləlik " + days + " gün çəkdi");
+    const kids = S.P.people.filter(p => p.role === "uşaq"); ok(kids.length > kids0, "uşaq doğulmadı");
+    ok(kids.some(k => k.age === 0 && k.g === pg), "körpənin cinsi gözlənilən deyil");
+    for (let q = 0; q < 2 && !S.P.dekret && S.P.seen.dekret_secim == null && S.P.seen.ata_mezuniyyet == null; q++) S.playYear.quarter();
+    if (g === "q") { moms++; if (S.P.seen.dekret_secim != null) asked++; }
+    if (S.P.dekret) { leave++; for (let q = 0; q < 16 && S.P.dekret && !S.P.dekret.back; q++) S.playYear.quarter(); if (S.P.dekret.back) back++; }
+    if (g === "k") ok(!S.P.dekret, "ata analıq məzuniyyətinə çıxdı");
+  }
+  ok(births >= 30, "doğum az: " + births); ok(asked >= moms * 0.7, `analıq seçimi az gəldi: ${asked}/${moms}`);
+  // gender-specific events never reach the other gender; both genders get their own stories
+  const seenBy = { k: new Set(), q: new Set() };
+  for (let i = 0; i < 120; i++) { const g = i % 2 ? "q" : "k"; S.playLife("Sim", g, "polis", 95000 + i, 45, e => seenBy[g].add(e.id)); }
+  const only = gg => S.Interp.lib.filter(e => e.cond && e.cond.gender === gg).map(e => e.id);
+  for (const id of only("k")) ok(!seenBy.q.has(id), "oğlan hadisəsi qızda: " + id);
+  for (const id of only("q")) ok(!seenBy.k.has(id), "qız hadisəsi oğlanda: " + id);
+  const qOwn = only("q").filter(id => seenBy.q.has(id)).length, kOwn = only("k").filter(id => seenBy.k.has(id)).length;
+  ok(qOwn >= 4 && kOwn >= 4, `cinsə xas hadisələr: qız ${qOwn}, oğlan ${kOwn}`);
+  console.log(`      (40 ailədən ${births} doğum; analıq məzuniyyəti ${leave}, işə qayıdan ${back}; cinsə xas görünən hadisələr: qız ${qOwn}/${only("q").length}, oğlan ${kOwn}/${only("k").length})`);
 });
 
 test("erkən ölüm mümkündür, amma nadirdir; keçmiş futbolçuya məşqçilik açıqdır", () => {

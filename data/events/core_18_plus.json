@@ -142,7 +142,7 @@
  {"t":"Çək","cond":{"money_gte":10000},"odds":[{"p":0.5,"fx":{"money":-10000,"fame":12,"happy":10},"do":[{"promote":true},{"followers_rand":[30000,150000]}],"r":"Klip trendlərdə 1-ci oldu!"},{"p":0.5,"fx":{"money":-10000,"happy":-8},"r":"Klipə heç kim baxmadı. Pul getdi."}]},
  {"t":"Telefonla özüm çəkərəm","odds":[{"p":0.3,"fx":{"fame":6},"do":[{"followers_rand":[10000,50000]}],"r":"Səmimiliyi bəyənildi, viral oldu!"},{"p":0.7,"fx":{"happy":-2},"r":"Pis çıxdı, silmək məcburiyyətində qaldın."}]}]},
 {"id":"mug_reqib","cat":"career","tone":"dramatic","age":[18,55],"icon":"🎤","cond":{"job":"mugenni","fame_gt":25},"t":"Başqa bir müğənni Pıçıltı-da səni “səsi yoxdur” deyə ələ salıb.","ch":[
- {"t":"Cavab ver, dava et","odds":[{"p":0.5,"fx":{"fame":6,"happy":3},"r":"Mübahisə bütün ölkəni bölüb. Mahnılarına baxış iki qat artdı!"},{"p":0.5,"fx":{"fame":-4,"happy":-8},"r":"Səni “qaba” adlandırdılar, konsert ləğv olundu."}]},
+ {"t":"Sərt cavab ver","odds":[{"p":0.5,"fx":{"fame":6,"happy":3},"r":"Mübahisə bütün ölkəni bölüb. Mahnılarına baxış iki qat artdı!"},{"p":0.5,"fx":{"fame":-4,"happy":-8},"r":"Səni “qaba” adlandırdılar, konsert ləğv olundu."}]},
  {"t":"Mahnı ilə cavab ver","fx":{"fame":4,"happy":5},"r":"Yeni mahnın hamıya cavab oldu 🎶"},
  {"t":"Səssiz qal","fx":{"smarts":2},"r":"Böyüklük göstərdin."}]},
 {"id":"mue_sagird","cat":"career","tone":"everyday","age":[21,65],"icon":"🧑‍🎓","cond":{"job":"muellim"},"t":"Sinifdə çox istedadlı, amma kasıb ailədən olan bir şagird var. Repetitorluğa pulu yoxdur.","ch":[
