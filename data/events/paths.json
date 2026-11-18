@@ -15,7 +15,12 @@
  {"t":"Yenə apar","fx":{"money":5000,"happy":-10},"do":[{"crime":"narkotik"}],"r":"İkinci dəfə daha qorxulu idi. {caught}"},
  {"t":"Polisə get, hər şeyi danış","fx":{"happy":-4,"unflag":"got_away_narkotik"},"trait":{"courage":4,"honesty":4},"do":[{"crime":"narkotik"}],"r":"İstintaqla əməkdaşlıq edirsən. Məhkəmədə bu nəzərə alınacaq, amma iş açılıb."},
  {"t":"Başqa şəhərə köç","fx":{"happy":-8,"unflag":"got_away_narkotik"},"do":[{"move_city":"random"}],"r":"Hər şeyi atıb {city} şəhərinə köçdün. Telefon nömrəni dəyişdin. Arxana baxmağı isə hələ tərgitməmisən."}]},
-{"id":"crime_dava","w":0.4,"cat":"justice","tone":"dramatic","age":[16,45],"icon":"🥊","cond":{"in_prison":false},"t":"Toyda sərxoş bir oğlan sənin yaxınını təhqir edir və itələyir. Hamı baxır.","ch":[
+{"id":"toy_kobudluq","w":0.6,"cat":"life","tone":"dramatic","age":[16,40],"icon":"💃","cond":{"gender":"q","in_prison":false},"t":"Toyda sərxoş bir oğlan sənə və rəfiqənə kobud söz atır, rəqsə məcbur etməyə çalışır. Masadakılar susur.","ch":[
+ {"t":"Sakit, amma sərt cavab ver: “Hörmətini saxla”","trait":{"courage":3},"odds":[{"p":0.6,"fx":{"happy":3},"r":"Bir neçə qadın sənin tərəfini tutdu. Oğlan pərt olub uzaqlaşdı."},{"p":0.4,"fx":{"happy":-4},"r":"O, daha da əsəbiləşdi. Rəfiqənlə məclisdən tez çıxdınız."}]},
+ {"t":"Qohumlarına de","odds":[{"p":0.5,"fx":{"happy":2},"r":"Əmin oğlanla danışdı, məsələ sakitcə həll olundu."},{"p":0.5,"fx":{"happy":-3,"rel":{"qardaş":4}},"r":"Qardaşın hirsləndi, az qala dava düşəcəkdi. Ağsaqqallar araya girdi."}]},
+ {"t":"Videoya çək, polisə müraciət et","trait":{"courage":2,"independence":2},"fx":{"happy":1},"r":"Polis protokol yazdı. Bəziləri “toyu korladın” dedi, bəziləri isə səni haqlı saydı."},
+ {"t":"Rəfiqəni götür, məclisi tərk et","fx":{"happy":-2},"r":"Taksidə ikiniz də susdunuz. Belə axşamlar heç vaxt unudulmur."}]},
+{"id":"crime_dava","w":0.4,"cat":"justice","tone":"dramatic","age":[16,45],"icon":"🥊","cond":{"in_prison":false,"gender":"k"},"t":"Toyda sərxoş bir oğlan sənin yaxınını təhqir edir və itələyir. Hamı baxır.","ch":[
  {"t":"Sakitcə uzaqlaşdır, hadisəni böyütmə","trait":{"discipline":3},"fx":{"happy":-2},"r":"Qohumlar onu çıxardı. Məclis davam etdi."},
  {"t":"Yumruq at","trait":{"courage":2,"discipline":-3},"odds":[{"p":0.5,"fx":{"happy":2,"health":-4},"r":"Kiçik dava oldu, araya girdilər. Hamı səni haqlı saydı."},{"p":0.5,"fx":{"health":-8},"do":[{"crime":"dava"}],"r":"O, yerə yıxılıb başını vurdu. Təcili yardım gəldi. {caught}"}]}]},
 {"id":"crime_serxos","w":0.4,"cat":"justice","tone":"dramatic","age":[18,65],"icon":"🍷","cond":{"asset":"maşın","in_prison":false},"t":"Dostunun ad günündən sonra gecə saat 2-dir. Bir neçə qədəh içmisən. Maşının qapının ağzındadır.","ch":[

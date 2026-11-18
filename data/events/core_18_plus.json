@@ -93,11 +93,19 @@
  {"t":"Get və danış","cond":{"job":true},"fx":{"happy":5},"r":"“{iş}” olduğunu eşidəndə hamı təəccübləndi."},
  {"t":"Get və danış","cond":{"job":false},"fx":{"happy":2},"r":"İşsiz olduğunu deyəndə bir az utandın, amma köhnə dostlarla gülüşdünüz."},
  {"t":"Getmə","r":"Fotolara Pıçıltı-dan baxdın."}]},
-{"id":"nevr","cat":"family","tone":"dramatic","age":[25,70],"icon":"🧓","cond":{"kid_age_gte":22,"no_flag":"neve"},"t":"Övladın deyir ki, ailə qurmaq istəyir!","ch":[
- {"t":"Xeyir-dua ver, toy et","fx":{"money":-6000,"happy":15,"flag":"neve"},"r":"Gözəl toy oldu. Tezliklə nəvə gələcək!"},
- {"t":"Hələ tezdir, oxusun","fx":{"rel":{"uşaq":-8}},"r":"Övladın səndən incidi."}]},
-{"id":"neve_geldi","cat":"family","tone":"dramatic","age":[40,90],"icon":"👶","cond":{"flag_since_gte":{"neve":1},"no_flag":"neveGeldi"},"t":"Nəvən dünyaya gəldi! Səni “baba” və ya “nənə” çağıracaq.","ch":[
- {"t":"Sevincdən uç!","fx":{"happy":20,"flag":"neveGeldi"},"do":[{"add_person":{"role":"nəvə","g":"any","age":0}}],"r":"Həyatın ən gözəl anlarından biri 💛 Nəvənin adı: {new}."}]},
+{"id":"ovlad_toy","cat":"family","tone":"dramatic","age":[38,95],"once":false,"cool":1,"w":3,"icon":"💍","cond":{"kid_unmarried":22},"t":"{kid_m_word} {kid_m} deyir ki, {kid_partner} ilə ailə qurmaq istəyir. Elçilik, nişan, toy… Hamı sənin sözünü gözləyir.","ch":[
+ {"t":"Cehizi tam hazırla, toy xərcinə də qoşul (15 000 ₼)","cond":{"kid_m_g":"q","money_gte":15000},"do":[{"kid_wedding":"full"}],"fx":{"happy":15},"r":"Mebel, məişət texnikası, qızıl dəsti, yorğan-döşək… {kid_m_gen} cehizi bütün məhəlləyə göstərildi. Toyda {kid_partner} ilə ilk rəqsə çıxanda gözlərin doldu."},
+ {"t":"Cehizin əsas hissəsini al (6 000 ₼)","cond":{"kid_m_g":"q","money_gte":6000},"do":[{"kid_wedding":"part"}],"fx":{"happy":10},"r":"Mebel və qızıl sizdən, qalanını gənclər özləri tamamladı. Toy təvazökar, amma səmimi oldu."},
+ {"t":"Yalnız qızıl dəstini al (2 500 ₼)","cond":{"kid_m_g":"q","money_gte":2500},"do":[{"kid_wedding":"toy"}],"fx":{"happy":5},"r":"Toyda qudalar cehizə baxıb pıçıldaşdılar. {kid_m} heç nə demədi, amma hiss etdin ki, incidi."},
+ {"t":"Mənzil, maşın və toy: hamısı bizdən (95 000 ₼)","cond":{"kid_m_g":"k","money_gte":95000},"do":[{"kid_wedding":"full"}],"fx":{"happy":15},"r":"Açarları {kid_m_dat} verəndə gözləri doldu. 500 qonaqlı toy, “Vağzalı” çalınanda sən də oynadın."},
+ {"t":"Toyu edək, mənzilin ilkin ödənişinə kömək edək (25 000 ₼)","cond":{"kid_m_g":"k","money_gte":25000},"do":[{"kid_wedding":"part"}],"fx":{"happy":10},"r":"Mənzil kreditlə alındı, ilkin ödəniş sizdən. Toy oldu, gənclər öz evlərinə köçdü."},
+ {"t":"Toyun xərcini ödəyək, qalanını özü etsin (9 000 ₼)","cond":{"kid_m_g":"k","money_gte":9000},"do":[{"kid_wedding":"toy"}],"fx":{"happy":5},"r":"Toy oldu, amma gənclər kirayədə yaşayır. {kid_m} bir dəfə dedi: “Başqalarının atası…” və sözünü bitirmədi."},
+ {"t":"İmkanımız yoxdur, sadə olsun","do":[{"kid_wedding":"none"}],"fx":{"happy":-6},"r":"Sadə nikah, ailə arasında süfrə. {kid_m} başa düşdüyünü dedi, amma qudalar arasında söz-söhbət oldu."},
+ {"t":"Bu namizəd xoşuma gəlmir, razılıq vermirəm","fx":{"rel":{"uşaq":-15},"happy":-4},"r":"{kid_m} ağladı, qapını çırpıb çıxdı. Aylarla az danışdınız. Bu məsələ hələ bitməyib."}]},
+{"id":"neve_xeber","cat":"family","tone":"dramatic","age":[35,110],"scheduled_only":true,"once":false,"icon":"👶","t":"Sevindirici xəbər: {grand_parent} övlad sahibi oldu! Körpənin adı {grand_name}. Artıq sən {granny_word}sən.","ch":[
+ {"t":"Qızıl hədiyyə al, körpəni görməyə get (500 ₼)","cond":{"money_gte":500},"fx":{"money":-500,"happy":18,"rel":{"uşaq":6,"nəvə":10}},"r":"Körpəni qucağına verəndə əllərin titrədi. Bu kiçik barmaqlar sənin barmağını sıxdı."},
+ {"t":"Xeyir-dua ver, ilk qırx günə qədər kömək et","fx":{"happy":15,"health":-2,"rel":{"uşaq":8,"nəvə":8}},"r":"Gecələr körpəni sən yatırdın ki, gənclər dincəlsin. Yorğun idin, amma xoşbəxt."},
+ {"t":"Telefonla təbrik et","fx":{"happy":8,"rel":{"uşaq":-2}},"r":"“Gələn həftə mütləq gələcəm” dedin. O həftə də keçdi…"}]},
 {"id":"polis_rusvet","cat":"career","tone":"dramatic","age":[18,65],"icon":"💰","cond":{"job":"polis"},"t":"Yol polisi postundasan. Sürət həddini aşan sürücü qovluğa 200 ₼ qoyub uzadır.","ch":[
  {"t":"Protokol yaz","fx":{"perf":10,"happy":3},"r":"Qanun hamı üçün birdir. Rəhbərlik səni təriflədi.","trait":{"honesty":3}},
  {"t":"Pulu götür","fx":{"money":200,"happy":-4},"do":[{"flag_inc":"rusvet"},{"crime":"rusvet_alma"}],"r":"Zərfi cibinə qoydun. {caught}","trait":{"honesty":-5}}]},
@@ -153,7 +161,7 @@
  {"t":"Stabil iş daha yaxşıdır","fx":{"happy":-2},"r":"Dostun tək başladı…"}]},
 {"id":"proq_xarici","cat":"career","tone":"rare","age":[22,45],"icon":"🌍","cond":{"job":"proqramci","job_lv_gte":2},"t":"Avropada böyük texnologiya şirkəti sənə uzaqdan iş təklif edir: maaşın {sal_now} yox, {offer_remote} olacaq.","ch":[
  {"t":"Qəbul et","fx":{"happy":12,"perf":10},"do":[{"raise":{"factor":2.5}}],"r":"Evdən işləyirsən, maaş avro ilə: ayda {sal_new}!"},
- {"t":"Komandamı tərk etmərəm","fx":{"perf":10},"do":[{"raise":{"factor":1.2}}],"r":"Rəhbər bunu bilib maaşını {sal_new}-a qaldırdı."}]},
+ {"t":"Komandamı tərk etmərəm","fx":{"perf":10},"do":[{"raise":{"factor":1.2}}],"r":"Rəhbər bunu bilib maaşını qaldırdı: {sal_new}."}]},
 {"id":"biz_vergi","cat":"career","tone":"dramatic","age":[20,75],"icon":"🧾","cond":{"job":"biznes"},"t":"Vergi yoxlaması gəldi. Mühasibin “bir az düzəliş edək” deyir.","ch":[
  {"t":"Hər şey qanuni olsun","fx":{"money":-3000},"r":"Bir az cərimə ödədin, amma rahat yatırsan.","trait":{"honesty":3}},
  {"t":"Düzəliş et","fx":{"money":2000},"do":[{"crime":"vergi"}],"r":"Hesabatlar “düzəldildi”. {caught}","trait":{"honesty":-3}}]},
@@ -187,7 +195,7 @@
 {"id":"teqaud_heyat","cat":"life","tone":"everyday","age":[63,90],"icon":"🌳","cond":{"flag":"teqaud"},"t":"Təqaüddəsən. Səhərlər parkda yaşıdların nərd oynayır.","ch":[
  {"t":"Qoşul, nərd oyna","fx":{"happy":8},"r":"Hər gün “Şeşbeş!” səsləri. Həyat gözəldir 🎲"},
  {"t":"Bağ sal, pomidor ək","fx":{"happy":6,"health":4},"r":"Ən dadlı pomidorlar səninkidir 🍅"},
- {"t":"Nəvələrlə vaxt keçir","cond":{"flag":"neveGeldi"},"fx":{"happy":10},"r":"Onlara nağıl danışdın: “Biri vardı, biri yoxdu…”"}]},
+ {"t":"Nəvələrlə vaxt keçir","cond":{"has":["nəvə"]},"fx":{"happy":10},"r":"Onlara nağıl danışdın: “Biri vardı, biri yoxdu…”"}]},
 {"id":"xatire","cat":"life","tone":"dramatic","age":[65,100],"icon":"📷","t":"Köhnə fotoalbomu vərəqləyirsən. 5 yaşında {xəyal} olmaq istəyirdin. Həyat isə səni {became} etdi.","ch":[
  {"t":"Gülümsə: Həyat, sən nə qəribəsən!","fx":{"happy":10},"r":"Hər şeyin bir səbəbi var idi."},
  {"t":"Kədərlən","fx":{"happy":-5},"r":"Bəzi qapılar açılmadı… amma başqaları açıldı."}]},

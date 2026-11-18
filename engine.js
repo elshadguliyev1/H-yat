@@ -11,6 +11,13 @@ const chance = p => R() < p;
 // whole manats normally; small sums keep their qəpik (e.g. "1,40 ₼")
 const fmtMoney = v => { const a = Math.abs(v); const s = a < 100 && Math.round(a * 100) % 100 ? a.toFixed(2).replace(".", ",") : Math.round(a).toLocaleString("az").replace(/,/g, " "); return (v < 0 ? "−" : "") + s + " ₼"; };
 const ord = n => n + ([1,2,5,7,8].includes(n % 10) || n % 100 === 11 || n % 100 === 12 ? "-ci" : [3,4].includes(n % 10) || n % 100 === 100 ? "-cü" : n % 10 === 6 ? "-cı" : "-cu");
+// Azerbaijani case suffixes on names (vowel harmony): gen("Orxan") → "Orxanın", dat("Leyla") → "Leylaya", acc("Ülvi") → "Ülvini"
+const lastVowel = w => { const m = String(w).toLowerCase().match(/[aıoueəiöü](?=[^aıoueəiöü]*$)/); return m ? m[0] : "a"; };
+const endsVowel = w => /[aıoueəiöü]$/i.test(w);
+const H4 = v => ({ a: "ı", ı: "ı", o: "u", u: "u", e: "i", ə: "i", i: "i", ö: "ü", ü: "ü" }[v]);
+const gen = w => w + (endsVowel(w) ? "n" : "") + H4(lastVowel(w)) + "n";
+const acc = w => w + (endsVowel(w) ? "n" : "") + H4(lastVowel(w));
+const dat = w => w + (endsVowel(w) ? "y" : "") + ("aıou".includes(lastVowel(w)) ? "a" : "ə");
 const fmtNum = v => v >= 1e6 ? (v / 1e6).toFixed(v >= 1e7 ? 0 : 1).replace(".", ",") + " mln" : v >= 1e4 ? Math.round(v / 1e3) + " min" : String(Math.round(v));
 
 const NAMES = {
@@ -323,13 +330,27 @@ function contextTick() {
     if (p.role === "məşqçi" && !football) p.role = "keçmiş məşqçi";
   }
 }
+// grown-up children live their own lives: marriage is an event for the player; grandchildren come later
+function kidsTick() {
+  for (const k of P.people.filter(p => p.role === "uşaq" && p.alive && p.spouse)) {
+    const sp = P.people.find(x => x.id === k.spouse && x.alive);
+    const nGrand = P.people.filter(x => x.role === "nəvə" && x.parent === k.id).length;
+    if (sp && nGrand < 3 && k.age < 42 && P.age - (k.married || 0) >= 1 && chance(nGrand ? 0.18 : 0.35)) {
+      const g = pick(["k", "q"]), base = k.g === "k" ? P.fam : (sp.fam || pick(SURN)); // son's child: our surname; daughter's child: son-in-law's
+      const gc = addPerson("nəvə", g, 0, { parent: k.id, last: surname(base, g) });
+      P.lastGrand = { id: gc.id, name: gc.name, g, parent: k.name, parentG: k.g };
+      P.sched.push({ event: "neve_xeber", day: P.day }); P.sched.sort((a, b) => a.day - b.day);
+    }
+  }
+}
 function peopleTick() {
   contextTick();
+  kidsTick();
   for (const p of P.people) {
     if (!p.alive) continue;
     if ((p.role === "ana" || p.role === "ata") && p.job === "İşsiz" && p.age < 60 && chance(0.35)) { p.job = pick(PARENT_JOBS[p.g].filter(j => j !== "Evdar qadın")); log(`💼 ${p.role === "ana" ? "Anan" : "Atan"} yenidən işə düzəldi: ${p.job.toLowerCase()}.`); }
     if (["ana", "ata", "nənə", "baba"].includes(p.role) && p.age >= 63 && p.job && !["Təqaüdçü", "Evdar qadın"].includes(p.job)) { p.job = "Təqaüdçü"; log(`🏖️ ${{ ana: "Anan", ata: "Atan", "nənə": "Nənən", baba: "Baban" }[p.role]} təqaüdə çıxdı.`); }
-    const risk = p.age > 60 ? ((p.age - 60) / 35) ** 2 * 0.5 : 0.001;
+    const risk = AGE_RISK.find(([lim]) => p.age < lim)[1] * (p.age >= 85 ? 1.3 : 1);
     if (chance(risk)) {
       p.alive = false; p.died = P.age;
       if (!p.role.startsWith("keçmiş")) {
@@ -396,6 +417,93 @@ function lifeSummary() {
   return { name: P.name + " " + surname(P.fam, P.g), g: P.g, age: P.age, dream: dream && dream.t, became: main ? main.title : none, becameId: main && main.id,
     money: Math.round(P.money + P.assets.reduce((a, x) => a + x.value, 0)), followers: P.soc ? P.soc.followers : 0, kids: people("uşaq").length + P.people.filter(p => p.role === "uşaq" && !p.alive).length,
     married: !!P.people.find(p => p.role === "həyat yoldaşı"), cause: P.cause, when: Date.now() };
+}
+
+// ---------- children's weddings ----------
+// daughter: dowry (cehiz) and her share of the wedding; son: the couple's home and car, and the wedding itself
+const WEDDING = {
+  q: { full: { cost: 15000, rel: 15, t: "Cehizi tam hazırla, toy xərcinə də qoşul" }, part: { cost: 6000, rel: 7, t: "Cehizin əsas hissəsini al" }, toy: { cost: 2500, rel: 2, t: "Yalnız qızıl dəstini al" }, none: { cost: 0, rel: -10, t: "İmkanımız yoxdur, sadə olsun" } },
+  k: { full: { cost: 95000, rel: 20, home: true, t: "Mənzil, maşın və toy: hamısı bizdən" }, part: { cost: 25000, rel: 10, t: "Toyu edək, mənzilin ilkin ödənişinə kömək edək" }, toy: { cost: 9000, rel: 4, t: "Toyun xərcini ödəyək, qalanını özü etsin" }, none: { cost: 0, rel: -12, t: "Özün qazan, özün qur" } }
+};
+function kidToMarry(minAge) { return P.people.find(p => p.role === "uşaq" && p.alive && !p.spouse && p.age >= minAge && p.age <= 40); }
+function partnerName(k) { const g = k.g === "k" ? "q" : "k", list = NAMES[g]; let h = 0; for (const c of k.id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return list[h % list.length]; }
+
+// ---------- interactions with people: depend on their role, age and gender, and on the player's age ----------
+// each: { id, icon, t, rel, happy, cost?, texts[] }
+function interactionsFor(p) {
+  const a = p.age, me = P.age, girl = p.g === "q", n = p.name, L = [];
+  const add = (id, icon, t, rel, happy, texts, cost) => L.push({ id, icon, t, rel, happy, texts, cost });
+  if (p.role === "uşaq" || p.role === "nəvə") {
+    if (a <= 2) {
+      add("baby_hold", "🍼", "Qucağına al, layla çal", 9, 6, [`“Laylay, balam, laylay…” ${n} qucağında yuxuya getdi.`, `${n} barmağını bərk-bərk tutdu və güldü. Ürəyin əridi.`]);
+      add("baby_walk", "🚼", "Uşaq arabasında gəzintiyə apar", 7, 4, [`Parkda gəzdiniz. ${n} göyərçinləri görüb əl çaldı.`, `Bulvarda gəzinti: ${n} dəniz küləyindən gözlərini qıyırdı.`]);
+    } else if (a <= 6) {
+      add("kid_play", "🧸", girl ? "Kukla oyunu oyna" : "Maşın və top oyna", 9, 6, girl ? [`${n} kuklalarına çay süfrəsi açdı, sən “qonaq” idin ☕`, `${n} ilə kuklaya paltar tikdiniz. “Ən gözəl kukla mənimkidir!”`] : [`Xalçanın üstündə maşın yarışı! ${n} hər dəfə “qalib” oldu 🏎️`, `Həyətdə top oynadınız, ${n} ilk dəfə “qapıya” vurdu ⚽`]);
+      add("kid_park", "🛝", "Parka apar, yelləncəkdə yellə", 8, 5, [`“Daha yüksək!” — ${n} yelləncəkdə qışqırırdı.`, `Sürüşkəndən on dəfə düşdü, hər dəfə “bir də!” dedi.`]);
+      add("kid_tale", "📖", "Yatmazdan əvvəl nağıl danış", 7, 4, [`“Biri vardı, biri yoxdu…” ${n} nağılın sonunu gözləmədən yuxuya getdi.`, `${n} “Cırtdan”ı üçüncü dəfə istədi. Sən də üçüncü dəfə danışdın.`]);
+      add("kid_ice", "🍦", "Dondurmaya apar", 6, 4, [`${n} dondurmanı üz-gözünə yaxdı 😄`, `${n} iki top istədi, birinə razılaşdınız. Danışıqlar çətin keçdi 😅`], 5);
+    } else if (a <= 12) {
+      add("kid_hw", "✏️", "Dərsinə kömək et", 6, 1, [`${n} ilə riyaziyyat məsələsini birlikdə həll etdiniz. “Sən hər şeyi bilirsən!”`, `${gen(n)} inşasını oxudun, iki səhvini birlikdə düzəltdiniz.`]);
+      add("kid_out", girl ? "🚲" : "⚽", girl ? "Velosiped sürməyi öyrət" : "Həyətdə futbol oyna", 8, 5, girl ? [`${n} ilk dəfə arxadan tutmadan sürdü! Sevincdən qışqırdı.`] : [`${n} sənə qol vurdu və bütün həyətə elan etdi 😄`]);
+      add("kid_game", "🎮", "Birlikdə video oyun oyna", 7, 4, [`${n} səni yenə uddu və sevincini gizlətmədi.`, `İkiniz bir komandada oynadınız. “Sən yaxşı oyunçusan” — dedi.`]);
+      add("kid_zoo", "🎡", "Attraksiona və ya zooparka apar", 9, 6, [`Zooparkda ${n} fili görəndə donub qaldı.`, `Attraksionda ${n} qorxdu, amma ikinci dəfə özü istədi.`], 30);
+    } else if (a <= 17) {
+      add("teen_talk", "💬", "Ürək söhbəti et", 8, 3, girl ? [`${n} bir sinif yoldaşından danışdı. Yanaqları qızardı. Sən sadəcə dinlədin.`, `${n} dedi ki, rəfiqələri ilə küsüb. Uzun danışdınız.`] : [`${n} məktəbdəki problemindən danışdı. İlk dəfə səndən məsləhət istədi.`, `${n} gələcək haqqında danışdı. Səsində qorxu da, ümid də vardı.`]);
+      add("teen_out", girl ? "🎬" : "🏟️", girl ? "Birlikdə kinoya və alış-verişə get" : "Birlikdə futbol matçına get", 8, 5, girl ? [`Kinodan sonra ${n} ilə kafedə oturdunuz. Telefonunu bir saat əlinə almadı.`] : [`Tribunada ${n} ilə birlikdə qışqırdınız. Bu günü uzun müddət xatırlayacaq.`], 25);
+      add("teen_money", "💵", "Cib xərcliyi ver", 5, 1, [`${n}: “Sağ ol!” Qapıdan çıxanda “yalnız kitaba xərclə” dedin. Gülümsədi.`], 20);
+      add("teen_advice", "🧭", "Gələcəyi haqqında məsləhət ver", 5, 2, [`${n} ilə universitet və peşə haqqında danışdınız. Bəzi sözlərini qeyd etdi.`]);
+    } else {
+      add("ad_call", "📞", "Zəng et, hal-əhval tut", 5, 3, [`${n} işdən danışdı. Səsi yorğun idi, amma zəngindən sevindi.`, `${n}: “Yaxşı ki, zəng etdin. Səni darıxmışdım.”`]);
+      add("ad_lunch", "🍽️", "Nahara dəvət et", 7, 5, [`${n} ilə köhnə restoranınızda nahar etdiniz. Uşaqlığından danışdınız.`], 40);
+      add("ad_help", "💸", "Maddi kömək et (500 ₼)", 8, 2, [`${n} əvvəl götürmək istəmədi, sonra qucaqladı: “Qaytaracağam.”`], 500);
+    }
+  } else if (["ana", "ata", "nənə", "baba"].includes(p.role)) {
+    const old = p.role === "nənə" || p.role === "baba";
+    if (me < 18) {
+      add("p_talk", "💬", old ? (p.role === "nənə" ? "Nənədən nağıl dinlə" : "Baba ilə nərd oyna") : "Söhbət et", 7, 3,
+        old ? (p.role === "nənə" ? [`${n} nənə “Məlikməmməd” nağılını danışdı, sən də əzbər bilsən də dinlədin.`] : [`${n} baba ilə nərd oynadınız. Uddun! Baba bilərəkdən uduzmuşdu… bəlkə də.`])
+          : [`${p.role === "ana" ? "Anan" : "Atan"} səndən məktəbi soruşdu, sən də hər şeyi danışdın.`]);
+      add("p_help", "🧹", old ? "Həyətdə kömək et" : "Ev işlərinə kömək et", 7, 1, old ? [`${n} ilə bağda alma yığdınız.`] : [`Qab yudun, zibili atdın. ${p.role === "ana" ? "Anan" : "Atan"} təəccübləndi.`]);
+    } else {
+      add("p_call", "📞", "Zəng et", 4, 2, [`${n} səsini eşidəndə sevindi: “Bala, yaxşısan?”`]);
+      add("p_visit", "🏘️", "Ziyarət et", 8, 4, [`${n} süfrə açdı, gecəyə qədər oturdunuz.`, `${n} ilə köhnə albomlara baxdınız.`]);
+      add("p_gift", "🎁", "Hədiyyə al", 9, 3, [`${n} hədiyyəni gizlicə kövrələrək açdı.`], 80);
+      if (a >= 60) {
+        add("p_doc", "🏥", "Həkimə apar", 9, 1, [`${acc(n)} müayinəyə apardın. Həkim təzyiq dərmanı yazdı.`], 60);
+        add("p_support", "💸", "Maddi dəstək ol (300 ₼)", 8, 2, [`${n}: “Bizə lazım deyil…” deyib pulu çəkinə-çəkinə götürdü.`], 300);
+        add("p_memo", "📷", "Gəncliyindən danışmasını dinlə", 8, 4, [`${n} gəncliyini, ilk işini, toy gününü danışdı. Bu hekayələri əvvəllər heç eşitməmişdin.`]);
+      }
+    }
+  } else if (p.role === "qardaş" || p.role === "bacı") {
+    if (me < 18 && a < 18) {
+      add("s_play", "🎲", "Birlikdə oyna", 7, 4, [`${n} ilə yastıq davası etdiniz, anan qışqırana qədər 😄`, `${n} ilə birlikdə multfilmə baxdınız.`]);
+      add("s_secret", "🤫", "Sirr paylaş", 8, 3, [`${n}-ə sirrini dedin. “Heç kimə demərəm” — söz verdi.`]);
+    } else {
+      add("s_call", "📞", "Zəng et", 5, 3, [`${n} ilə uşaqlıq xatirələrinə güldünüz.`]);
+      add("s_tea", "☕", "Çay içməyə get", 7, 4, [`${n} ilə gec saatlara qədər danışdınız.`]);
+    }
+  } else if (p.role === "dost") {
+    if (me < 13) add("f_yard", "⚽", "Həyətdə oyna", 8, 6, [`${n} ilə həyətdə qaranlıq düşənə qədər oynadınız.`]);
+    else if (me < 18) add("f_hang", "🎮", "Birlikdə oyun oyna, gəz", 8, 5, [`${n} ilə kompüter klubunda iki saat. Pulunuz çatmadı 😅`, `${n} ilə bulvarda gəzdiniz.`]);
+    else { add("f_tea", "☕", "Çay içməyə get", 7, 4, [`${n} ilə çayxanada dərdləşdiniz.`]); add("f_match", "📺", "Birlikdə matça bax", 6, 5, [`${n} ilə matça baxdınız, komandanız uduzdu. Yenə də yaxşı gecə idi.`]); }
+  } else if (p.role === "sevgili") {
+    add("l_date", "🌹", "Görüşə çağır", 9, 6, [`${n} ilə bulvarda gəzdiniz, dəniz qaranlıqda parıldayırdı.`], 40);
+    add("l_gift", "🎁", "Hədiyyə al", 10, 4, [`${n} hədiyyəni açanda gözləri parladı.`], 50);
+  } else if (p.role === "həyat yoldaşı") {
+    add("w_dinner", "🕯️", "Romantik şam yeməyi", 10, 6, [`${n} ilə şam yeməyi. Telefonları söndürdünüz, sadəcə danışdınız.`], 80);
+    add("w_show", "📺", "Birlikdə serial izlə", 6, 4, [`${n} ilə yenə eyni serialı izlədiniz. Sonunu təxmin etdin, ${n} əsəbiləşdi 😄`]);
+    add("w_house", "🧺", "Ev işlərində kömək et", 8, 2, [`Bu gün ev işlərini sən götürdün. ${n} təəccüblə gülümsədi.`]);
+  } else {
+    add("o_talk", "💬", "Söhbət et", 5, 2, [`${n} ilə söhbət etdiniz.`]);
+  }
+  return L;
+}
+function runInteraction(p, it) {
+  const ch = [];
+  if (it.cost && P.age >= 18) { P.money -= it.cost; ch.push(["money", -it.cost]); }
+  p.rel = clamp(p.rel + it.rel + rnd(-2, 2));
+  ch.push(...apply({ happy: it.happy }));
+  return { text: pick(it.texts), changes: ch };
 }
 
 // ---------- activities (3 per year) ----------

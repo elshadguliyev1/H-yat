@@ -18,7 +18,8 @@
  {"t":"Özüm öyrənərəm","odds":[{"p":0.5,"fx":{"fitness":4,"happy":5},"r":"Bir neçə yıxılmadan sonra öyrəndin!"},{"p":0.5,"fx":{"health":-6,"happy":-2},"r":"Bordürə dəydin, qolun sıyrıldı. Yaşıl məlhəm vaxtıdır."}],"trait":{"independence":2}}]},
 {"id":"sinif_dava","cat":"school","tone":"everyday","age":[7,11],"icon":"🥊","t":"Sinif yoldaşın teneffüsdə səni hər gün ələ salır.","ch":[
  {"t":"Müəllimə de","cond":{"has":["müəllim"]},"fx":{"happy":2,"rel":{"müəllim":4}},"r":"{müəllim} müəllim onunla danışdı, ələ salmaq dayandı."},
- {"t":"Dava et","odds":[{"p":{"of":"st.fitness","div":120},"fx":{"happy":6,"fitness":1},"r":"Bir daha sənə toxunmadı. Amma valideynlərin məktəbə çağırıldı."},{"p":0.5,"fx":{"happy":-6,"health":-5},"r":"Davada uduzdun, gözünün altı göyərdi."}],"trait":{"courage":3}},
+ {"t":"Hamının qarşısında sözlə cavab ver","cond":{"gender":"q"},"odds":[{"p":{"of":"tal.social","div":110,"add":0.15},"fx":{"happy":6,"tal":{"social":2}},"r":"Elə cavab verdin ki, bütün sinif güldü. O, bir daha sənə söz atmadı."},{"p":0.45,"fx":{"happy":-5},"r":"Səsin titrədi, sözlər yarımçıq qaldı. Teneffüs bitənə qədər ağlamamağa çalışdın."}],"trait":{"courage":3}},
+ {"t":"Dava et","cond":{"gender":"k"},"odds":[{"p":{"of":"st.fitness","div":120},"fx":{"happy":6,"fitness":1},"r":"Bir daha sənə toxunmadı. Amma valideynlərin məktəbə çağırıldı."},{"p":0.5,"fx":{"happy":-6,"health":-5},"r":"Davada uduzdun, gözünün altı göyərdi."}],"trait":{"courage":3}},
  {"t":"Məhəl qoyma","fx":{"happy":-3,"smarts":1},"r":"Bir müddət sonra sənə məhəl qoymayanda o da bezdi."},
  {"t":"Zarafatla cavab ver","odds":[{"p":0.55,"fx":{"happy":5,"tal":{"social":3}},"r":"Bütün sinif güldü, o özü utandı. İndi dostsunuz."},{"p":0.45,"fx":{"happy":-3},"r":"Zarafatın alınmadı, daha çox güldülər."}]}]},
 {"id":"ilk_dost","cat":"friends","tone":"everyday","age":[6,9],"icon":"🤝","cond":{"has_not":["dost"]},"t":"Sinifdə yanında oturan uşaq səninlə çörəyini bölüşdü.","ch":[

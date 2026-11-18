@@ -55,6 +55,8 @@ const Interp = (() => {
     hours_gte: v => (P.hours || 0) >= v,
     medical: v => medicalOk() === v,
     asset_type: v => P.assets.some(a => a.type === v),
+    kid_unmarried: v => !!kidToMarry(v),
+    kid_m_g: v => (kidToMarry(22) || {}).g === v,
     npc_job: o => Object.entries(o).every(([r, j]) => !!person(r) && person(r).job === j),
     asset: v => P.assets.some(a => a.type === v),
     army: v => v === "none" ? !P.army : v === "active" ? !!P.army && !P.army.done : !!P.army && P.army.done,
@@ -108,6 +110,15 @@ const Interp = (() => {
     money_rand(r, ctx) { const m = rnd(r[0], r[1]); P.money = Math.round((P.money + m) * 100) / 100; ctx.vars.amount = fmtMoney(m); ctx.changes.push(["money", m]); },
     // money in qəpik (e.g. coins found on the street)
     money_rand_q(r, ctx) { const q = rnd(r[0], r[1]); const m = q / 100; P.money = Math.round((P.money + m) * 100) / 100; ctx.vars.amount = fmtMoney(m); ctx.changes.push(["money", m]); },
+    // a grown child's wedding: what the parents give depends on the choice (dowry for a daughter, home/car for a son)
+    kid_wedding(help, ctx) {
+      const k = kidToMarry(22); if (!k) return;
+      const W = WEDDING[k.g][help]; P.money -= W.cost;
+      const sp = addPerson(k.g === "k" ? "gəlin" : "kürəkən", k.g === "k" ? "q" : "k", k.age + rnd(-4, 2), { fam: pick(SURN), of: k.id });
+      sp.name = partnerName(k); k.spouse = sp.id; k.married = P.age; k.rel = clamp(k.rel + W.rel);
+      ctx.vars.kid_m = k.name; ctx.vars.kid_m_gen = gen(k.name); ctx.vars.kid_m_dat = dat(k.name); ctx.vars.kid_partner = sp.name; ctx.changes.push(["money", -W.cost]);
+      log(`💍 ${k.g === "k" ? "Oğlu" : "Qızı"} ${k.name} ${sp.name} ilə evləndi.`);
+    },
     npc_die(o, ctx) { const p = person(o.role); if (!p) return; p.alive = false; p.died = P.age; ctx.vars.dead = p.name; if (o.log !== false) log(`🕯️ ${o.role[0].toUpperCase() + o.role.slice(1)} ${p.name} ${p.age} yaşında dünyasını dəyişdi.`); },
     npc_note(o) { const p = person(o.role); if (p) p.note = o.note || undefined; },
     npc_job(o) { const p = person(o.role); if (p) p.job = o.job; },
@@ -158,6 +169,16 @@ const Interp = (() => {
     lawyer_cost: () => P.legal && P.legal.case ? fmtMoney(RULES.justice.crimes[P.legal.case.type].lawyer_cost) : "",
     lawyer_cost3: () => P.legal && P.legal.case ? fmtMoney(RULES.justice.crimes[P.legal.case.type].lawyer_cost * 3) : "",
     prison_left: () => P.legal && P.legal.prison ? Math.max(0, Math.ceil((P.legal.prison.end - P.day) / 365)) + " il" : "",
+    kid_m: () => (kidToMarry(22) || {}).name || "Övladın",
+    kid_m_gen: () => gen((kidToMarry(22) || {}).name || "Övladın"),
+    kid_m_dat: () => dat((kidToMarry(22) || {}).name || "Övlad"),
+    yoldas_dat: () => person("həyat yoldaşı") ? dat(person("həyat yoldaşı").name) : "həyat yoldaşına",
+    kid_m_word: () => (kidToMarry(22) || {}).g === "q" ? "Qızın" : "Oğlun",
+    kid_partner: () => { const k = kidToMarry(22); return k ? partnerName(k) : "?"; },
+    granny_word: () => P.g === "q" ? "nənə" : "baba",
+    grand_name: () => (P.lastGrand || {}).name || "?",
+    grand_word: () => (P.lastGrand || {}).g === "q" ? "qızı" : "oğlu",
+    grand_parent: () => (P.lastGrand || {}).name ? `${P.lastGrand.parentG === "q" ? "Qızın" : "Oğlun"} ${P.lastGrand.parent}` : "Övladın",
     sal_now: () => fmtMoney(salaryMonthly()),
     offer_city: () => fmtMoney(Math.round(salaryMonthly() * 1.6)),
     offer_remote: () => fmtMoney(Math.round(salaryMonthly() * 2.5)),
@@ -170,7 +191,7 @@ const Interp = (() => {
     let s = String(t ?? "").replace(/\{(\w+)\}/g, (m, k) => ctx && ctx.vars && ctx.vars[k] != null ? ctx.vars[k] : TV[k] ? TV[k]() : m);
     return fill(s);
   }
-  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", "sal_new", "crime", "caught", "verdict", ...Object.keys(TV)]);
+  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", "sal_new", "kid_m", "kid_m_gen", "kid_m_dat", "yoldas_dat", "kid_m_word", "kid_partner", "grand_name", "grand_word", "grand_parent", "granny_word", "wcost_full", "wcost_part", "wcost_toy", "crime", "caught", "verdict", ...Object.keys(TV)]);
 
   // ---------------- dynamic choice lists ----------------
   const GEN = {
@@ -278,7 +299,9 @@ const Interp = (() => {
       if (e.tone && !["everyday", "dramatic", "rare"].includes(e.tone)) errs.push(`${w}: ton səhvdir`);
       vCond(e.cond, w);
       if (e.choices_gen) { if (!GEN[e.choices_gen]) errs.push(`${w}: naməlum choices_gen`); continue; }
-      if (!Array.isArray(e.ch) || e.ch.length < 1 || e.ch.length > 5) errs.push(`${w}: seçim sayı 1–5 olmalıdır`);
+      // at most 5 choices visible at once; variants that are exclusive by gender (player's or the child's) count separately
+      const vis = ["k", "q"].map(g => (e.ch || []).filter(c => !c.cond || ((c.cond.gender || g) === g && (c.cond.kid_m_g || g) === g)).length);
+      if (!Array.isArray(e.ch) || e.ch.length < 1 || Math.max(...vis) > 5) errs.push(`${w}: görünən seçim sayı 1–5 olmalıdır`);
       (e.ch || []).forEach((c, i) => {
         const cw = `${w}.ch${i}`;
         for (const k of Object.keys(c)) if (!CHOICE_KEYS.has(k)) errs.push(`${cw}: naməlum sahə "${k}"`);

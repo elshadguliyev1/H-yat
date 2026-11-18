@@ -54,7 +54,7 @@ function sandbox() {
     };
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
-    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial;
+    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial;
     globalThis.playLife = function (name, g, dream, seed, maxAge, log) { newLife(name, g, "Bakı", dream, seed); while (P.alive && P.age < (maxAge || 130)) playYear(log); return P; };
   `, ctx);
   return ctx;
@@ -275,6 +275,34 @@ test("məktəb və futbol bitəndən sonra müəllim və məşqçi aktiv siyahı
       if (!fb) ok(!S.person("məşqçi"), `${S.P.age} yaşında futbolsuz məşqçi siyahıdadır`);
     }
   }
+});
+
+test("ailə: yaşa uyğun münasibətlər, övladın toyu, nəvələr, NPC ömrü, qızda dava seçimi yoxdur", () => {
+  S.newLife("Ana", "q", "Bakı", "muellim", 90001); while (S.P.age < 30) S.playYear();
+  const d4 = S.addPerson("uşaq", "q", 4), s15 = S.addPerson("uşaq", "k", 15), b0 = S.addPerson("uşaq", "k", 0);
+  const t4 = S.interactionsFor(d4).map(x => x.t).join("|"), t0 = S.interactionsFor(b0).map(x => x.t).join("|");
+  ok(/Kukla/.test(t4) && !/Söhbət et|Zəng et/.test(t4), "4 yaşlı qız üçün seçimlər uyğun deyil: " + t4);
+  ok(/layla/i.test(t0), "körpə üçün seçimlər uyğun deyil: " + t0);
+  ok(/futbol matçına|Ürək söhbəti/.test(S.interactionsFor(s15).map(x => x.t).join("|")), "yeniyetmə üçün seçimlər uyğun deyil");
+  // wedding of a grown child and grandchildren linked to that child
+  let weddings = 0, grand = 0, linked = 0;
+  for (let s = 1; s <= 40; s++) {
+    S.newLife("Valideyn", s % 2 ? "k" : "q", "Bakı", "proqramci", 91000 + s); while (S.P.age < 25) S.playYear();
+    const kid = S.addPerson("uşaq", s % 2 ? "q" : "k", 23); S.P.money = 200000;
+    const e = S.Interp.byId("ovlad_toy"); ok(S.Interp.check(e.cond), "toy hadisəsinin şərti ödənmədi");
+    const ch = S.Interp.choicesOf(e); ok(ch.length <= 5, "çox seçim");
+    S.Interp.choose(e, ch[0]); if (kid.spouse) weddings++;
+    for (let y = 0; y < 8 && S.P.alive; y++) { S.ageUp(); S.P.yearEvents = []; }
+    const gk = S.P.people.filter(p => p.role === "nəvə"); grand += gk.length; linked += gk.filter(g => g.parent === kid.id).length;
+  }
+  eq(weddings, 40, "toydan sonra həyat yoldaşı yaranmadı"); ok(grand > 0 && linked === grand, `nəvələr övlada bağlı deyil (${linked}/${grand})`);
+  // NPC lifespans: grandparents rarely pass 95
+  let over95 = 0, gp = 0;
+  for (let s = 1; s <= 150; s++) { S.newLife("N", "k", "Bakı", "polis", 92000 + s); while (S.P.alive && S.P.age < 45) { S.ageUp(); S.P.yearEvents = []; } for (const p of S.P.people.filter(x => x.role === "nənə" || x.role === "baba")) { gp++; if (p.alive && p.age > 95) over95++; } }
+  ok(over95 / gp < 0.03, `nənə-babaların ${over95}/${gp}-i 95 yaşdan çox yaşayır`);
+  // girls never get fist-fight choices
+  for (let s = 1; s <= 120; s++) S.playLife("Qız", "q", "aktyor", 93000 + s, 50, (e) => { for (const c of S.Interp.choicesOf(e)) ok(!/Yumruq|^Dava et/.test(c.t), `qız üçün dava seçimi: ${e.id} — ${c.t}`); });
+  console.log(`      (40 toy, ${grand} nəvə — hamısı öz valideyninə bağlı; nənə-babalardan 95+ yaşayan: ${over95}/${gp})`);
 });
 
 test("köhnə (V0.1) yaddaş yeni formata köçür və oyun davam edir", () => {

@@ -201,7 +201,7 @@ function avatar(p = P) {
   if (p.age < 3) return "👶"; if (p.age < 13) return k ? "👦" : "👧"; if (p.age < 18) return k ? "🧑" : "👧";
   if (p.age < 40) return k ? "👨" : "👩"; if (p.age < 65) return k ? "🧔" : "👩‍🦱"; return k ? "👴" : "👵";
 }
-const ROLE_ICON = { "nənə": "👵", baba: "👴", ana: "👩", ata: "👨", "qardaş": "👦", "bacı": "👧", dost: "🤝", sevgili: "💕", "həyat yoldaşı": "💍", "uşaq": "🧒", "müəllim": "🧑‍🏫", "məşqçi": "🧢", "nəvə": "👶", "tanış": "🙂" };
+const ROLE_ICON = { "gəlin": "👰", "kürəkən": "🤵", "nənə": "👵", baba: "👴", ana: "👩", ata: "👨", "qardaş": "👦", "bacı": "👧", dost: "🤝", sevgili: "💕", "həyat yoldaşı": "💍", "uşaq": "🧒", "müəllim": "🧑‍🏫", "məşqçi": "🧢", "nəvə": "👶", "tanış": "🙂" };
 
 // ---------- start ----------
 const MAX_SLOTS = 5;
@@ -532,17 +532,26 @@ function panelSoc() {
 }
 
 // ---------- people tab ----------
-const ORDER = ["həyat yoldaşı", "sevgili", "uşaq", "nəvə", "ana", "ata", "qardaş", "bacı", "dost", "müəllim", "məşqçi"];
+const ORDER = ["həyat yoldaşı", "sevgili", "uşaq", "gəlin", "kürəkən", "nəvə", "ana", "ata", "qardaş", "bacı", "dost", "müəllim", "məşqçi"];
 function panelPpl() {
   const live = P.people.filter(p => !p.role.startsWith("keçmiş")).sort((a, b) => (ORDER.indexOf(a.role) + 99 * !a.alive) - (ORDER.indexOf(b.role) + 99 * !b.alive));
   const past = P.people.filter(p => p.role.startsWith("keçmiş") && p.alive && ["keçmiş sevgili", "keçmiş dost"].includes(p.role));
-  const row = p => `<button class="pp ${p.alive ? "" : "dead"}" data-id="${p.id}"><span class="e" aria-hidden="true">${p.alive ? (ROLE_ICON[p.role] || avatar(p)) : "🕯️"}</span><span><div class="nm">${esc(p.name)}</div><div class="rl">${esc(p.role)} · ${p.alive ? p.age + " yaş" : "rəhmətə gedib"}${p.job ? " · " + esc(p.job) : ""}${p.note ? " · " + esc(p.note) : ""}</div></span>${p.alive ? `<span class="relbar" title="Münasibət ${p.rel}%"><i style="width:${p.rel}%"></i></span>` : ""}</button>`;
+  const row = p => `<button class="pp ${p.alive ? "" : "dead"}" data-id="${p.id}"><span class="e" aria-hidden="true">${p.alive ? (ROLE_ICON[p.role] || avatar(p)) : "🕯️"}</span><span><div class="nm">${esc(p.name)}</div><div class="rl">${esc(p.role)} · ${p.alive ? p.age + " yaş" : "rəhmətə gedib"}${p.job ? " · " + esc(p.job) : ""}${p.note ? " · " + esc(p.note) : ""}${relLine(p)}</div></span>${p.alive ? `<span class="relbar" title="Münasibət ${p.rel}%"><i style="width:${p.rel}%"></i></span>` : ""}</button>`;
   $("#panel").innerHTML = `<div class="ppl">${live.map(row).join("")}</div>${past.length ? `<p class="sec-h">Keçmiş</p><div class="ppl">${past.map(row).join("")}</div>` : ""}`;
   $("#panel").querySelectorAll(".pp").forEach(b => b.onclick = () => personSheet(P.people.find(p => p.id === b.dataset.id)));
 }
+// who is whose: "Murad-ın həyat yoldaşı", "Leylanın oğlu", "evli"
+function relLine(p) {
+  const by = id => P.people.find(x => x.id === id);
+  if ((p.role === "gəlin" || p.role === "kürəkən") && p.of && by(p.of)) return ` · ${esc(gen(by(p.of).name))} həyat yoldaşı`;
+  if (p.role === "nəvə" && p.parent && by(p.parent)) return ` · ${esc(gen(by(p.parent).name))} ${p.g === "q" ? "qızı" : "oğlu"}`;
+  if (p.role === "uşaq" && p.spouse) return " · evli";
+  return "";
+}
 function personSheet(p) {
   if (!p.alive) return toast(`${p.name} — Allah rəhmət eləsin.`);
-  const opts = [{ id: "talk", t: "💬 Söhbət et" }, { id: "gift", t: "🎁 Hədiyyə al (50 ₼)", cost: 50 }];
+  const inter = interactionsFor(p);
+  const opts = inter.map(it => ({ id: "i:" + it.id, t: `${it.icon} ${it.t}${it.cost && P.age >= 18 ? ` (${fmtMoney(it.cost)})` : ""}`, cost: P.age >= 18 ? it.cost : 0 }));
   if (p.role === "sevgili" && P.age >= 18 && p.rel >= 60) opts.push({ id: "propose", t: "💍 Evlilik təklif et" });
   if (p.role === "sevgili") opts.push({ id: "breakup", t: "💔 Ayrıl" });
   if (p.role === "həyat yoldaşı") opts.push({ id: "divorce", t: "📄 Boşan" });
@@ -554,8 +563,7 @@ function personSheet(p) {
     if (!useAct()) return;
     let text, ch = [];
     const id = b.dataset.id;
-    if (id === "talk") { p.rel = clamp(p.rel + rnd(4, 9)); ch = apply({ happy: 2 }); text = pick([`${p.name} ilə uzun-uzun söhbət etdiniz.`, `${p.name} sənə həyatından maraqlı bir əhvalat danışdı.`, `${p.name} ilə köhnə xatirələri yada saldınız, çox güldünüz.`]); }
-    if (id === "gift") { P.money -= 50; ch = [["money", -50]]; p.rel = clamp(p.rel + rnd(8, 14)); text = `${p.name} hədiyyəni çox bəyəndi!`; }
+    if (id.startsWith("i:")) { const r = runInteraction(p, inter.find(x => "i:" + x.id === id)); text = r.text; ch = r.changes; }
     if (id === "propose") { if (chance(p.rel / 110)) { p.role = "həyat yoldaşı"; P.flags.evli = P.age; P.money -= 5000; ch = [["money", -5000], ...apply({ happy: 18 })]; text = `“Hə!” dedi! 💍 Toy edildi, ${p.name} artıq həyat yoldaşındır.`; } else { p.rel = clamp(p.rel - 15); ch = apply({ happy: -12 }); text = `${p.name} “hələ hazır deyiləm” dedi…`; } }
     if (id === "breakup") { p.role = "keçmiş sevgili"; ch = apply({ happy: -6 }); text = `${p.name} ilə ayrıldınız.`; }
     if (id === "divorce") { p.role = "keçmiş həyat yoldaşı"; const half = Math.max(0, Math.round(P.money / 2)); P.money -= half; ch = [["money", -half], ...apply({ happy: -15 })]; text = `Boşandınız. Əmlak bölündü.`; }
