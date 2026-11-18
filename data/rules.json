@@ -115,5 +115,32 @@
         "lawyer_cost": 1000
       }
     }
+  },
+  "pension": {
+    "source": "Sadələşdirilmiş OYUN KONFİQURASİYASI; real təqaüd düsturu deyil, yoxlanılmalıdır.",
+    "verified": false,
+    "age": 65,
+    "min_monthly": 280,
+    "base_monthly": 200,
+    "per_year_pct": 0.012,
+    "military_last_salary_pct": 0.5
+  },
+  "bank": {
+    "source": "Sadələşdirilmiş oyun konfiqurasiyası.",
+    "verified": false,
+    "cash_rate": 0.18,
+    "cash_years": 3,
+    "max_payment_share": 0.4,
+    "late_fee_pct": 0.05,
+    "restructure_extra_years": 5
+  },
+  "social": {
+    "source": "Sadələşdirilmiş oyun konfiqurasiyası (ünvanlı sosial yardım ideyası).",
+    "verified": false,
+    "aid_yearly": 1800
+  },
+  "inheritance": {
+    "source": "Sadələşdirilmiş oyun konfiqurasiyası: birinci növbə vərəsələr (həyat yoldaşı, övladlar, valideynlər) bərabər pay alır; yoxdursa ikinci növbə (qardaş-bacı, nənə-baba).",
+    "verified": false
   }
 }

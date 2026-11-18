@@ -195,6 +195,6 @@ function investTick() {
   for (const a of P.assets) {
     if (a.type === "depozit") a.value = Math.round(a.value * (1.05 + R() * 0.04));
     if (a.type === "sehm") a.value = Math.max(0, Math.round(a.value * (0.7 + R() * 0.7)));
-    if (a.type === "kiraye") { a.value = Math.round(a.value * (1.01 + R() * 0.04)); P.money += Math.round(a.value * 0.05); }
+    if (a.type === "kiraye") a.value = Math.round(a.value * (1.01 + R() * 0.04)); // rent income is booked in moneyTick
   }
 }

@@ -56,6 +56,8 @@ const Interp = (() => {
     medical: v => medicalOk() === v,
     asset_type: v => P.assets.some(a => a.type === v),
     kid_unmarried: v => !!kidToMarry(v),
+    adult_kid: v => P.people.some(p => p.role === "uşaq" && p.alive && p.age >= 22) === v,
+    loans: v => ((P.loans || []).length > 0) === v,
     kid_m_g: v => (kidToMarry(22) || {}).g === v,
     npc_job: o => Object.entries(o).every(([r, j]) => !!person(r) && person(r).job === j),
     asset: v => P.assets.some(a => a.type === v),
@@ -119,6 +121,9 @@ const Interp = (() => {
       ctx.vars.kid_m = k.name; ctx.vars.kid_m_gen = gen(k.name); ctx.vars.kid_m_dat = dat(k.name); ctx.vars.kid_partner = sp.name; ctx.changes.push(["money", -W.cost]);
       log(`💍 ${k.g === "k" ? "Oğlu" : "Qızı"} ${k.name} ${sp.name} ilə evləndi.`);
     },
+    biz_handover(o, ctx) { const k = P.people.find(p => p.role === "uşaq" && p.alive && p.age >= 22); if (!k || !P.job) return; const v = BIZ_VALUE[P.job.lv]; endJob("övlada təhvil verdi"); P.assets.push({ type: "biznes", t: `Ailə biznesi (${k.name} idarə edir)`, value: v, heir: k.id }); k.job = "Ailə biznesinin rəhbəri"; k.rel = clamp(k.rel + 12); P.flags.teqaud = P.age; ctx.vars.kid_b = k.name; log(`🤝 Biznesini ${dat(k.name)} təhvil verdi.`); },
+    biz_sell(o, ctx) { if (!P.job) return; const v = Math.round(BIZ_VALUE[P.job.lv] * (0.7 + R() * 0.5)); P.money += v; endJob("biznesi satdı"); P.flags.teqaud = P.age; ctx.vars.amount = fmtMoney(v); ctx.changes.push(["money", v]); log(`💼 Biznesini ${fmtMoney(v)}-a satdı.`); },
+    restructure() { restructure(); },
     npc_die(o, ctx) { const p = person(o.role); if (!p) return; p.alive = false; p.died = P.age; ctx.vars.dead = p.name; if (o.log !== false) log(`🕯️ ${o.role[0].toUpperCase() + o.role.slice(1)} ${p.name} ${p.age} yaşında dünyasını dəyişdi.`); },
     npc_note(o) { const p = person(o.role); if (p) p.note = o.note || undefined; },
     npc_job(o) { const p = person(o.role); if (p) p.job = o.job; },
@@ -170,6 +175,8 @@ const Interp = (() => {
     lawyer_cost3: () => P.legal && P.legal.case ? fmtMoney(RULES.justice.crimes[P.legal.case.type].lawyer_cost * 3) : "",
     prison_left: () => P.legal && P.legal.prison ? Math.max(0, Math.ceil((P.legal.prison.end - P.day) / 365)) + " il" : "",
     kid_m: () => (kidToMarry(22) || {}).name || "Övladın",
+    kid_b: () => { const k = P.people.find(p => p.role === "uşaq" && p.alive && p.age >= 22); return k ? k.name : "övladın"; },
+    biz_value: () => fmtMoney(P.job && P.job.id === "biznes" ? BIZ_VALUE[P.job.lv] : 0),
     kid_m_gen: () => gen((kidToMarry(22) || {}).name || "Övladın"),
     kid_m_dat: () => dat((kidToMarry(22) || {}).name || "Övlad"),
     yoldas_dat: () => person("həyat yoldaşı") ? dat(person("həyat yoldaşı").name) : "həyat yoldaşına",
@@ -191,7 +198,7 @@ const Interp = (() => {
     let s = String(t ?? "").replace(/\{(\w+)\}/g, (m, k) => ctx && ctx.vars && ctx.vars[k] != null ? ctx.vars[k] : TV[k] ? TV[k]() : m);
     return fill(s);
   }
-  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", "sal_new", "kid_m", "kid_m_gen", "kid_m_dat", "yoldas_dat", "kid_m_word", "kid_partner", "grand_name", "grand_word", "grand_parent", "granny_word", "wcost_full", "wcost_part", "wcost_toy", "crime", "caught", "verdict", ...Object.keys(TV)]);
+  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", "sal_new", "kid_m", "kid_b", "biz_value", "kid_m_gen", "kid_m_dat", "yoldas_dat", "kid_m_word", "kid_partner", "grand_name", "grand_word", "grand_parent", "granny_word", "wcost_full", "wcost_part", "wcost_toy", "crime", "caught", "verdict", ...Object.keys(TV)]);
 
   // ---------------- dynamic choice lists ----------------
   const GEN = {

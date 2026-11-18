@@ -54,7 +54,7 @@ function sandbox() {
     };
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
-    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial;
+    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial;
     globalThis.playLife = function (name, g, dream, seed, maxAge, log) { newLife(name, g, "Bakı", dream, seed); while (P.alive && P.age < (maxAge || 130)) playYear(log); return P; };
   `, ctx);
   return ctx;
@@ -303,6 +303,32 @@ test("ailə: yaşa uyğun münasibətlər, övladın toyu, nəvələr, NPC ömr�
   // girls never get fist-fight choices
   for (let s = 1; s <= 120; s++) S.playLife("Qız", "q", "aktyor", 93000 + s, 50, (e) => { for (const c of S.Interp.choicesOf(e)) ok(!/Yumruq|^Dava et/.test(c.t), `qız üçün dava seçimi: ${e.id} — ${c.t}`); });
   console.log(`      (40 toy, ${grand} nəvə — hamısı öz valideyninə bağlı; nənə-babalardan 95+ yaşayan: ${over95}/${gp})`);
+});
+
+test("pul: təqaüd, qocalıq xərcləri, biznes təhvili, bank, miras, borc spiralı yoxdur", () => {
+  // pension grows with service years
+  S.newLife("T", "k", "Bakı", "muellim", 95001); while (S.P.age < 30) S.playYear(); S.P.yearEvents = [];
+  S.P.job = null; S.startJob("ofis", 1); const p0 = S.pensionMonthly();
+  for (let y = 0; y < 25; y++) { S.ageUp(); S.P.yearEvents = []; if (!S.P.job) S.startJob("ofis", 1); }
+  ok(S.pensionMonthly() > p0, "təqaüd stajla artmır"); ok(S.pensionMonthly() >= S.RULES.pension.min_monthly, "minimum təqaüd");
+  S.P.job = null; while (S.P.alive && S.P.age < 67) { S.ageUp(); S.P.yearEvents = []; }
+  if (S.P.alive) { ok(S.onPension() && S.P.budget.inc["Təqaüd"] > 0, "təqaüd ödənilmir"); ok(S.P.budget.exp["Dərman və müayinə"] > 0, "qocalıqda dərman xərci yoxdur"); }
+  // business handover to a grown child
+  S.newLife("B", "q", "Bakı", "biznes", 95002); while (S.P.age < 64) { S.ageUp(); S.P.yearEvents = []; }
+  S.P.legal = { record: [], history: [] }; S.P.job = null; S.startJob("biznes", 2); S.addPerson("uşaq", "k", 35);
+  const e = S.Interp.byId("biz_gelecek"); ok(S.Interp.check(e.cond), "biznes hadisəsi şərti"); S.Interp.choose(e, S.Interp.choicesOf(e)[0]);
+  ok(!S.P.job && S.P.assets.some(a => a.type === "biznes"), "biznes övlada keçmədi");
+  S.ageUp(); S.P.yearEvents = []; ok((S.P.budget.inc["Ailə biznesindən pay"] || 0) > 0, "ailə biznesindən pay gəlmir");
+  // bank refuses when income is too low
+  S.P.job = null; S.startJob("ofisiant", 0); ok(!S.bankOffer(25000).ok, "aşağı maaşa 25 000 ₼ kredit verildi");
+  // inheritance: equal shares among first-order heirs
+  const E = S.estate(); ok(E.heirs.length > 0 && (E.total <= 0 || E.share > 0), "miras hesabı");
+  // no hopeless debt spirals in ordinary lives
+  let spirals = 0; const N3 = 200;
+  for (let s = 1; s <= N3; s++) { let run = 0, worst = 0; S.playLife("D", s % 2 ? "k" : "q", "polis", 96000 + s, 130, null); }
+  for (let s = 1; s <= N3; s++) { S.newLife("D", s % 2 ? "k" : "q", "Bakı", "polis", 96000 + s); let run = 0, worst = 0; while (S.P.alive && S.P.age < 90) { S.playYear(); run = S.P.money < -20000 ? run + 1 : 0; worst = Math.max(worst, run); } if (worst >= 10) spirals++; }
+  ok(spirals / N3 < 0.05, `borc spiralı: ${spirals}/${N3}`);
+  console.log(`      (təqaüd: ${S.fmtMoney(p0)} → ${S.fmtMoney(S.pensionMonthly())}/ay stajla; 10+ il dərin borcda qalan həyatlar: ${spirals}/${N3})`);
 });
 
 test("köhnə (V0.1) yaddaş yeni formata köçür və oyun davam edir", () => {

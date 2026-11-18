@@ -295,31 +295,69 @@ function eduTick() {
     }
   }
 }
+// yearly budget: every income and expense line is recorded (P.budget) so the player can see where money goes
+const BIZ_VALUE = [20000, 80000, 250000, 800000, 3000000];
+function pensionMonthly() {
+  const R_ = RULES.pension, w = P.work || { years: 0, salSum: 0 };
+  const avg = w.years ? w.salSum / w.years : 0;
+  let m = R_.base_monthly + avg * R_.per_year_pct * w.years;
+  if (P.flags.military_pension != null) m = Math.max(m, (P.lastMilSal || avg) * R_.military_last_salary_pct);
+  return Math.round(Math.max(R_.min_monthly, m));
+}
+const onPension = () => !P.job && (P.flags.teqaud != null || P.flags.military_pension != null || P.age >= RULES.pension.age);
 function moneyTick() {
-  const sal = salaryMonthly() * 12;
-  // under 18: no automatic allowance (money only from family, finds, part-time work)
-  if (P.age < 16) return;
-  if (inPrison()) return; // no salary, no rent while inside
-  if (P.job) P.money += P.job && CAREERS[P.job.id].unstable ? Math.round(salaryMonthly() * (P.job.monthsWorked || 8)) : sal;
-  if (P.edu.stage === "uni" && P.flags.odenisli) P.money -= 2500;
-  if (P.age >= 18 && !(["uni", "magistr"].includes(P.edu.stage) && P.age < 26) && !(P.army && !P.army.done)) {
-    const ownHouse = P.assets.some(a => a.type === "ev" || a.home);
-    const living = 3000 + (ownHouse ? 0 : 3600) + (person("həyat yoldaşı") ? 1500 : 0) + people("uşaq").filter(k => k.age < 18).length * 1800;
-    const livingWithParents = !ownHouse && P.age < 30 && !person("həyat yoldaşı") && person("ana");
-    const lifestyle = Math.round(sal * 0.35); // people spend more as they earn more
-    P.money -= (livingWithParents ? 1500 : living) + lifestyle;
+  if (P.age < 16) { P.budget = null; return; }
+  const inc = {}, exp = {}, add = (o, k, v) => { v = Math.round(v); if (v) o[k] = (o[k] || 0) + v; };
+  if (inPrison()) { P.budget = { age: P.age, inc, exp, net: 0, note: "Həbsdə: gəlir və xərc yoxdur" }; return; }
+  // income
+  if (P.job && !P.job.susp) {
+    const c = CAREERS[P.job.id];
+    add(inc, P.job.id === "biznes" ? "Biznes gəliri" : "Maaş", c.unstable ? salaryMonthly() * (P.job.monthsWorked || 8) : salaryMonthly() * 12);
+    P.work = P.work || { years: 0, salSum: 0 }; P.work.years++; P.work.salSum += salaryMonthly();
+    if (c.track === "military") P.lastMilSal = salaryMonthly();
   }
+  if (onPension()) add(inc, "Təqaüd", pensionMonthly() * 12);
   for (const a of P.assets) {
-    if (a.type === "maşın") { P.money -= 400 + Math.round(a.value * 0.03); a.value = Math.round(a.value * 0.9); }       // insurance, fuel, repairs
-    else if (a.type === "ev") { P.money -= Math.round(a.value * 0.004) + 300; a.value = Math.round(a.value * (1.02 + R() * 0.05)); } // utilities, upkeep
-    else if (a.type === "torpaq") a.value = Math.round(a.value * (1.03 + R() * 0.06));
-    else if (a.type === "mağaza") { a.value = Math.round(a.value * (1.01 + R() * 0.04)); P.money += Math.round(a.value * 0.06); } // rent income
+    if (a.type === "mağaza") add(inc, "Kirayə gəliri", a.value * 0.06);
+    if (a.type === "kiraye") add(inc, "Kirayə gəliri", a.value * 0.05);
+    if (a.type === "biznes") add(inc, "Ailə biznesindən pay", a.value * 0.06);
   }
-  for (const l of P.loans || []) { const pay = Math.min(l.left, l.yearly); P.money -= pay; l.left -= Math.round(pay * (1 - LOAN.rate * 0.5)); }
+  { const earned = Object.values(inc).reduce((x, y) => x + y, 0); if (P.age >= 18 && earned < 6000 && P.money < 0 && !(["uni", "magistr"].includes(P.edu.stage)) && !(P.army && !P.army.done)) add(inc, "Sosial yardım", RULES.social.aid_yearly); }
+  // expenses
+  if (P.edu.stage === "uni" && P.flags.odenisli) add(exp, "Təhsil haqqı", 2500);
+  const student = ["uni", "magistr"].includes(P.edu.stage) && P.age < 26, inArmy = P.army && !P.army.done;
+  if (P.age >= 18 && !student && !inArmy) {
+    // people adapt to what they earn: cheaper room, staying with parents, a tighter food budget
+    const income = Object.values(inc).reduce((x, y) => x + y, 0), tight = P.money < 0 || income < 9000;
+    const ownHouse = P.assets.some(a => (a.type === "ev" || a.home) && a.type !== "kiraye");
+    const withParents = !ownHouse && !person("həyat yoldaşı") && (P.age < 30 || tight) && (person("ana") || person("ata"));
+    if (withParents) add(exp, "Ailə büdcəsinə pay", tight ? 900 : 1500);
+    else {
+      if (!ownHouse) add(exp, tight ? "Kirayə (ucuz otaq)" : "Kirayə", tight ? 1800 : 3600);
+      add(exp, "Ərzaq və məişət", tight ? Math.max(1500, income * 0.3) + (person("həyat yoldaşı") ? 800 : 0) : 2400 + (person("həyat yoldaşı") ? 1200 : 0));
+      add(exp, "Kommunal", 600);
+      add(exp, "Nəqliyyat", P.assets.some(a => a.type === "maşın") ? 0 : 360);
+    }
+    const kids = people("uşaq").filter(k => k.age < 18).length; if (kids) add(exp, "Uşaqlar (geyim, məktəb, dərnək)", kids * 1500);
+    const sal = salaryMonthly() * 12; if (sal > 0 && P.money > 0) add(exp, "Geyim və əyləncə", sal * 0.3);
+  }
+  if (P.age >= 55) add(exp, "Dərman və müayinə", (P.age - 50) * 40 + Math.max(0, 70 - P.st.health) * 15);
+  for (const a of P.assets) {
+    if (a.type === "maşın") { add(exp, "Maşın (sığorta, yanacaq, təmir)", 400 + a.value * 0.03); a.value = Math.round(a.value * 0.9); }
+    else if (a.type === "ev") { add(exp, "Ev saxlanması", a.value * 0.004 + 300); a.value = Math.round(a.value * (1.02 + R() * 0.05)); }
+    else if (a.type === "torpaq") a.value = Math.round(a.value * (1.03 + R() * 0.06));
+    else if (a.type === "mağaza") a.value = Math.round(a.value * (1.01 + R() * 0.04));
+  }
+  for (const l of P.loans || []) { const pay = Math.min(l.left, l.yearly); add(exp, "Kredit ödənişi", pay); l.left -= Math.round(pay * (1 - (l.rate || LOAN.rate) * 0.5)); }
+  const net = Object.values(inc).reduce((x, y) => x + y, 0) - Object.values(exp).reduce((x, y) => x + y, 0);
+  P.money = Math.round((P.money + net) * 100) / 100;
+  // late payments: fee and a lower credit score
+  P.credit = P.credit ?? 60;
+  if ((P.loans || []).length && P.money < 0) { const fee = Math.round((P.loans || []).reduce((x, l) => x + l.yearly, 0) * RULES.bank.late_fee_pct); P.money -= fee; exp["Gecikmə cəriməsi"] = fee; P.credit = clamp(P.credit - 12); }
+  else if ((P.loans || []).length) P.credit = clamp(P.credit + 3);
   if (P.loans && P.loans.some(l => l.left <= 0)) { for (const l of P.loans.filter(x => x.left <= 0)) log(`🏦 Kredit bağlandı: ${l.t}.`); P.loans = P.loans.filter(l => l.left > 0); }
-  if (P.age >= 63 && !P.job && P.flags.teqaud) P.money += 4200;
-  if (P.flags.military_pension != null && !P.job) P.money += 9000;
-  if (P.money < -5000 && !P.flags.borc) { P.flags.borc = P.age; }
+  P.budget = { age: P.age, inc, exp, net: Math.round(net) };
+  if (P.money < -5000 && !P.flags.borc) P.flags.borc = P.age;
 }
 // people who belong to a period of life leave the active list when that period ends
 function contextTick() {
@@ -418,6 +456,40 @@ function lifeSummary() {
     money: Math.round(P.money + P.assets.reduce((a, x) => a + x.value, 0)), followers: P.soc ? P.soc.followers : 0, kids: people("uşaq").length + P.people.filter(p => p.role === "uşaq" && !p.alive).length,
     married: !!P.people.find(p => p.role === "həyat yoldaşı"), cause: P.cause, when: Date.now() };
 }
+
+// ---------- inheritance (facts only; simplified rule in rules.json) ----------
+function estate() {
+  const items = P.assets.map(a => ({ t: a.t, v: a.value })), biz = P.job && P.job.id === "biznes" ? BIZ_VALUE[P.job.lv] : 0;
+  if (biz) items.push({ t: "Öz biznesi", v: biz });
+  const debt = (P.loans || []).reduce((x, l) => x + l.left, 0);
+  const total = Math.round(P.money + items.reduce((x, i) => x + i.v, 0) - debt);
+  const alive = r => P.people.filter(p => p.role === r && p.alive);
+  let heirs = [...alive("həyat yoldaşı"), ...alive("uşaq"), ...alive("ana"), ...alive("ata")];
+  if (!heirs.length) heirs = [...alive("qardaş"), ...alive("bacı"), ...alive("nənə"), ...alive("baba")];
+  return { total, items, debt, heirs, share: heirs.length && total > 0 ? Math.round(total / heirs.length) : 0 };
+}
+// ---------- bank ----------
+function bankOffer(amount) {
+  const B = RULES.bank, yearly = annuity(amount, B.cash_rate, B.cash_years);
+  const current = (P.loans || []).reduce((x, l) => x + l.yearly, 0), cap = salaryMonthly() * 12 * B.max_payment_share + (onPension() ? pensionMonthly() * 12 * 0.3 : 0);
+  const reasons = [];
+  if (P.age < 18) reasons.push("18 yaşdan kiçiklərə kredit verilmir");
+  if ((P.credit ?? 60) < 40) reasons.push("kredit tarixçən pisdir (gecikmələr)");
+  if (current + yearly > cap) reasons.push(`gəlirin bu ödənişə çatmır (illik ${fmtMoney(current + yearly)}, imkan ${fmtMoney(cap)})`);
+  if (hasRecord()) reasons.push("məhkumluq qeydi riskli sayılır");
+  return { ok: !reasons.length || (reasons.length === 1 && hasRecord() && chance(0.4)), yearly, reasons };
+}
+function takeCashLoan(amount) { const o = bankOffer(amount); if (!o.ok) return o; P.money += amount; (P.loans = P.loans || []).push({ t: `Nağd kredit ${fmtMoney(amount)}`, left: Math.round(amount * (1 + RULES.bank.cash_rate * 0.6)), yearly: o.yearly, years: RULES.bank.cash_years, rate: RULES.bank.cash_rate, since: P.age }); log(`🏦 Bankdan ${fmtMoney(amount)} nağd kredit götürdü (ildə ${fmtMoney(o.yearly)}).`); return o; }
+function restructure() { for (const l of P.loans || []) { l.years += RULES.bank.restructure_extra_years; l.yearly = Math.round(l.left / Math.max(1, l.years) * 1.15); } P.credit = clamp((P.credit ?? 60) - 8); log("🏦 Kreditlər restrukturizasiya olundu: illik ödəniş azaldı, müddət uzandı."); }
+// ---------- side income (extra work) ----------
+const SIDE_JOBS = [
+  { id: "s_taksi", t: "Axşamlar taksi sür", icon: "🚕", if: () => P.age >= 18 && P.lic && P.lic.surucu && P.assets.some(a => a.type === "maşın"), money: [1200, 2500], fx: { happy: -2, health: -1 }, r: "Axşamlar sürdün, gecə yarısı evə qayıtdın." },
+  { id: "s_kuryer", t: "Həftəsonu kuryerlik", icon: "🛵", if: () => P.age >= 16 && P.age <= 55, money: [600, 1300], fx: { happy: -2, fitness: 1 }, r: "Şənbə-bazar sifariş daşıdın." },
+  { id: "s_repet", t: "Repetitorluq et", icon: "📚", if: () => P.age >= 18 && (P.edu.degree || P.st.smarts >= 65), money: [1500, 3500], fx: { happy: -1 }, r: "Üç şagirdə dərs verdin. Biri imtahanda yüksək bal topladı." },
+  { id: "s_usta", t: "Usta sifarişləri götür", icon: "🔧", if: () => P.age >= 18 && (P.flags.pese_kursu != null || P.flags.pese_mekteb != null || (P.job && P.job.id === "usta")), money: [1000, 3000], fx: { happy: -1, health: -1 }, r: "Qonşulara elektrik, santexnika işləri gördün." },
+  { id: "s_freel", t: "Freelance layihə et", icon: "💻", if: () => P.age >= 18 && (P.flags.kodYazir != null || (P.job && P.job.id === "proqramci") || P.edu.degree === "proqramci"), money: [2000, 6000], fx: { happy: -3, health: -1 }, r: "Gecələr xarici müştəri üçün sayt yazdın." },
+  { id: "s_satis", t: "Onlayn satış et", icon: "📦", if: () => P.age >= 18, money: [300, 1800], fx: { happy: -1 }, r: "Pıçıltı-da kiçik mağaza açdın: əl işləri və aksesuarlar." }
+];
 
 // ---------- children's weddings ----------
 // daughter: dowry (cehiz) and her share of the wedding; son: the couple's home and car, and the wedding itself
@@ -526,6 +598,8 @@ const ACTIONS = [
     r: () => ({ futbolcu: "Hamı gedəndən sonra da meydanda qaldın, cərimə zərbələri vurdun. Məşqçi gördü.", mugenni: "Səhərə qədər studiyada yeni mahnı yazdın.", hekim: "İki növbə ardıcıl. Yorğunsan, amma xəstələr səni tanıyır." }[P.job.id] || "Gec saatlara qədər işlədin. Rəhbər bunu gördü."), after: () => { P.job.perf = clamp(P.job.perf + rnd(8, 15)); P.job.boss = clamp((P.job.boss || 50) + 2); } },
   { id: "seyahet", t: "Səyahətə çıx", icon: "✈️", min: 18, cost: 1500, fx: () => ({ happy: rnd(8, 14) }), r: () => { const c = pick(["Türkiyəyə", "Gürcüstana", "Dubaya", "İtaliyaya", "Misirə", "Fransaya", "Qəbələyə", "Şəkiyə"]); P.stats.countries++; return `${c} səyahət etdin, möhtəşəm idi!`; } },
   { id: "al", t: "Alış-veriş: əşya, maşın, ev", icon: "🔑", min: 18, special: "shop" },
+  { id: "bank", t: "Banka get", icon: "🏦", min: 18, special: "bank" },
+  { id: "elave", t: "Əlavə qazanc", icon: "💼", min: 16, special: "side", if: () => SIDE_JOBS.some(s => s.if()) },
   // ---- adulthood (26+): family, home, work, community
   { id: "q_valideyn", t: "Valideynlərini ziyarət et", icon: "🏘️", min: 26, if: () => !!(person("ana") || person("ata")), fx: () => ({ happy: 4 }), r: () => pick([`Ananın dolması, atanın köhnə hekayələri. Ev hələ də uşaqlığın kimi qoxuyur.`, "Atanla bağda alma ağaclarını budadınız.", "Anan yenə “arıqlamısan” dedi və bir çanta yemək qoydu."]), after: () => { relAdd("ana", 8); relAdd("ata", 8); } },
   { id: "q_piknik", t: "Ailəlikcə təbiətə çıx", icon: "🧺", min: 26, cost: 150, if: () => !!(person("həyat yoldaşı") || person("uşaq")), fx: () => ({ happy: rnd(6, 10) }), r: () => `${pick(["Quba meşəsində", "Qəbələdə göl kənarında", "Şamaxının dağlarında", "Nabranda dəniz kənarında"])} kabab, samovar, uşaqların səsi.`, after: () => { relAdd("həyat yoldaşı", 7); relAdd("uşaq", 7); } },

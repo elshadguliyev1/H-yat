@@ -189,9 +189,14 @@
  {"t":"Gözlə, yaxşı iş tapılar","fx":{"happy":-5},"r":"Bir il də keçdi…"}]},
 {"id":"borc_bank","cat":"money","tone":"dramatic","age":[18,90],"once":false,"cool":3,"icon":"🏦","cond":{"money_lt":-3000},"t":"Bankdan zəng: “Borcunuz {debt}-dır. Ödəniş gecikir!”","ch":[
  {"t":"Əlavə iş götür","fx":{"happy":-6,"health":-3},"do":[{"money_rand":[2000,5000]}],"r":"Gecələr də işlədin, {amount} qaytardın."},
+ {"t":"Bankla restrukturizasiya razılaşması","cond":{"loans":true},"do":[{"restructure":true}],"fx":{"happy":2},"r":"İllik ödəniş azaldı, müddət uzandı. Nəfəs ala bilirsən, amma borc daha uzun çəkəcək."},
  {"t":"Valideynlərdən kömək istə","cond":{"has_any":["ana","ata"]},"fx":{"rel":{"ana":-4,"ata":-4}},"do":[{"money_rand":[1000,4000]}],"r":"Valideynlərin {amount} verdi. “Axırıncı dəfədir!”"},
  {"t":"Maşını sat","cond":{"asset":"maşın"},"do":[{"sell_asset":"maşın"}],"r":"{asset} satıldı, borcun bir hissəsi bağlandı."},
  {"t":"Zəngləri cavabsız qoy","fx":{"happy":-10},"do":[{"money_mul":1.1}],"r":"Problem yox olmadı, faizlər artdı."}]},
+{"id":"biz_gelecek","cat":"career","tone":"dramatic","age":[63,95],"force":true,"once":false,"cool":4,"icon":"🏢","cond":{"job":"biznes"},"t":"Hər səhər ofisə getmək artıq əvvəlki kimi asan deyil. Biznesin dəyəri təxminən {biz_value}. Onu kim davam etdirəcək?","ch":[
+ {"t":"Övlada təhvil ver, özün məsləhətçi qal","cond":{"adult_kid":true},"do":[{"biz_handover":true}],"fx":{"happy":10},"r":"{kid_b} ilk iclasda səndən daha sərt danışdı. Sonra gəlib dedi: “Sən olmasaydın, bacarmazdım.” İndi hər il gəlirdən pay alırsan."},
+ {"t":"Biznesi sat","do":[{"biz_sell":true}],"fx":{"happy":4},"r":"Lövhəni dəyişəndə ürəyin sıxıldı. Hesabına {amount} köçürüldü."},
+ {"t":"Hələ özüm idarə edəcəyəm","fx":{"health":-4,"happy":2},"r":"“Mən hələ gəncəm!” Amma hər səhər qalxmaq bir az da çətinləşir."}]},
 {"id":"teqaud_heyat","cat":"life","tone":"everyday","age":[63,90],"icon":"🌳","cond":{"flag":"teqaud"},"t":"Təqaüddəsən. Səhərlər parkda yaşıdların nərd oynayır.","ch":[
  {"t":"Qoşul, nərd oyna","fx":{"happy":8},"r":"Hər gün “Şeşbeş!” səsləri. Həyat gözəldir 🎲"},
  {"t":"Bağ sal, pomidor ək","fx":{"happy":6,"health":4},"r":"Ən dadlı pomidorlar səninkidir 🍅"},

@@ -420,6 +420,8 @@ function doAction(a) {
   if (a.special === "post") return postPicker();
   if (a.special === "job") return jobPicker();
   if (a.special === "shop") return shopPicker();
+  if (a.special === "bank") return bankSheet();
+  if (a.special === "side") return sidePicker();
   if (a.special === "love") return findLove();
   if (!useAct()) return;
   const changes = apply(a.fx ? a.fx() : {});
@@ -507,6 +509,32 @@ function shopPicker() {
     log(`💱 ${a.t} satıldı: ${fmtMoney(a.value)}.`); save(); s.close(); renderGame(); toast("Satıldı: +" + fmtMoney(a.value));
   });
   draw();
+}
+function bankSheet() {
+  const homes = P.assets.filter(a => a.type === "ev" || a.home);
+  const s = sheet(`<div class="big">🏦</div><p class="q">Bank · Pulun: ${fmtMoney(P.money)}<br><span class="small muted">Kredit reytinqi: ${P.credit ?? 60}/100</span></p>
+    <p class="sec-h">Nağd kredit (${Math.round(RULES.bank.cash_rate * 100)}%, ${RULES.bank.cash_years} il)</p>
+    <div class="choices">${[2000, 5000, 10000, 25000].map(a => { const o = bankOffer(a); return `<button data-loan="${a}">${fmtMoney(a)} <span class="muted small">· ildə ${fmtMoney(o.yearly)}${o.ok ? "" : " · " + esc(o.reasons[0])}</span></button>`; }).join("")}</div>
+    ${(P.loans || []).length ? `<p class="sec-h">Kreditlərin</p><div class="small">${P.loans.map(l => `<div>🏦 ${esc(l.t)} — qalıq ${fmtMoney(l.left)}, ildə ${fmtMoney(l.yearly)}</div>`).join("")}</div><div class="choices" style="margin-top:8px"><button data-restr="1">🔁 Restrukturizasiya: ödənişi azalt, müddəti uzat</button></div>` : ""}
+    ${homes.length >= 2 ? `<p class="sec-h">Əlavə mənzil</p><div class="choices">${homes.slice(1).map(a => `<button data-rent="${P.assets.indexOf(a)}">🏢 ${esc(a.t)} — kirayəyə ver (ildə ~${fmtMoney(a.value * 0.05)})</button>`).join("")}</div>` : ""}
+    <p class="small muted">Depozit və səhm üçün: Fəaliyyət → İnvestisiya et.</p><button class="btn ghost close">Bağla</button>`);
+  s.el.querySelector(".close").onclick = s.close;
+  const done = t => { save(); s.close(); renderGame(); toast(t, 3500); };
+  s.el.querySelectorAll("[data-loan]").forEach(b => b.onclick = () => { if (!useAct()) return; const o = takeCashLoan(+b.dataset.loan); if (o.ok) done(`Kredit təsdiqləndi: +${fmtMoney(+b.dataset.loan)}`); else { log("🏦 Bank kredit vermədi: " + o.reasons.join("; ")); done("Bank rədd etdi: " + o.reasons[0]); } });
+  const r = s.el.querySelector("[data-restr]"); if (r) r.onclick = () => { if (!useAct()) return; restructure(); done("Kreditlər restrukturizasiya olundu"); };
+  s.el.querySelectorAll("[data-rent]").forEach(b => b.onclick = () => { if (!useAct()) return; const a = P.assets[+b.dataset.rent]; a.type = "kiraye"; a.home = false; a.t = a.t + " (kirayədə)"; log(`🏢 ${a.t} kirayəyə verildi.`); done("Mənzil kirayəyə verildi"); });
+}
+function sidePicker() {
+  const list = SIDE_JOBS.filter(j => j.if());
+  const s = sheet(`<div class="big">💼</div><p class="q">Əlavə qazanc: nə edirsən?</p><div class="choices">${list.map(j => `<button data-s="${j.id}">${j.icon} ${j.t} <span class="muted small">· ${fmtMoney(j.money[0])}–${fmtMoney(j.money[1])}</span></button>`).join("")}</div><button class="btn ghost close">Bağla</button>`);
+  s.el.querySelector(".close").onclick = s.close;
+  s.el.querySelectorAll("[data-s]").forEach(b => b.onclick = () => {
+    if (!useAct()) return;
+    const j = SIDE_JOBS.find(x => x.id === b.dataset.s), m = rnd(j.money[0], j.money[1]); P.money += m;
+    const ch = [["money", m], ...apply(j.fx)]; log(`${j.icon} ${j.r} (+${fmtMoney(m)})`); save();
+    s.el.innerHTML = `<div class="big">${j.icon}</div><p class="q">${esc(j.r)}</p><div class="fx">${fxChips(ch)}</div><button class="btn close">Yaxşı</button>`;
+    s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
+  });
 }
 function findLove() {
   if (!useAct()) return;
@@ -605,7 +633,12 @@ function panelMe() {
     <p class="sec-h">Xarakter (qərarlarından formalaşır)</p><div class="card tal">${Object.entries(TRAITS).map(([k, t]) => `<div><span>${t}</span><span class="tbar" role="meter" aria-label="${t}" aria-valuenow="${P.tr[k]}" aria-valuemin="0" aria-valuemax="100"><i style="width:${P.tr[k]}%"></i></span></div>`).join("")}</div>
     ${P.age >= 8 ? `<p class="sec-h">İstedadlar (müəllimlərin fikrincə)</p><div class="card tal">${[["sport", "⚽ İdman"], ["music", "🎶 Musiqi"], ["acting", "🎭 Aktyorluq"], ["science", "🔬 Elm"], ["social", "🗣️ Ünsiyyət"]].map(([k, t]) => `<div><span>${t}</span><span class="stars" aria-label="${Math.round(P.tal[k] / 20)} ulduz">${stars(P.tal[k])}</span></div>`).join("")}</div>` : ""}
     <p class="sec-h">Əmlak</p><div class="card">${P.assets.length ? P.assets.map(a => `<div>${{ ev: "🏠", "maşın": "🚗", depozit: "🏦", sehm: "📈", kiraye: "🏢", torpaq: "🌾", "mağaza": "🏪" }[a.type] || "📦"} ${esc(a.t)} · <span class="muted">${fmtMoney(a.value)}</span></div>`).join("") : '<span class="muted">Hələ heç nə yoxdur.</span>'}</div>
-    ${(P.loans || []).length ? `<p class="sec-h">Kreditlər</p><div class="card small">${P.loans.map(l => `<div>🏦 ${esc(l.t)} — qalıq ${fmtMoney(l.left)}, ildə ${fmtMoney(l.yearly)}</div>`).join("")}</div>` : ""}
+    ${P.budget ? `<p class="sec-h">Son ilin büdcəsi (${P.budget.age - 1}–${P.budget.age} yaş)</p><div class="card small">${P.budget.note ? `<div class="muted">${esc(P.budget.note)}</div>` : ""}
+      ${Object.entries(P.budget.inc).map(([k, v]) => `<div style="display:flex;justify-content:space-between"><span>➕ ${esc(k)}</span><b style="color:var(--good)">${fmtMoney(v)}</b></div>`).join("")}
+      ${Object.entries(P.budget.exp).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div style="display:flex;justify-content:space-between"><span>➖ ${esc(k)}</span><b style="color:var(--bad)">${fmtMoney(v)}</b></div>`).join("")}
+      <div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:6px;padding-top:6px"><span>Balans</span><b>${P.budget.net >= 0 ? "+" : ""}${fmtMoney(P.budget.net)}</b></div></div>` : ""}
+    ${P.age >= 40 ? `<p class="sec-h">Təqaüd</p><div class="card small">${onPension() ? `Hazırda ayda <b>${fmtMoney(pensionMonthly())}</b> təqaüd alırsan.` : `Təxmini təqaüdün (indiki stajla): <b>${fmtMoney(pensionMonthly())}</b>/ay. Təqaüd yaşı: ${RULES.pension.age}.`} <span class="muted">Staj: ${(P.work || {}).years || 0} il.</span></div>` : ""}
+    ${(P.loans || []).length ? `<p class="sec-h">Kreditlər · reytinq ${P.credit ?? 60}/100</p><div class="card small">${P.loans.map(l => `<div>🏦 ${esc(l.t)} — qalıq ${fmtMoney(l.left)}, ildə ${fmtMoney(l.yearly)}</div>`).join("")}</div>` : ""}
     ${(P.careerHist || []).length ? `<p class="sec-h">Karyera tarixçəsi</p><div class="card small">${P.careerHist.slice(-10).reverse().map(h => `<div style="padding:3px 0">${h.age} yaş · ${esc(h.text)}${h.sal ? ` <span class="muted">(${fmtMoney(h.sal)})</span>` : ""}</div>`).join("")}</div>` : ""}
     ${P.jobs.length ? `<p class="sec-h">Keçmiş işlər</p><div class="card">${P.jobs.map(j => `<div>${CAREERS[j.id].icon} ${esc(j.title)} <span class="muted small">(${j.from}–${j.to} yaş, ${esc(j.reason)})</span></div>`).join("")}</div>` : ""}
     <div style="display:grid;gap:8px;margin-top:18px"><button class="btn ghost" id="home">🏠 Əsas menyu</button><button class="btn ghost" id="quit" style="color:var(--bad)">Bu həyatı bitir</button></div>`;
@@ -628,6 +661,11 @@ function renderEnd() {
       <div><span class="muted small">Ailə</span><b>${s.married ? "Evli" : "Subay"} · ${s.kids} uşaq</b></div><div><span class="muted small">Şöhrət</span><b>⭐ ${P.fame}</b></div>
       <div><span class="muted small">Səyahət</span><b>${P.stats.countries} dəfə</b></div><div><span class="muted small">Paylaşım</span><b>${P.stats.posts}</b></div></div>
     ${(() => { const sv = survivors(); return `<div class="card" style="text-align:left;margin-bottom:12px"><h3 style="font-size:18px;margin-bottom:8px">Geridə qalanlar</h3>${sv.now.map(t => `<p style="margin:6px 0">${esc(t)}</p>`).join("")}${sv.before.length ? `<p class="small muted" style="margin:10px 0 4px">Ondan əvvəl getdilər:</p>${sv.before.map(t => `<p class="small muted" style="margin:2px 0">${esc(t)}</p>`).join("")}` : ""}</div>`; })()}
+    ${(() => { const E = estate(); return `<div class="card small" style="text-align:left;margin-bottom:12px"><h3 style="font-size:16px;margin-bottom:6px">Miras</h3>
+      ${E.items.length ? E.items.map(i => `<div>• ${esc(i.t)} — ${fmtMoney(i.v)}</div>`).join("") : ""}<div>• Pul: ${fmtMoney(P.money)}</div>${E.debt ? `<div style="color:var(--bad)">• Borclar: −${fmtMoney(E.debt)}</div>` : ""}
+      <div style="margin-top:6px"><b>${E.total > 0 ? `Cəmi ${fmtMoney(E.total)}` : "Borclar əmlakdan çox idi: vərəsələrə heç nə qalmadı"}</b></div>
+      ${E.total > 0 ? (E.heirs.length ? `<div>Vərəsələr: ${E.heirs.map(h => `${esc(h.name)} (${esc(h.role)})`).join(", ")} — hər birinə təxminən ${fmtMoney(E.share)}.</div>` : "<div>Vərəsə qalmadı: əmlak dövlətə keçdi.</div>") : ""}
+      ${P.assets.filter(a => a.type === "biznes").map(a => `<div>🏢 ${esc(a.t)} artıq ailədə davam edir.</div>`).join("")}</div>`; })()}
     ${(P.careerHist || []).length ? `<div class="card small" style="text-align:left;margin-bottom:12px"><h3 style="font-size:16px;margin-bottom:6px">Karyera yolu</h3>${P.careerHist.filter(h => h.kind !== "end").slice(-8).map(h => `<div>${h.age} yaş · ${esc(h.text)}</div>`).join("")}</div>` : ""}
     <button class="btn" id="again" style="width:100%">Yeni həyat başlat 🌱</button>
     <button class="btn ghost" id="story" style="width:100%;margin-top:8px">Həyat hekayəsinə bax</button></section>`;

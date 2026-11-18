@@ -1,69 +1,1250 @@
 {
   "_doc": "Karyeralar. sal: hər pillə üçün aylıq maaş diapazonu [min, max] ₼ (oyun konfiqurasiyası). minYears: növbəti pilləyə keçmək üçün bu pillədə minimum il. paths: işə qəbul yolları (biri ödənsə kifayətdir). reqLv: konkret pilləyə keçid şərti. risk: peşəyə görə illik əlavə ölüm riski. record_ok:false — məhkumluğu olan qəbul edilmir.",
-  "polis": { "t": "Polis", "icon": "👮", "track": "law", "lv": ["Leytenant","Baş leytenant","Kapitan","Mayor","Polkovnik-leytenant","Polkovnik"], "sal": [[650,800],[800,1000],[1000,1300],[1300,1700],[1700,2200],[2200,2900]], "minYears": [2,3,4,4,5], "key": "fitness", "risk": 0.0008, "record_ok": false, "retire": 60,
-    "paths": [ { "deg": "polis", "hire": 0.9 }, { "army_done": true, "stat": { "fitness": 60 }, "age": [19, 30], "hire": 0.4 } ],
-    "employers": ["Bakı şəhər Polis İdarəsi", "Rayon Polis Şöbəsi", "Yol Polisi İdarəsi"], "work": "Əlavə növbə götür" },
-  "hekim": { "t": "Həkim", "icon": "🩺", "track": "medicine", "lv": ["Rezident həkim","Həkim","Baş həkim","Şöbə müdiri","Klinika direktoru"], "sal": [[500,700],[900,1400],[1500,2200],[2400,3400],[3500,5500]], "minYears": [3,4,5,5], "key": "smarts", "record_ok": false,
-    "reqLv": { "4": { "stat": { "smarts": 75 } } },
-    "paths": [ { "deg": "hekim", "hire": 0.85 } ],
-    "employers": ["Respublika Xəstəxanası", "Şəhər Xəstəxanası №3", "Xəzər Tibb Mərkəzi", "Rayon Mərkəzi Xəstəxanası"], "work": "Əlavə növbə götür" },
-  "cerrah": { "t": "Cərrah", "icon": "🔪", "track": "medicine", "lv": ["Cərrah-rezident","Cərrah","Baş cərrah","Cərrahiyyə şöbəsinin müdiri","Klinika direktoru"], "sal": [[700,1000],[1500,2300],[2600,3800],[3800,5200],[5000,8000]], "minYears": [3,4,5,5], "key": "smarts", "record_ok": false,
-    "paths": [ { "deg": "hekim", "flag": "cerrah_rezidentura", "hire": 0.8 } ],
-    "employers": ["Respublika Xəstəxanası", "Xəzər Tibb Mərkəzi", "Mərkəzi Hospital"], "work": "Əlavə əməliyyatlara gir" },
-  "futbolcu": { "t": "Futbolçu", "icon": "⚽", "track": "sport", "lv": ["Gənclər komandası","Əsas heyət","Klubun ulduzu","Avropa klubu","Dünya ulduzu"], "sal": [[400,700],[1800,3500],[6000,11000],[25000,60000],[90000,200000]], "minYears": [1,2,2,2], "key": "fitness", "fame": 6, "sport": true, "risk": 0.0002,
-    "paths": [ { "flag": "akademiya", "age": [16, 22], "stat": { "fitness": 60 }, "hire": 0.5 } ],
-    "employers": ["Xəzər FK", "Abşeron FK", "Gəncə Simurq FK", "Lənkəran Sahil FK"], "work": "Əlavə məşq et" },
-  "mesqci": { "t": "Məşqçi", "icon": "🧢", "track": "sport", "lv": ["Uşaq komandasının məşqçisi","Gənclər komandasının məşqçisi","Baş məşqçinin köməkçisi","Baş məşqçi","Futbol akademiyasının sahibi"], "sal": [[500,800],[800,1300],[1500,2500],[3000,8000],[0,0]], "minYears": [2,2,3,4], "key": "smarts", "fame": 2,
-    "reqLv": { "4": { "money_gte": 80000 } },
-    "paths": [ { "flag": "exFutbolcu", "hire": 0.75 }, { "tal": { "sport": 70 }, "deg": "muellim", "hire": 0.35 } ],
-    "employers": ["Xəzər FK akademiyası", "Rayon idman məktəbi", "Abşeron FK"], "work": "Taktika üzərində işlə" },
-  "mugenni": { "t": "Müğənni", "icon": "🎤", "track": "art", "lv": ["Toy müğənnisi","Yeni səs","Tanınan müğənni","Məşhur müğənni","Səhnə ulduzu"], "sal": [[400,900],[900,1600],[2500,4500],[7000,12000],[18000,35000]], "minYears": [1,2,2,3], "key": "looks", "fame": 7,
-    "paths": [ { "deg": "mugenni", "hire": 0.6 }, { "tal": { "music": 70 }, "hire": 0.25 } ],
-    "employers": ["Müstəqil", "Səs Prodakşn", "Muğam Evi"], "work": "Studiyada çalış" },
-  "aktyor": { "t": "Aktyor", "icon": "🎭", "track": "art", "lv": ["Teatr aktyoru","Serial aktyoru","Tanınan aktyor","Kino ulduzu","Xalq artisti"], "sal": [[400,550],[900,1400],[2200,3800],[6000,10000],[10000,18000]], "minYears": [2,2,3,4], "key": "looks", "fame": 6,
-    "paths": [ { "deg": "aktyor", "hire": 0.6 }, { "tal": { "acting": 70 }, "hire": 0.2 } ],
-    "employers": ["Dövlət Dram Teatrı", "Gənc Tamaşaçılar Teatrı", "Xəzər Film Studiyası"], "work": "Rol üzərində işlə" },
-  "muellim": { "t": "Müəllim", "icon": "📚", "track": "education", "lv": ["Gənc müəllim","Müəllim","Baş müəllim","Direktor müavini","Məktəb direktoru"], "sal": [[450,550],[550,700],[700,900],[900,1100],[1200,1600]], "minYears": [3,4,5,4], "key": "smarts", "record_ok": false,
-    "paths": [ { "deg": "muellim", "hire": 0.9 } ],
-    "employers": ["127 nömrəli məktəb", "Kənd tam orta məktəbi", "Lisey", "Özəl məktəb"], "work": "Dərslərə yaxşı hazırlaş" },
-  "alim": { "t": "Alim", "icon": "🔬", "track": "science", "lv": ["Assistent","Baş müəllim","Dosent","Professor","Kafedra müdiri"], "sal": [[500,700],[700,950],[1000,1400],[1500,2200],[2200,3000]], "minYears": [2,4,5,5], "key": "smarts", "record_ok": false,
-    "reqLv": { "2": { "flag": "phd" }, "3": { "stat": { "smarts": 75 } } },
-    "paths": [ { "master": true, "stat": { "smarts": 65 }, "hire": 0.5 } ],
-    "employers": ["Dövlət Universiteti", "Elmlər Akademiyasının institutu", "Texniki Universitet"], "work": "Məqalə üzərində işlə" },
-  "proqramci": { "t": "Proqramçı", "icon": "💻", "track": "it", "lv": ["Junior proqramçı","Middle proqramçı","Senior proqramçı","Komanda rəhbəri","Texniki direktor"], "sal": [[600,900],[1100,1600],[1900,2700],[2800,3800],[3800,5500]], "minYears": [1,2,3,3], "key": "smarts",
-    "paths": [ { "deg": "proqramci", "hire": 0.75 }, { "flag": "kodYazir", "hire": 0.4 } ],
-    "employers": ["Kod Mərkəzi MMC", "Xəzər Soft", "Bank-texnologiya şöbəsi", "Startap"], "work": "Gecə də kod yaz" },
-  "biznes": { "t": "Biznesmen", "icon": "💼", "track": "business", "lv": ["Kiçik dükan sahibi","Şirkət sahibi","Uğurlu biznesmen","Holdinq rəhbəri","Milyonçu"], "sal": [[0,0],[0,0],[0,0],[0,0],[0,0]], "minYears": [2,3,4,5], "key": "smarts", "fame": 2,
-    "paths": [], "employers": ["Öz biznesi"], "work": "Biznesə çox vaxt ayır" },
-  "pilot": { "t": "Mülki pilot", "icon": "✈️", "track": "aviation", "lv": ["İkinci pilot","Baş ikinci pilot","Kapitan","Baş kapitan","Uçuş təlimatçısı"], "sal": [[1800,2600],[2600,3500],[4500,6500],[6500,9000],[5000,7500]], "minYears": [2,3,4,3], "key": "smarts", "risk": 0.0004, "record_ok": false, "retire": 65,
-    "reqLv": { "2": { "lic": "atpl", "hours_gte": 3000 }, "4": { "hours_gte": 7000 } },
-    "paths": [ { "lic": "cpl", "medical": true, "age": [20, 45], "hire": 0.6 } ],
-    "employers": ["Xəzər Hava Yolları", "Kür Ervayz", "Silk Kargo"], "work": "Simulyatorda əlavə məşq et" },
-  "herbi_pilot": { "t": "Hərbi pilot", "icon": "🛩️", "track": "military", "lv": ["Leytenant-pilot","Baş leytenant-pilot","Kapitan-pilot","Mayor-pilot","Polkovnik-leytenant"], "sal": [[1400,1800],[1800,2300],[2300,3000],[3000,3800],[3800,4800]], "minYears": [2,3,4,5], "key": "fitness", "risk": 0.0025, "record_ok": false, "retire": 50,
-    "paths": [ { "flag": "pilot_secildi", "deg": "herbi", "medical": true, "hire": 0.9 } ],
-    "employers": ["Hərbi Hava Qüvvələri"], "work": "Əlavə uçuş təlimi" },
-  "herbci": { "t": "Hərbçi", "icon": "🎖️", "track": "military", "lv": ["Gizir","Baş gizir","Leytenant","Baş leytenant","Kapitan","Mayor","Polkovnik-leytenant","Polkovnik","General-mayor"], "sal": [[700,900],[900,1100],[1100,1400],[1400,1700],[1700,2100],[2100,2600],[2600,3200],[3200,4000],[4500,6000]], "minYears": [3,3,2,3,4,4,5,5], "key": "fitness", "risk": 0.001, "record_ok": false, "retire": 55,
-    "reqLv": { "2": { "deg": "herbi" }, "7": { "stat": { "smarts": 70 } } },
-    "paths": [ { "deg": "herbi", "lv": 2, "hire": 0.95 }, { "army_done": true, "stat": { "fitness": 65 }, "age": [19, 30], "hire": 0.55 } ],
-    "employers": ["Quru Qoşunları", "Sərhəd hissəsi", "Hərbi Hava Qüvvələri", "Hərbi Dəniz Qüvvələri"], "work": "Əlavə təlimə çıx" },
-  "xilasedici": { "t": "Xilasedici", "icon": "🚒", "track": "rescue", "lv": ["Xilasedici","Baş xilasedici","Bölmə komandiri","Hissə rəisi"], "sal": [[650,850],[850,1100],[1100,1500],[1500,2100]], "minYears": [3,4,5], "key": "fitness", "risk": 0.002, "record_ok": false, "retire": 55,
-    "paths": [ { "stat": { "fitness": 65, "health": 70 }, "age": [18, 32], "hire": 0.6 } ],
-    "employers": ["Fövqəladə Hallar — Bakı yanğından mühafizə hissəsi", "Rayon xilasetmə hissəsi"], "work": "Əlavə təlimə çıx" },
-  "usta": { "t": "Usta", "icon": "🔧", "track": "trade", "lv": ["Şagird usta","Usta","Baş usta","Emalatxana sahibi"], "sal": [[400,600],[700,1100],[1100,1700],[1500,3500]], "minYears": [2,3,4], "key": "fitness",
-    "reqLv": { "3": { "money_gte": 8000 } },
-    "paths": [ { "flag": "pese_mekteb", "hire": 0.85 }, { "flag": "pese_kursu", "hire": 0.65 } ],
-    "employers": ["Tikinti şirkəti", "Avtoservis", "Elektrik-montaj sexi", "Santexnika ustaxanası"], "work": "Əlavə sifariş götür" },
-  "fehle": { "t": "Gündəlik fəhlə", "icon": "🧱", "track": "unstable", "plain": true, "unstable": true, "lv": ["Gündəlik fəhlə"], "sal": [[250,700]], "minYears": [], "key": "fitness", "risk": 0.0006,
-    "paths": [ { "age": [16, 65], "hire": 0.95 } ], "employers": ["Tikinti meydançası", "Bazar", "Anbar"], "work": "Hər gün işə çıx" },
-  "kuryer": { "t": "Kuryer", "icon": "🛵", "track": "plain", "plain": true, "lv": ["Kuryer","Baş kuryer"], "sal": [[450,650],[650,850]], "minYears": [2], "key": "fitness", "risk": 0.0005,
-    "paths": [ { "age": [16, 60], "hire": 0.85 } ], "employers": ["Tez Çatdırılma", "Yemək Çatdırılması", "Poçt xidməti"] },
-  "ofisiant": { "t": "Ofisiant", "icon": "🍽️", "track": "plain", "plain": true, "lv": ["Ofisiant","Baş ofisiant"], "sal": [[380,550],[550,750]], "minYears": [2], "key": "looks",
-    "paths": [ { "age": [16, 55], "hire": 0.7 } ], "employers": ["Dəniz kənarı restoranı", "Çayxana", "Şəhər kafesi"] },
-  "satici": { "t": "Satıcı", "icon": "🛒", "track": "plain", "plain": true, "lv": ["Satıcı","Mağaza müdiri"], "sal": [[420,600],[800,1100]], "minYears": [3], "key": "looks",
-    "paths": [ { "age": [16, 65], "hire": 0.75 } ], "employers": ["Market şəbəkəsi", "Paltar mağazası", "Elektronika mağazası"] },
-  "taksi": { "t": "Taksi sürücüsü", "icon": "🚕", "track": "plain", "plain": true, "lv": ["Taksi sürücüsü"], "sal": [[600,1000]], "minYears": [], "key": "health", "risk": 0.0005,
-    "paths": [ { "lic": "surucu", "age": [18, 70], "hire": 0.85 } ], "employers": ["Taksi parkı", "Öz maşınında"] },
-  "ofis": { "t": "Ofis işçisi", "icon": "🗂️", "track": "plain", "plain": true, "lv": ["Ofis işçisi","Mütəxəssis","Şöbə rəhbəri"], "sal": [[600,850],[850,1200],[1200,1800]], "minYears": [2,4], "key": "smarts",
-    "paths": [ { "any_degree": true, "age": [18, 60], "hire": 0.7 }, { "stat": { "smarts": 60 }, "age": [18, 60], "hire": 0.35 } ],
-    "employers": ["Logistika şirkəti", "Bank filialı", "Sığorta şirkəti", "Dövlət idarəsi"] }
+  "polis": {
+    "t": "Polis",
+    "icon": "👮",
+    "track": "law",
+    "lv": [
+      "Leytenant",
+      "Baş leytenant",
+      "Kapitan",
+      "Mayor",
+      "Polkovnik-leytenant",
+      "Polkovnik"
+    ],
+    "sal": [
+      [
+        650,
+        800
+      ],
+      [
+        800,
+        1000
+      ],
+      [
+        1000,
+        1300
+      ],
+      [
+        1300,
+        1700
+      ],
+      [
+        1700,
+        2200
+      ],
+      [
+        2200,
+        2900
+      ]
+    ],
+    "minYears": [
+      2,
+      3,
+      4,
+      4,
+      5
+    ],
+    "key": "fitness",
+    "risk": 0.0008,
+    "record_ok": false,
+    "retire": 60,
+    "paths": [
+      {
+        "deg": "polis",
+        "hire": 0.9
+      },
+      {
+        "army_done": true,
+        "stat": {
+          "fitness": 60
+        },
+        "age": [
+          19,
+          30
+        ],
+        "hire": 0.4
+      }
+    ],
+    "employers": [
+      "Bakı şəhər Polis İdarəsi",
+      "Rayon Polis Şöbəsi",
+      "Yol Polisi İdarəsi"
+    ],
+    "work": "Əlavə növbə götür"
+  },
+  "hekim": {
+    "t": "Həkim",
+    "icon": "🩺",
+    "track": "medicine",
+    "lv": [
+      "Rezident həkim",
+      "Həkim",
+      "Baş həkim",
+      "Şöbə müdiri",
+      "Klinika direktoru"
+    ],
+    "sal": [
+      [
+        500,
+        700
+      ],
+      [
+        900,
+        1400
+      ],
+      [
+        1500,
+        2200
+      ],
+      [
+        2400,
+        3400
+      ],
+      [
+        3500,
+        5500
+      ]
+    ],
+    "minYears": [
+      3,
+      4,
+      5,
+      5
+    ],
+    "key": "smarts",
+    "record_ok": false,
+    "reqLv": {
+      "4": {
+        "stat": {
+          "smarts": 75
+        }
+      }
+    },
+    "paths": [
+      {
+        "deg": "hekim",
+        "hire": 0.85
+      }
+    ],
+    "employers": [
+      "Respublika Xəstəxanası",
+      "Şəhər Xəstəxanası №3",
+      "Xəzər Tibb Mərkəzi",
+      "Rayon Mərkəzi Xəstəxanası"
+    ],
+    "work": "Əlavə növbə götür"
+  },
+  "cerrah": {
+    "t": "Cərrah",
+    "icon": "🔪",
+    "track": "medicine",
+    "lv": [
+      "Cərrah-rezident",
+      "Cərrah",
+      "Baş cərrah",
+      "Cərrahiyyə şöbəsinin müdiri",
+      "Klinika direktoru"
+    ],
+    "sal": [
+      [
+        700,
+        1000
+      ],
+      [
+        1500,
+        2300
+      ],
+      [
+        2600,
+        3800
+      ],
+      [
+        3800,
+        5200
+      ],
+      [
+        5000,
+        8000
+      ]
+    ],
+    "minYears": [
+      3,
+      4,
+      5,
+      5
+    ],
+    "key": "smarts",
+    "record_ok": false,
+    "paths": [
+      {
+        "deg": "hekim",
+        "flag": "cerrah_rezidentura",
+        "hire": 0.8
+      }
+    ],
+    "employers": [
+      "Respublika Xəstəxanası",
+      "Xəzər Tibb Mərkəzi",
+      "Mərkəzi Hospital"
+    ],
+    "work": "Əlavə əməliyyatlara gir"
+  },
+  "futbolcu": {
+    "t": "Futbolçu",
+    "icon": "⚽",
+    "track": "sport",
+    "lv": [
+      "Gənclər komandası",
+      "Əsas heyət",
+      "Klubun ulduzu",
+      "Avropa klubu",
+      "Dünya ulduzu"
+    ],
+    "sal": [
+      [
+        400,
+        700
+      ],
+      [
+        1800,
+        3500
+      ],
+      [
+        6000,
+        11000
+      ],
+      [
+        25000,
+        60000
+      ],
+      [
+        90000,
+        200000
+      ]
+    ],
+    "minYears": [
+      1,
+      2,
+      2,
+      2
+    ],
+    "key": "fitness",
+    "fame": 6,
+    "sport": true,
+    "risk": 0.0002,
+    "paths": [
+      {
+        "flag": "akademiya",
+        "age": [
+          16,
+          22
+        ],
+        "stat": {
+          "fitness": 60
+        },
+        "hire": 0.5
+      }
+    ],
+    "employers": [
+      "Xəzər FK",
+      "Abşeron FK",
+      "Gəncə Simurq FK",
+      "Lənkəran Sahil FK"
+    ],
+    "work": "Əlavə məşq et"
+  },
+  "mesqci": {
+    "t": "Məşqçi",
+    "icon": "🧢",
+    "track": "sport",
+    "lv": [
+      "Uşaq komandasının məşqçisi",
+      "Gənclər komandasının məşqçisi",
+      "Baş məşqçinin köməkçisi",
+      "Baş məşqçi",
+      "Futbol akademiyasının sahibi"
+    ],
+    "sal": [
+      [
+        500,
+        800
+      ],
+      [
+        800,
+        1300
+      ],
+      [
+        1500,
+        2500
+      ],
+      [
+        3000,
+        8000
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "minYears": [
+      2,
+      2,
+      3,
+      4
+    ],
+    "key": "smarts",
+    "fame": 2,
+    "reqLv": {
+      "4": {
+        "money_gte": 80000
+      }
+    },
+    "paths": [
+      {
+        "flag": "exFutbolcu",
+        "hire": 0.75
+      },
+      {
+        "tal": {
+          "sport": 70
+        },
+        "deg": "muellim",
+        "hire": 0.35
+      }
+    ],
+    "employers": [
+      "Xəzər FK akademiyası",
+      "Rayon idman məktəbi",
+      "Abşeron FK"
+    ],
+    "work": "Taktika üzərində işlə"
+  },
+  "mugenni": {
+    "t": "Müğənni",
+    "icon": "🎤",
+    "track": "art",
+    "lv": [
+      "Toy müğənnisi",
+      "Yeni səs",
+      "Tanınan müğənni",
+      "Məşhur müğənni",
+      "Səhnə ulduzu"
+    ],
+    "sal": [
+      [
+        400,
+        900
+      ],
+      [
+        900,
+        1600
+      ],
+      [
+        2500,
+        4500
+      ],
+      [
+        7000,
+        12000
+      ],
+      [
+        18000,
+        35000
+      ]
+    ],
+    "minYears": [
+      1,
+      2,
+      2,
+      3
+    ],
+    "key": "looks",
+    "fame": 7,
+    "paths": [
+      {
+        "deg": "mugenni",
+        "hire": 0.6
+      },
+      {
+        "tal": {
+          "music": 70
+        },
+        "hire": 0.25
+      }
+    ],
+    "employers": [
+      "Müstəqil",
+      "Səs Prodakşn",
+      "Muğam Evi"
+    ],
+    "work": "Studiyada çalış"
+  },
+  "aktyor": {
+    "t": "Aktyor",
+    "icon": "🎭",
+    "track": "art",
+    "lv": [
+      "Teatr aktyoru",
+      "Serial aktyoru",
+      "Tanınan aktyor",
+      "Kino ulduzu",
+      "Xalq artisti"
+    ],
+    "sal": [
+      [
+        400,
+        550
+      ],
+      [
+        900,
+        1400
+      ],
+      [
+        2200,
+        3800
+      ],
+      [
+        6000,
+        10000
+      ],
+      [
+        10000,
+        18000
+      ]
+    ],
+    "minYears": [
+      2,
+      2,
+      3,
+      4
+    ],
+    "key": "looks",
+    "fame": 6,
+    "paths": [
+      {
+        "deg": "aktyor",
+        "hire": 0.6
+      },
+      {
+        "tal": {
+          "acting": 70
+        },
+        "hire": 0.2
+      }
+    ],
+    "employers": [
+      "Dövlət Dram Teatrı",
+      "Gənc Tamaşaçılar Teatrı",
+      "Xəzər Film Studiyası"
+    ],
+    "work": "Rol üzərində işlə"
+  },
+  "muellim": {
+    "t": "Müəllim",
+    "icon": "📚",
+    "track": "education",
+    "lv": [
+      "Gənc müəllim",
+      "Müəllim",
+      "Baş müəllim",
+      "Direktor müavini",
+      "Məktəb direktoru"
+    ],
+    "sal": [
+      [
+        450,
+        550
+      ],
+      [
+        550,
+        700
+      ],
+      [
+        700,
+        900
+      ],
+      [
+        900,
+        1100
+      ],
+      [
+        1200,
+        1600
+      ]
+    ],
+    "minYears": [
+      3,
+      4,
+      5,
+      4
+    ],
+    "key": "smarts",
+    "record_ok": false,
+    "paths": [
+      {
+        "deg": "muellim",
+        "hire": 0.9
+      }
+    ],
+    "employers": [
+      "127 nömrəli məktəb",
+      "Kənd tam orta məktəbi",
+      "Lisey",
+      "Özəl məktəb"
+    ],
+    "work": "Dərslərə yaxşı hazırlaş"
+  },
+  "alim": {
+    "t": "Alim",
+    "icon": "🔬",
+    "track": "science",
+    "lv": [
+      "Assistent",
+      "Baş müəllim",
+      "Dosent",
+      "Professor",
+      "Kafedra müdiri"
+    ],
+    "sal": [
+      [
+        500,
+        700
+      ],
+      [
+        700,
+        950
+      ],
+      [
+        1000,
+        1400
+      ],
+      [
+        1500,
+        2200
+      ],
+      [
+        2200,
+        3000
+      ]
+    ],
+    "minYears": [
+      2,
+      4,
+      5,
+      5
+    ],
+    "key": "smarts",
+    "record_ok": false,
+    "reqLv": {
+      "2": {
+        "flag": "phd"
+      },
+      "3": {
+        "stat": {
+          "smarts": 75
+        }
+      }
+    },
+    "paths": [
+      {
+        "master": true,
+        "stat": {
+          "smarts": 65
+        },
+        "hire": 0.5
+      }
+    ],
+    "employers": [
+      "Dövlət Universiteti",
+      "Elmlər Akademiyasının institutu",
+      "Texniki Universitet"
+    ],
+    "work": "Məqalə üzərində işlə"
+  },
+  "proqramci": {
+    "t": "Proqramçı",
+    "icon": "💻",
+    "track": "it",
+    "lv": [
+      "Junior proqramçı",
+      "Middle proqramçı",
+      "Senior proqramçı",
+      "Komanda rəhbəri",
+      "Texniki direktor"
+    ],
+    "sal": [
+      [
+        600,
+        900
+      ],
+      [
+        1100,
+        1600
+      ],
+      [
+        1900,
+        2700
+      ],
+      [
+        2800,
+        3800
+      ],
+      [
+        3800,
+        5500
+      ]
+    ],
+    "minYears": [
+      1,
+      2,
+      3,
+      3
+    ],
+    "key": "smarts",
+    "paths": [
+      {
+        "deg": "proqramci",
+        "hire": 0.75
+      },
+      {
+        "flag": "kodYazir",
+        "hire": 0.4
+      }
+    ],
+    "employers": [
+      "Kod Mərkəzi MMC",
+      "Xəzər Soft",
+      "Bank-texnologiya şöbəsi",
+      "Startap"
+    ],
+    "work": "Gecə də kod yaz"
+  },
+  "biznes": {
+    "t": "Biznesmen",
+    "icon": "💼",
+    "track": "business",
+    "lv": [
+      "Kiçik dükan sahibi",
+      "Şirkət sahibi",
+      "Uğurlu biznesmen",
+      "Holdinq rəhbəri",
+      "Milyonçu"
+    ],
+    "sal": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "minYears": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "key": "smarts",
+    "fame": 2,
+    "paths": [],
+    "employers": [
+      "Öz biznesi"
+    ],
+    "work": "Biznesə çox vaxt ayır",
+    "retire": 999
+  },
+  "pilot": {
+    "t": "Mülki pilot",
+    "icon": "✈️",
+    "track": "aviation",
+    "lv": [
+      "İkinci pilot",
+      "Baş ikinci pilot",
+      "Kapitan",
+      "Baş kapitan",
+      "Uçuş təlimatçısı"
+    ],
+    "sal": [
+      [
+        1800,
+        2600
+      ],
+      [
+        2600,
+        3500
+      ],
+      [
+        4500,
+        6500
+      ],
+      [
+        6500,
+        9000
+      ],
+      [
+        5000,
+        7500
+      ]
+    ],
+    "minYears": [
+      2,
+      3,
+      4,
+      3
+    ],
+    "key": "smarts",
+    "risk": 0.0004,
+    "record_ok": false,
+    "retire": 65,
+    "reqLv": {
+      "2": {
+        "lic": "atpl",
+        "hours_gte": 3000
+      },
+      "4": {
+        "hours_gte": 7000
+      }
+    },
+    "paths": [
+      {
+        "lic": "cpl",
+        "medical": true,
+        "age": [
+          20,
+          45
+        ],
+        "hire": 0.6
+      }
+    ],
+    "employers": [
+      "Xəzər Hava Yolları",
+      "Kür Ervayz",
+      "Silk Kargo"
+    ],
+    "work": "Simulyatorda əlavə məşq et"
+  },
+  "herbi_pilot": {
+    "t": "Hərbi pilot",
+    "icon": "🛩️",
+    "track": "military",
+    "lv": [
+      "Leytenant-pilot",
+      "Baş leytenant-pilot",
+      "Kapitan-pilot",
+      "Mayor-pilot",
+      "Polkovnik-leytenant"
+    ],
+    "sal": [
+      [
+        1400,
+        1800
+      ],
+      [
+        1800,
+        2300
+      ],
+      [
+        2300,
+        3000
+      ],
+      [
+        3000,
+        3800
+      ],
+      [
+        3800,
+        4800
+      ]
+    ],
+    "minYears": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "key": "fitness",
+    "risk": 0.0025,
+    "record_ok": false,
+    "retire": 50,
+    "paths": [
+      {
+        "flag": "pilot_secildi",
+        "deg": "herbi",
+        "medical": true,
+        "hire": 0.9
+      }
+    ],
+    "employers": [
+      "Hərbi Hava Qüvvələri"
+    ],
+    "work": "Əlavə uçuş təlimi"
+  },
+  "herbci": {
+    "t": "Hərbçi",
+    "icon": "🎖️",
+    "track": "military",
+    "lv": [
+      "Gizir",
+      "Baş gizir",
+      "Leytenant",
+      "Baş leytenant",
+      "Kapitan",
+      "Mayor",
+      "Polkovnik-leytenant",
+      "Polkovnik",
+      "General-mayor"
+    ],
+    "sal": [
+      [
+        700,
+        900
+      ],
+      [
+        900,
+        1100
+      ],
+      [
+        1100,
+        1400
+      ],
+      [
+        1400,
+        1700
+      ],
+      [
+        1700,
+        2100
+      ],
+      [
+        2100,
+        2600
+      ],
+      [
+        2600,
+        3200
+      ],
+      [
+        3200,
+        4000
+      ],
+      [
+        4500,
+        6000
+      ]
+    ],
+    "minYears": [
+      3,
+      3,
+      2,
+      3,
+      4,
+      4,
+      5,
+      5
+    ],
+    "key": "fitness",
+    "risk": 0.001,
+    "record_ok": false,
+    "retire": 55,
+    "reqLv": {
+      "2": {
+        "deg": "herbi"
+      },
+      "7": {
+        "stat": {
+          "smarts": 70
+        }
+      }
+    },
+    "paths": [
+      {
+        "deg": "herbi",
+        "lv": 2,
+        "hire": 0.95
+      },
+      {
+        "army_done": true,
+        "stat": {
+          "fitness": 65
+        },
+        "age": [
+          19,
+          30
+        ],
+        "hire": 0.55
+      }
+    ],
+    "employers": [
+      "Quru Qoşunları",
+      "Sərhəd hissəsi",
+      "Hərbi Hava Qüvvələri",
+      "Hərbi Dəniz Qüvvələri"
+    ],
+    "work": "Əlavə təlimə çıx"
+  },
+  "xilasedici": {
+    "t": "Xilasedici",
+    "icon": "🚒",
+    "track": "rescue",
+    "lv": [
+      "Xilasedici",
+      "Baş xilasedici",
+      "Bölmə komandiri",
+      "Hissə rəisi"
+    ],
+    "sal": [
+      [
+        650,
+        850
+      ],
+      [
+        850,
+        1100
+      ],
+      [
+        1100,
+        1500
+      ],
+      [
+        1500,
+        2100
+      ]
+    ],
+    "minYears": [
+      3,
+      4,
+      5
+    ],
+    "key": "fitness",
+    "risk": 0.002,
+    "record_ok": false,
+    "retire": 55,
+    "paths": [
+      {
+        "stat": {
+          "fitness": 65,
+          "health": 70
+        },
+        "age": [
+          18,
+          32
+        ],
+        "hire": 0.6
+      }
+    ],
+    "employers": [
+      "Fövqəladə Hallar — Bakı yanğından mühafizə hissəsi",
+      "Rayon xilasetmə hissəsi"
+    ],
+    "work": "Əlavə təlimə çıx"
+  },
+  "usta": {
+    "t": "Usta",
+    "icon": "🔧",
+    "track": "trade",
+    "lv": [
+      "Şagird usta",
+      "Usta",
+      "Baş usta",
+      "Emalatxana sahibi"
+    ],
+    "sal": [
+      [
+        400,
+        600
+      ],
+      [
+        700,
+        1100
+      ],
+      [
+        1100,
+        1700
+      ],
+      [
+        1500,
+        3500
+      ]
+    ],
+    "minYears": [
+      2,
+      3,
+      4
+    ],
+    "key": "fitness",
+    "reqLv": {
+      "3": {
+        "money_gte": 8000
+      }
+    },
+    "paths": [
+      {
+        "flag": "pese_mekteb",
+        "hire": 0.85
+      },
+      {
+        "flag": "pese_kursu",
+        "hire": 0.65
+      }
+    ],
+    "employers": [
+      "Tikinti şirkəti",
+      "Avtoservis",
+      "Elektrik-montaj sexi",
+      "Santexnika ustaxanası"
+    ],
+    "work": "Əlavə sifariş götür"
+  },
+  "fehle": {
+    "t": "Gündəlik fəhlə",
+    "icon": "🧱",
+    "track": "unstable",
+    "plain": true,
+    "unstable": true,
+    "lv": [
+      "Gündəlik fəhlə"
+    ],
+    "sal": [
+      [
+        250,
+        700
+      ]
+    ],
+    "minYears": [],
+    "key": "fitness",
+    "risk": 0.0006,
+    "paths": [
+      {
+        "age": [
+          16,
+          65
+        ],
+        "hire": 0.95
+      }
+    ],
+    "employers": [
+      "Tikinti meydançası",
+      "Bazar",
+      "Anbar"
+    ],
+    "work": "Hər gün işə çıx"
+  },
+  "kuryer": {
+    "t": "Kuryer",
+    "icon": "🛵",
+    "track": "plain",
+    "plain": true,
+    "lv": [
+      "Kuryer",
+      "Baş kuryer"
+    ],
+    "sal": [
+      [
+        450,
+        650
+      ],
+      [
+        650,
+        850
+      ]
+    ],
+    "minYears": [
+      2
+    ],
+    "key": "fitness",
+    "risk": 0.0005,
+    "paths": [
+      {
+        "age": [
+          16,
+          60
+        ],
+        "hire": 0.85
+      }
+    ],
+    "employers": [
+      "Tez Çatdırılma",
+      "Yemək Çatdırılması",
+      "Poçt xidməti"
+    ]
+  },
+  "ofisiant": {
+    "t": "Ofisiant",
+    "icon": "🍽️",
+    "track": "plain",
+    "plain": true,
+    "lv": [
+      "Ofisiant",
+      "Baş ofisiant"
+    ],
+    "sal": [
+      [
+        450,
+        600
+      ],
+      [
+        600,
+        800
+      ]
+    ],
+    "minYears": [
+      2
+    ],
+    "key": "looks",
+    "paths": [
+      {
+        "age": [
+          16,
+          55
+        ],
+        "hire": 0.7
+      }
+    ],
+    "employers": [
+      "Dəniz kənarı restoranı",
+      "Çayxana",
+      "Şəhər kafesi"
+    ]
+  },
+  "satici": {
+    "t": "Satıcı",
+    "icon": "🛒",
+    "track": "plain",
+    "plain": true,
+    "lv": [
+      "Satıcı",
+      "Mağaza müdiri"
+    ],
+    "sal": [
+      [
+        450,
+        650
+      ],
+      [
+        800,
+        1100
+      ]
+    ],
+    "minYears": [
+      3
+    ],
+    "key": "looks",
+    "paths": [
+      {
+        "age": [
+          16,
+          65
+        ],
+        "hire": 0.75
+      }
+    ],
+    "employers": [
+      "Market şəbəkəsi",
+      "Paltar mağazası",
+      "Elektronika mağazası"
+    ]
+  },
+  "taksi": {
+    "t": "Taksi sürücüsü",
+    "icon": "🚕",
+    "track": "plain",
+    "plain": true,
+    "lv": [
+      "Taksi sürücüsü"
+    ],
+    "sal": [
+      [
+        600,
+        1000
+      ]
+    ],
+    "minYears": [],
+    "key": "health",
+    "risk": 0.0005,
+    "paths": [
+      {
+        "lic": "surucu",
+        "age": [
+          18,
+          70
+        ],
+        "hire": 0.85
+      }
+    ],
+    "employers": [
+      "Taksi parkı",
+      "Öz maşınında"
+    ]
+  },
+  "ofis": {
+    "t": "Ofis işçisi",
+    "icon": "🗂️",
+    "track": "plain",
+    "plain": true,
+    "lv": [
+      "Ofis işçisi",
+      "Mütəxəssis",
+      "Şöbə rəhbəri"
+    ],
+    "sal": [
+      [
+        600,
+        850
+      ],
+      [
+        850,
+        1200
+      ],
+      [
+        1200,
+        1800
+      ]
+    ],
+    "minYears": [
+      2,
+      4
+    ],
+    "key": "smarts",
+    "paths": [
+      {
+        "any_degree": true,
+        "age": [
+          18,
+          60
+        ],
+        "hire": 0.7
+      },
+      {
+        "stat": {
+          "smarts": 60
+        },
+        "age": [
+          18,
+          60
+        ],
+        "hire": 0.35
+      }
+    ],
+    "employers": [
+      "Logistika şirkəti",
+      "Bank filialı",
+      "Sığorta şirkəti",
+      "Dövlət idarəsi"
+    ]
+  }
 }
