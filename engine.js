@@ -218,7 +218,14 @@ function feedTick() {
 // event selection lives in js/interp.js; this re-check is used by the UI right before showing an event
 const eventOk = e => Interp.stillOk(e);
 // ---------- quarters: the button moves time 3 months; the yearly tick (ageUp) runs on the birthday ----------
-const QUARTER_ACTS = 1;
+const QUARTER_ACTS = 3;
+// actions are frequent (3 a quarter), so each one moves a stat a little, and less the higher it already is:
+// reaching 100 in smarts/fitness/looks takes a focused life, not a random one. Health and mood are not softened.
+function softenFx(fx) {
+  const out = Object.assign({}, fx);
+  for (const k of ["smarts", "fitness", "looks"]) { const v = fx[k]; if (!(v > 0)) continue; const x = v * 0.45 * Math.max(0.05, 1 - P.st[k] / 105); out[k] = Math.floor(x) + (R() < x - Math.floor(x) ? 1 : 0); }
+  return out;
+}
 const quarterStart = q => Cal.addMonths(Cal.addYears(P.birth, P.age), 3 * q);
 const quarterEnd = () => quarterStart((P.q || 0) + 1); // first day of the next quarter
 const dueEvents = () => (P.yearEvents || []).filter(e => e.day < quarterEnd());

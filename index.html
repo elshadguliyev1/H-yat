@@ -292,7 +292,7 @@ function renderGame() {
       <div class="stat"><span aria-hidden="true">⭐</span><div class="bar"><i style="width:${P.fame}%;background:var(--accent)"></i></div><span class="n">${P.fame}</span></div></div>
     <nav class="tabs"><div class="wrap" role="tablist">${[["life", "Həyat"], ["act", "Fəaliyyət"], ...(isPres() ? [["gov", "🏛️ Ölkə"]] : []), ["soc", "Pıçıltı"], ["ppl", "İnsanlar"], ["me", "Mən"]].map(([id, t]) => `<button role="tab" data-t="${id}" aria-selected="${tab === id}">${t}</button>`).join("")}</div></nav>
     <main class="wrap panel" id="panel"></main>
-    <div class="agebar"><div class="wrap"><div class="qinfo" title="Bu rüb qalan fəaliyyət"><b>${Cal.fmtMonth(P.day)}</b><span>${["I", "II", "III", "IV"][P.q || 0]} rüb · ${P.acts > 0 ? "1 fəaliyyət qalıb" : "fəaliyyət edildi"}</span></div><button class="btn" id="ageBtn">${(P.q || 0) >= 3 ? `🎂 +3 ay → ${P.age + 1} yaş` : "+3 ay →"}</button></div></div></div>`;
+    <div class="agebar"><div class="wrap"><div class="qinfo" title="Bu rüb qalan fəaliyyət"><b>${Cal.fmtMonth(P.day)}</b><span>${["I", "II", "III", "IV"][P.q || 0]} rüb · ${P.acts > 0 ? P.acts + " fəaliyyət qalıb" : "fəaliyyətlər bitdi"}</span></div><button class="btn" id="ageBtn">${(P.q || 0) >= 3 ? `🎂 +3 ay → ${P.age + 1} yaş` : "+3 ay →"}</button></div></div></div>`;
   app.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { tab = b.dataset.t; renderGame(); window.scrollTo({ top: 0 }); });
   $("#ageBtn").onclick = nextYear;
   $("#helpBtn").onclick = showLegend;
@@ -374,7 +374,7 @@ function nameForm(el, done) {
 
 // ---------- legend ----------
 function showLegend() {
-  const rows = [["❤️", "Sağlamlıq", "0-a düşsə, həyat bitə bilər."], ["😊", "Xoşbəxtlik", "Ruh halın: seçimlər, ailə və uğurlar təsir edir."], ["🧠", "Ağıl", "Dərs, imtahan, peşə uğuru."], ["💪", "İdman", "Fiziki forma: idman, polis, ordu."], ["✨", "Görünüş", "Sevgi, səhnə və sosial şəbəkə üçün."], ["⭐", "Şöhrət", "Nə qədər tanınırsan."], ["₼", "Pul", "18 yaşa qədər yalnız ailədən, tapılan puldan və 16 yaşdan yarımştat işdən."], ["👥", "İzləyici", "Pıçıltı sosial şəbəkəsində."], ["<span style='color:var(--accent)'>●</span>", "Fəaliyyət nöqtələri", "Hər 3 ayda 1 fəaliyyət seçə bilərsən. Bitəndə +3 ay bas."], ["<span style='color:var(--pink)'>▬</span>", "Çəhrayı zolaq", "İnsanlar bölməsində münasibətin səviyyəsi."], ["<span style='color:var(--gold)'>★</span>", "Ulduzlar", "Mən bölməsində istedadların."]];
+  const rows = [["❤️", "Sağlamlıq", "0-a düşsə, həyat bitə bilər."], ["😊", "Xoşbəxtlik", "Ruh halın: seçimlər, ailə və uğurlar təsir edir."], ["🧠", "Ağıl", "Dərs, imtahan, peşə uğuru."], ["💪", "İdman", "Fiziki forma: idman, polis, ordu."], ["✨", "Görünüş", "Sevgi, səhnə və sosial şəbəkə üçün."], ["⭐", "Şöhrət", "Nə qədər tanınırsan."], ["₼", "Pul", "18 yaşa qədər yalnız ailədən, tapılan puldan və 16 yaşdan yarımştat işdən."], ["👥", "İzləyici", "Pıçıltı sosial şəbəkəsində."], ["<span style='color:var(--accent)'>●</span>", "Fəaliyyət nöqtələri", "Hər 3 ayda 3 fəaliyyət seçə bilərsən. Bitəndə +3 ay bas."], ["<span style='color:var(--pink)'>▬</span>", "Çəhrayı zolaq", "İnsanlar bölməsində münasibətin səviyyəsi."], ["<span style='color:var(--gold)'>★</span>", "Ulduzlar", "Mən bölməsində istedadların."]];
   const s = sheet(`<h3 style="margin-bottom:12px">İkonlar nə deməkdir?</h3><div class="legend">${rows.map(([e, t, d]) => `<div><span class="e">${e}</span><span><b>${t}</b><small>${d}</small></span></div>`).join("")}</div><button class="btn close">Aydındır</button>`);
   s.el.querySelector(".close").onclick = s.close;
 }
@@ -389,7 +389,7 @@ function panelAct() {
     return;
   }
   const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !(a.id === "post" && !P.soc) && (P.army && !P.army.done ? !!a.army : !a.army));
-  $("#panel").innerHTML = `<p class="small muted" style="margin:0 0 10px">Hər 3 ayda bir fəaliyyət seçə bilərsən. Sonra <b>+3 ay</b> bas: maaş və xərclər rüblük hesablanır, yaş ad günündə artır.</p>
+  $("#panel").innerHTML = `<p class="small muted" style="margin:0 0 10px">Hər 3 ayda 3 fəaliyyət seçə bilərsən. Sonra <b>+3 ay</b> bas: maaş və xərclər rüblük hesablanır, yaş ad günündə artır.</p>
     <div class="acts">${list.map(a => `<button class="act" data-id="${a.id}" ${P.acts <= 0 || (a.cost && P.age >= 18 && P.money < a.cost) ? "disabled" : ""}><span class="i" aria-hidden="true">${a.icon}</span><span>${typeof a.t === "function" ? a.t() : a.t}${a.cost ? `<small>${P.age >= 18 ? fmtMoney(a.cost) : "valideynlər ödəyir"}</small>` : ""}</span></button>`).join("")}</div>`;
   const work = P.job && !P.job.susp && P.job.id !== "biznes" && CAREERS[P.job.id].track !== "politics" && !(P.army && !P.army.done);
   const W = [["raise", "💰", "Maaş artımı istə"], ["promo", "📈", "Vəzifə yüksəlişi üçün müraciət et"], ["boss", "🤝", "Rəhbərlə münasibət qur"], ["switch", "🔁", "Başqa iş yerinə keç"], ["own", "🏪", "Öz biznesini qur (5 000 ₼)"]];
@@ -443,7 +443,7 @@ function doAction(a) {
   if (a.special === "shop_small") return itemPicker(false);
   if (a.special === "love") return findLove();
   if (!useAct()) return;
-  const changes = apply(a.fx ? a.fx() : {});
+  const changes = apply(a.fx ? softenFx(a.fx()) : {});
   if (a.cost && P.age >= 18) { P.money -= a.cost; changes.push(["money", -a.cost]); } // children: parents pay
   const text = typeof a.r === "function" ? a.r() : a.r;
   if (a.after) a.after();

@@ -29,7 +29,7 @@ function sandbox() {
       for (let q = 0; q < 4 && P.age === a0; q++) { // (a dead person still "ages" here, as before, so loops in tests end)
         for (let i = 0; i < P.acts; i++) {
           const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !a.special && (!a.cost || P.age < 18 || P.money >= a.cost) && (P.army && !P.army.done ? !!a.army : !a.army));
-          const a = pick(list); if (a) { apply(a.fx ? a.fx() : {}); if (a.cost && P.age >= 18) P.money -= a.cost; if (a.after) a.after(); }
+          const a = pick(list); if (a) { apply(a.fx ? softenFx(a.fx()) : {}); if (a.cost && P.age >= 18) P.money -= a.cost; if (a.after) a.after(); }
         }
         if (q === 0 && P.soc && chance(.5)) { const ts = POST_TYPES.filter(t => P.age >= t.min && (!t.need || t.need())); makePost(pick(ts).id); }
         if (q === 0 && P.age >= 17 && !P.job && !["uni", "magistr"].includes(P.edu.stage) && !(P.army && !P.army.done) && chance(.5)) { const o = jobOptions(); if (o.length) { const x = pick(o); if (chance(x.odds)) startJob(x.id); } }
