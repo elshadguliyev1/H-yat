@@ -6,25 +6,25 @@
  {"t":"Bitərəf siyasətçi ol","fx":{"happy":2},"do":[{"pol_join":"bitaraf"}],"r":"Heç kimə borclu deyilsən. Heç kim də sənə kömək etməyəcək."},
  {"t":"Siyasət mənlik deyil","fx":{"happy":1},"r":"Gülümsəyib mövzunu dəyişdin. Çay soyumuşdu."}]},
 
-{"id":"secki_belediyye","once":false,"cat":"career","tone":"dramatic","age":[21,99],"scheduled_only":true,"force":true,"icon":"🗳️","cond":{"pol":true,"in_prison":false,"any":[{"pol_office":false},{"pol_office":"belediyye"}]},"t":"Bələdiyyə seçkiləri elan olundu. Məhəllədə adın çəkilir: namizəd olursan?","ch":[
+{"id":"secki_belediyye","teaser":"Bələdiyyə seçkiləri","once":false,"cat":"career","tone":"dramatic","age":[21,99],"scheduled_only":true,"force":true,"icon":"🗳️","cond":{"pol":true,"in_prison":false,"any":[{"pol_office":false},{"pol_office":"belediyye"}]},"t":"Bələdiyyə seçkiləri elan olundu. Məhəllədə adın çəkilir: namizəd olursan?","ch":[
  {"t":"Böyük kampaniya ({camp_b2})","cond":{"money_gte":12000},"do":[{"pol_run":{"office":"belediyye","spend":2}}],"r":"{pol_result}"},
  {"t":"Orta kampaniya ({camp_b1})","cond":{"money_gte":3000},"do":[{"pol_run":{"office":"belediyye","spend":1}}],"r":"{pol_result}"},
  {"t":"Qapı-qapı gəz, pulsuz kampaniya","fx":{"health":-2},"do":[{"pol_run":{"office":"belediyye","spend":0}}],"r":"Üç həftə ərzində 900 qapı döydün. {pol_result}"},
  {"t":"Bu dəfə namizəd olmuram","fx":{"happy":1},"r":"Seçki sənsiz keçdi."}]},
 
-{"id":"secki_meclis","once":false,"cat":"career","tone":"dramatic","age":[25,99],"scheduled_only":true,"force":true,"icon":"🗳️","cond":{"pol":true,"in_prison":false,"any":[{"pol_office":false},{"pol_office":["belediyye","meclis"]}]},"t":"Milli Məclisə seçkilər elan olundu. {party} dairələri bölüşdürür. Sənin adın da siyahıdadır.","ch":[
+{"id":"secki_meclis","teaser":"Milli Məclis seçkiləri","once":false,"cat":"career","tone":"dramatic","age":[25,99],"scheduled_only":true,"force":true,"icon":"🗳️","cond":{"pol":true,"in_prison":false,"any":[{"pol_office":false},{"pol_office":["belediyye","meclis"]}]},"t":"Milli Məclisə seçkilər elan olundu. {party} dairələri bölüşdürür. Sənin adın da siyahıdadır.","ch":[
  {"t":"Böyük kampaniya ({camp_m2})","cond":{"money_gte":80000},"do":[{"pol_run":{"office":"meclis","spend":2}}],"r":"{pol_result}"},
  {"t":"Orta kampaniya ({camp_m1})","cond":{"money_gte":20000},"do":[{"pol_run":{"office":"meclis","spend":1}}],"r":"{pol_result}"},
  {"t":"Könüllülərlə, pulsuz kampaniya","fx":{"health":-3},"do":[{"pol_run":{"office":"meclis","spend":0}}],"r":"Dairədəki hər kəndə özün getdin. {pol_result}"},
  {"t":"Namizəd olmuram","fx":{"happy":1},"r":"Partiya başqasını irəli sürdü."}]},
 
-{"id":"secki_prezident","once":false,"cat":"career","tone":"rare","age":[35,99],"scheduled_only":true,"force":true,"icon":"🗳️","cond":{"pol":true,"pres":false,"in_prison":false},"t":"Prezident seçkiləri elan olundu. Tərəfdarların toplanıb: “Sən namizəd olmalısan. İndi və ya heç vaxt.”","ch":[
+{"id":"secki_prezident","teaser":"Prezident seçkiləri","once":false,"cat":"career","tone":"rare","age":[35,99],"scheduled_only":true,"force":true,"icon":"🗳️","cond":{"pol":true,"pres":false,"in_prison":false},"t":"Prezident seçkiləri elan olundu. Tərəfdarların toplanıb: “Sən namizəd olmalısan. İndi və ya heç vaxt.”","ch":[
  {"t":"Böyük kampaniya ({camp_p2})","cond":{"money_gte":600000},"do":[{"pol_run":{"office":"prezident","spend":2}}],"r":"{pol_result}"},
  {"t":"Orta kampaniya ({camp_p1})","cond":{"money_gte":150000},"do":[{"pol_run":{"office":"prezident","spend":1}}],"r":"{pol_result}"},
  {"t":"Xalqın ianələri ilə kampaniya","fx":{"health":-4},"do":[{"pol_run":{"office":"prezident","spend":0}}],"r":"Kampaniya avtobusunda 50 şəhər gəzdin. {pol_result}"},
  {"t":"Hələ vaxtı deyil","fx":{"happy":-1},"r":"Tərəfdarların məyus oldu, amma sən gözləməyi seçdin."}]},
 
-{"id":"pres_yeniden","once":false,"cat":"career","tone":"rare","age":[35,120],"scheduled_only":true,"force":true,"icon":"🗳️","cond":{"pres":true},"t":"Səlahiyyət müddətin bitir. Növbəti prezident seçkisi: xalqın dəstəyi {approval}. Komandan soruşur: yenidən namizəd olursan?","ch":[
+{"id":"pres_yeniden","teaser":"Yenidən seçilmək: prezident seçkisi","once":false,"cat":"career","tone":"rare","age":[35,120],"scheduled_only":true,"force":true,"icon":"🗳️","cond":{"pres":true},"t":"Səlahiyyət müddətin bitir. Növbəti prezident seçkisi: xalqın dəstəyi {approval}. Komandan soruşur: yenidən namizəd olursan?","ch":[
  {"t":"Böyük kampaniya ({camp_p2})","cond":{"money_gte":600000},"do":[{"pol_run":{"office":"prezident","spend":2}}],"r":"{pol_result}"},
  {"t":"Görülən işlərlə çıx: sadə kampaniya","do":[{"pol_run":{"office":"prezident","spend":0}}],"r":"Yollar, məktəblər, xəstəxanalar: kampaniya əvəzinə hesabat verdin. {pol_result}"},
  {"t":"Namizəd olmuram, hakimiyyəti təhvil verirəm","fx":{"happy":6},"do":[{"pres_end":"namizədliyini irəli sürmədi"}],"r":"Son çıxışında “Ölkə bir nəfərdən böyükdür” dedin. Hakimiyyətin sülh yolu ilə təhvili qəzetlərin manşetinə çıxdı."}]},

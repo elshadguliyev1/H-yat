@@ -7,7 +7,7 @@
 const fs = require("fs"), path = require("path"), vm = require("vm");
 const ROOT = path.join(__dirname, "..");
 const read = f => fs.readFileSync(path.join(ROOT, f), "utf8");
-const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json", "data/events/gender.json"];
+const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json", "data/events/gender.json", "data/events/suspense.json"];
 
 // strict JSON check first (the browser uses JSON.parse; the sandbox below would forgive trailing commas)
 for (const f of ["data/rules.json", "data/careers.json", ...EVENT_FILES]) { try { JSON.parse(read(f)); } catch (e) { console.log("✗ JSON xətası: " + f + " — " + e.message); process.exit(1); } }
@@ -64,7 +64,7 @@ function sandbox() {
     }
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
-    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial; globalThis.hasRecord = hasRecord; globalThis.everConvicted = everConvicted; globalThis.lockReason = lockReason; globalThis.SPORTS = SPORTS; globalThis.RULES = RULES; globalThis.polJoin = polJoin; globalThis.setOffice = setOffice; globalThis.polRun = polRun; globalThis.isPres = isPres; globalThis.govAvailable = govAvailable; globalThis.doGov = doGov; globalThis.CTRY_KEYS = CTRY_KEYS; globalThis.pick = pick; globalThis.itemsFor = itemsFor; globalThis.ITEMS = ITEMS; globalThis.askParents = askParents; globalThis.familyMeans = familyMeans; globalThis.owns = owns; globalThis.itemsTick = itemsTick; globalThis.pregStart = pregStart; globalThis.addPerson = addPerson;
+    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.openThreads = openThreads; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial; globalThis.hasRecord = hasRecord; globalThis.everConvicted = everConvicted; globalThis.lockReason = lockReason; globalThis.SPORTS = SPORTS; globalThis.RULES = RULES; globalThis.polJoin = polJoin; globalThis.setOffice = setOffice; globalThis.polRun = polRun; globalThis.isPres = isPres; globalThis.govAvailable = govAvailable; globalThis.doGov = doGov; globalThis.CTRY_KEYS = CTRY_KEYS; globalThis.pick = pick; globalThis.itemsFor = itemsFor; globalThis.ITEMS = ITEMS; globalThis.askParents = askParents; globalThis.familyMeans = familyMeans; globalThis.owns = owns; globalThis.itemsTick = itemsTick; globalThis.pregStart = pregStart; globalThis.addPerson = addPerson; globalThis.openThreads = openThreads;
     globalThis.playLife = function (name, g, dream, seed, maxAge, log) { newLife(name, g, "Bakı", dream, seed); while (P.alive && P.age < (maxAge || 130)) playYear(log); return P; };
   `, ctx);
   return ctx;
@@ -398,6 +398,28 @@ test("qız və oğlan həyatı: hamiləlik rüblərlə, doğum, analıq məzuniy
   const qOwn = only("q").filter(id => seenBy.q.has(id)).length, kOwn = only("k").filter(id => seenBy.k.has(id)).length;
   ok(qOwn >= 4 && kOwn >= 4, `cinsə xas hadisələr: qız ${qOwn}, oğlan ${kOwn}`);
   console.log(`      (40 ailədən ${births} doğum; analıq məzuniyyəti ${leave}, işə qayıdan ${back}; cinsə xas görünən hadisələr: qız ${qOwn}/${only("q").length}, oğlan ${kOwn}/${only("k").length})`);
+});
+
+test("dramaturgiya: uzun sakitlik yoxdur, ağır ildən sonra nəfəs, gözlənilənlər və 'davamı var' işləyir", () => {
+  let maxQuiet = 0, heavyRuns = 0, cliff = 0, threadsSeen = 0, lives = 0;
+  for (let i = 0; i < 80; i++) {
+    let lastNext = 0;
+    const P = S.playLife("Sim", i % 2 ? "q" : "k", "polis", 130000 + i, 70, () => { if (S.openThreads().length) threadsSeen++; });
+    lives++;
+    const T = P.toneLog || {}, N = P.noteLog || {}; let q = 0, heavy = 0;
+    const jailAges = new Set(); for (const t of (P.legal && P.legal.terms) || []) for (let y = Math.floor((t.start - P.birth) / 365.25); y <= Math.floor(((t.out || t.end) - P.birth) / 365.25) + 1; y++) jailAges.add(y);
+    for (let a = 8; a < P.age; a++) { if (N[a] || jailAges.has(a)) q = 0; else { q++; maxQuiet = Math.max(maxQuiet, q); } heavy = (T[a] || 0) >= 3 ? heavy + 1 : 0; if (heavy >= 3) heavyRuns++; }
+  }
+  // a teaser shows up right after a choice that sets the next step in motion
+  S.newLife("Lot", "k", "Bakı", "polis", 131000); while (S.P.age < 25) S.playYear(); S.P.money = 1000;
+  const e = S.Interp.byId("lot_bilet"), r = S.Interp.choose(e, e.ch[0]); if (r.next && r.next.length) cliff++;
+  ok(cliff === 1 && /Lotereya/.test(r.next[0].text), "'davamı var' yoxdur");
+  ok(S.openThreads().some(t => /Lotereya/.test(t.text)), "gözlənilənlərdə lotereya yoxdur");
+  // every teaser renders without leftover placeholders
+  for (const ev of S.Interp.lib.filter(x => x.teaser)) ok(!/\{|undefined/.test(S.Interp.text(ev.teaser)), "pis teaser: " + ev.id);
+  ok(maxQuiet <= 3, "yaddaqalan hadisəsiz ən uzun dövr (həbsdən kənar): " + maxQuiet + " il");
+  ok(heavyRuns <= lives * 0.05, "ardıcıl 3 ağır il çox: " + heavyRuns); // only consequences of earlier choices can still pile up
+  console.log(`      (80 həyat: yaddaqalan hadisəsiz ən uzun dövr ${maxQuiet} il; ardıcıl ağır illər ${heavyRuns}; gözlənilən olan hadisə anları ${threadsSeen})`);
 });
 
 test("erkən ölüm mümkündür, amma nadirdir; keçmiş futbolçuya məşqçilik açıqdır", () => {

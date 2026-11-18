@@ -265,7 +265,13 @@ const Interp = (() => {
 
   // ---------------- event selection ----------------
   let LIB = [], BY_ID = {};
-  function load(lists) { LIB = [].concat(...lists).map(normalize); BY_ID = Object.fromEntries(LIB.map(e => [e.id, e])); return LIB; }
+  let HOOKS = new Set(); // events that start a story with a visible continuation (a scheduled step with a teaser)
+  function load(lists) {
+    LIB = [].concat(...lists).map(normalize); BY_ID = Object.fromEntries(LIB.map(e => [e.id, e]));
+    const steps = c => [...(c.do || []), ...(c.odds || []).flatMap(o => o.do || [])];
+    HOOKS = new Set(LIB.filter(e => (e.ch || []).some(c => steps(c).some(s => s.schedule && BY_ID[s.schedule.event] && BY_ID[s.schedule.event].teaser))).map(e => e.id));
+    return LIB;
+  }
   function normalize(e) { const x = Object.assign({}, e); if (!x.age && x.age_min != null) x.age = [x.age_min, x.age_max]; if (x.repeatable === true) x.once = false; return x; }
   function ok(e) {
     if (!!e.prison !== inPrison()) return false; // in prison only prison events, outside never
@@ -304,11 +310,20 @@ const Interp = (() => {
     for (const e of pool) if (e.force && !out.includes(e.id)) out.push(e.id);
     let rest = pool.filter(e => !e.force && !out.includes(e.id));
     const serious = rest.filter(e => e.tone && e.tone !== "everyday");
-    if (!out.some(id => (BY_ID[id].tone || "everyday") !== "everyday") && serious.length && R() < 0.3) {
+    // narrative director: after two quiet years something must happen; after a heavy year, a breather
+    // "quiet" = nothing notable (serious, or a story with a continuation) for two years; "heavy" = 3+ serious ones last year
+    const T = P.toneLog || {}, N = P.noteLog || {}, quiet = !N[P.age - 1] && !N[P.age - 2] && P.age > 7, heavy = (T[P.age - 1] || 0) >= 3;
+    const seriousChance = quiet ? 1 : heavy ? 0 : 0.3;
+    if (quiet && !serious.length) { const hooks = rest.filter(e => HOOKS.has(e.id)); if (hooks.length) serious.push(...hooks); }
+    if (!out.some(id => (BY_ID[id].tone || "everyday") !== "everyday") && serious.length && R() < seriousChance) {
       const tot = serious.reduce((a, e) => a + (e.w || 1) * (1 + (e.priority || 0)), 0); let r = R() * tot, pickE = serious[0];
       for (const x of serious) { r -= (x.w || 1) * (1 + (x.priority || 0)); if (r <= 0) { pickE = x; break; } }
       out.push(pickE.id); rest = rest.filter(x => x !== pickE);
     }
+    // the remaining slots are everyday life; serious stories come only through the director above
+    // (a second one is rare, and never right after a heavy year)
+    const everyday = rest.filter(e => !e.tone || e.tone === "everyday");
+    rest = everyday.length && !(R() < (heavy ? 0 : 0.12)) ? everyday : rest;
     while (out.length < n && rest.length) {
       const tot = rest.reduce((a, e) => a + (e.w || 1) * (1 + (e.priority || 0)), 0);
       let r = R() * tot, e = rest[0];
@@ -328,6 +343,9 @@ const Interp = (() => {
   function choose(e, c) {
     const ctx = { vars: {}, changes: [] };
     P.curEvent = e.id;
+    const schedBefore = new Set(P.sched);
+    if ((e.tone || "everyday") !== "everyday") { P.toneLog = P.toneLog || {}; P.toneLog[P.age] = (P.toneLog[P.age] || 0) + 1; }
+    if ((e.tone || "everyday") !== "everyday" || HOOKS.has(e.id) || e.teaser) { P.noteLog = P.noteLog || {}; P.noteLog[P.age] = (P.noteLog[P.age] || 0) + 1; } // something worth remembering
     let o = c;
     if (c.odds) {
       const ps = c.odds.map(x => Math.max(0, prob(x.p))); let roll = R();
@@ -341,11 +359,13 @@ const Interp = (() => {
     P.curEvent = null;
     if (typeof contextTick === "function") contextTick(); // e.g. leaving football mid-year
     const parts = [o.r, o !== c ? c.r : null].filter(Boolean);
-    return { text: parts.map(t => text(t, ctx)).join(" "), changes: ctx.changes, outcome: c.odds ? c.odds.indexOf(o) : -1 };
+    // cliffhanger: what this choice set in motion (shown under the result: "to be continued…")
+    const next = P.sched.filter(s => !schedBefore.has(s) && BY_ID[s.event] && BY_ID[s.event].teaser).map(s => ({ text: text(BY_ID[s.event].teaser, ctx), months: Math.max(0, Math.round((s.day - P.day) / 30.44)) }));
+    return { text: parts.map(t => text(t, ctx)).join(" "), changes: ctx.changes, outcome: c.odds ? c.odds.indexOf(o) : -1, next };
   }
 
   // ---------------- validation ----------------
-  const EVENT_KEYS = new Set(["prison", "p", "id", "cat", "tone", "age", "age_min", "age_max", "icon", "visual", "t", "title", "description", "location", "w", "weight", "priority", "force", "once", "repeatable", "cool", "scheduled_only", "cond", "conditions", "ch", "choices", "choices_gen", "g", "note"]);
+  const EVENT_KEYS = new Set(["prison", "p", "teaser", "id", "cat", "tone", "age", "age_min", "age_max", "icon", "visual", "t", "title", "description", "location", "w", "weight", "priority", "force", "once", "repeatable", "cool", "scheduled_only", "cond", "conditions", "ch", "choices", "choices_gen", "g", "note"]);
   const CHOICE_KEYS = new Set(["t", "cond", "fx", "do", "r", "odds", "trait", "id", "text", "result_text", "effects"]);
   const FX_KEYS = new Set([...STAT_KEYS, "money", "fame", "followers", "rel", "tal", "flag", "unflag", "perf"]);
   function validate(lists) {

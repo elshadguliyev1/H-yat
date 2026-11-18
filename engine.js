@@ -232,6 +232,17 @@ function advanceQuarter() {
   if (P.alive) { P.yearEvents.push(...Interp.takeScheduled(quarterEnd())); P.yearEvents.sort((a, b) => a.day - b.day); }
   save(); return { birthday: false, msgs };
 }
+// what the player is waiting for: scheduled story steps with a teaser, and running states
+function openThreads() {
+  const out = [], m = d => Math.max(0, Math.round((d - P.day) / 30.44));
+  if (typeof pregnant === "function" && pregnant()) out.push({ icon: "🤰", text: P.preg.known ? `${P.preg.twins ? "Əkizlər" : P.preg.g === "k" ? "Oğlan" : "Qız"} gözlənilir` : "Oğlan, yoxsa qız?", months: m(P.preg.due) });
+  if (P.army && !P.army.done) out.push({ icon: "🪖", text: "Tərxis", months: m(P.army.end) });
+  if (inPrison()) out.push({ icon: "🔒", text: "Azadlıq", months: m(P.legal.prison.end) });
+  if (P.dekret && !P.dekret.back) out.push({ icon: "👶", text: "İşə qayıdış", months: m(P.dekret.until) });
+  if (P.pres && !P.pres.ended) out.push({ icon: "🏛️", text: "Prezidentlik müddətinin sonu", months: m(P.pres.until) });
+  for (const s of P.sched) { const e = Interp.byId(s.event); if (e && e.teaser && s.day - P.day < 1100) out.push({ icon: e.icon || "⏳", text: Interp.text(e.teaser), months: m(s.day) }); }
+  return out.sort((a, b) => a.months - b.months).slice(0, 6);
+}
 // discharge as soon as the service period is over (checked every quarter)
 function armyTick() {
   if (P.army && !P.army.done && P.army.end <= P.day + 15) { P.army.done = true; P.army.out = P.day; log(`🏠 Hərbi xidmət (${P.army.months} ay) başa çatdı. Evə qayıtdı.`); apply({ fitness: 8, happy: 10, rel: { ana: 8 } }); }

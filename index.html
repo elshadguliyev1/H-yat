@@ -111,6 +111,8 @@ nav.tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg) 
 .energy { display: flex; gap: 4px; align-items: center; font-size: 12px; color: var(--muted); font-weight: 800 }
 .energy i { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); display: inline-block }
 .energy i.off { background: var(--surface-2); border: 2px solid var(--line) }
+.waits { margin-bottom: 12px } .waits h3 { margin: 0 0 6px; font-size: 15px } .waits div { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; border-top: 1px dashed var(--line); font-size: 14px } .waits div:first-of-type { border-top: 0 } .waits b { white-space: nowrap; color: var(--accent) }
+.next { margin: 10px 0 0; padding: 8px 10px; border-radius: 10px; background: var(--surface-2, rgba(0,0,0,.05)); font-size: 14px; text-align: left }
 .qinfo { display: grid; line-height: 1.15; min-width: 0 } .qinfo b { font-size: 14px; white-space: nowrap } .qinfo span { font-size: 11.5px; color: var(--muted); white-space: nowrap }
 .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
 .act { display: grid; grid-template-columns: 34px minmax(0,1fr); gap: 8px; align-items: center; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; font-weight: 700; font-size: 13.5px; line-height: 1.25; box-shadow: var(--shadow) }
@@ -300,8 +302,10 @@ function renderGame() {
   if (dueEvents().length && !$(".modal")) showNextEvent();
 }
 function panelLife() {
+  const th = openThreads();
+  const wait = th.length ? `<div class="card waits"><h3>⏳ Gözlənilənlər</h3>${th.map(t => `<div><span>${t.icon} ${esc(t.text)}</span><b>${t.months <= 0 ? "bu rüb" : t.months < 12 ? "~" + t.months + " ay" : "~" + Math.round(t.months / 12) + " il"}</b></div>`).join("")}</div>` : "";
   const html = [...P.log].sort((a, b) => b.age - a.age).slice(0, 40).map(y => `<div class="yr"><h3>${y.age} yaş</h3>${y.items.map(t => `<p>${esc(t)}</p>`).join("")}</div>`).join("");
-  $("#panel").innerHTML = html || '<p class="muted">Həyat hələ yazılmayıb.</p>';
+  $("#panel").innerHTML = wait + (html || '<p class="muted">Həyat hələ yazılmayıb.</p>');
 }
 // +3 months: first the events of this quarter, then time moves on (the 4th quarter ends on the birthday)
 function nextYear() {
@@ -338,7 +342,7 @@ function showNextEvent() {
     recordChoice(e.id, i, res.outcome, res.text);
     if (res.text) log(`${e.icon || "•"} ${res.text}`);
     save();
-    const showResult = () => { s.el.innerHTML = `<div class="big" aria-hidden="true">${e.icon || "✨"}</div><p class="q">${esc(res.text || "Həyat davam edir.")}</p><div class="fx">${fxChips(res.changes)}</div><button class="btn close" id="ok">${P.yearEvents.length ? "Növbəti →" : "Davam"}</button>`;
+    const showResult = () => { s.el.innerHTML = `<div class="big" aria-hidden="true">${e.icon || "✨"}</div><p class="q">${esc(res.text || "Həyat davam edir.")}</p><div class="fx">${fxChips(res.changes)}</div>${(res.next || []).map(n => `<p class="next">⏳ <b>Davamı var:</b> ${esc(n.text)} · ${n.months <= 0 ? "tezliklə" : "~" + n.months + " ay sonra"}</p>`).join("")}<button class="btn close" id="ok">${dueEvents().length ? "Növbəti →" : "Davam"}</button>`;
     s.el.querySelector("#ok").onclick = () => { s.close(); if (!P.alive) return renderEnd(); renderGame(); };
     s.el.querySelector("#ok").focus(); };
     if (P.pendingName) nameForm(s.el, (old, name) => { if (old) res.text = res.text.split(old).join(name); showResult(); });
@@ -761,7 +765,7 @@ function renderEnd() {
 
 // ---------- boot ----------
 // ---------- boot: content library, rules, database ----------
-const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json", "data/events/gender.json"];
+const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json", "data/events/gender.json", "data/events/suspense.json"];
 (async function boot() {
   app.innerHTML = '<p class="wrap muted" style="padding-top:40vh;text-align:center">Yüklənir…</p>';
   try {
