@@ -48,6 +48,11 @@ Vəziyyət: son işlək versiya `fddf1f6`, 18/18 test keçir. Aşağıdakılar h
    - **Borcdan çıxış yolu:** borc böyüyəndə restrukturizasiya, əmlak satmaq, ailədən kömək, əlavə iş kimi seçimlər görünməlidir.
    - **Balans testi:** adi həyatda oyunçu çıxılmaz borc spiralına düşməməlidir.
 
+13. **Qız və oğlan həyatı fərqli olmalıdır:**
+   - Ssenarilər, fəaliyyətlər və ailə gözləntiləri cinsə görə fərqlənməlidir. Uşaqlıq oyunları, yeniyetməlikdə ailə nəzarəti, elçilik və toy (qız tərəfi / oğlan tərəfi), cehiz və ev-maşın, hamiləlik və analıq, əsgərlik (yalnız oğlanlar).
+   - Hər iki tərəf üçün eyni dərinlik olmalıdır. Stereotipləri məcburi etmək yox, mühitin real təzyiqlərini və oyunçunun onlara qarşı seçim imkanını göstərmək lazımdır.
+   - Hadisələrdə `gender` şərti və fərqli versiyalar; test: hər cins üçün xüsusi hadisələrin payı.
+
 ## B. KRİTİK: dramaturgiya (növbəti işin əsası)
 
 **Niyə hazırkı mühərrik maraqlı hekayə yaratmır (qısa diaqnoz):**
