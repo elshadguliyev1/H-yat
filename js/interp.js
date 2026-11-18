@@ -125,7 +125,7 @@ const Interp = (() => {
     end_job(o) { endJob(o.reason || "bitdi"); },
     promote() { promote(); },
     // service is counted from the start of the current year of age, so 12 months = exactly one "+1 yaş"
-    army_start(o, ctx) { const m = armyMonths(); const start = Cal.addYears(P.birth, P.age); P.army = { start, end: Cal.addMonths(start, m), months: m, basis: P.edu.master ? "master" : P.edu.degree ? "bachelor" : "none", done: false }; if (P.job && !P.job.susp) endJob("hərbi xidmət"); ctx.vars.months = m; },
+    army_start(o, ctx) { const m = armyMonths(); const start = P.day; P.army = { start, end: Cal.addMonths(start, m), months: m, basis: P.edu.master ? "master" : P.edu.degree ? "bachelor" : "none", done: false }; if (P.job && !P.job.susp) endJob("hərbi xidmət"); ctx.vars.months = m; },
     // a better-paid offer: the salary really grows by this factor (and the offer text shows the exact figures)
     raise(o, ctx) { if (!P.job) return; const before = salaryMonthly(); P.job.bonus = Math.round((P.job.bonus || 1) * o.factor * 100) / 100; ctx.vars.sal_new = fmtMoney(salaryMonthly()); log(`💰 Maaş: ${fmtMoney(before)} → ${fmtMoney(salaryMonthly())}.`); },
     job_suspend() { if (P.job) { P.job.susp = true; log(`⏸️ ${jobTitle()}: müqavilə donduruldu.`); } },
@@ -256,6 +256,18 @@ const Interp = (() => {
   }
   // re-check right before showing (an earlier event this year may have changed things)
   function stillOk(e) { try { return check(e.cond); } catch (err) { return false; } }
+  // delayed consequences that fall due during the coming quarter (between birthdays)
+  function takeScheduled(until) {
+    const out = [], keep = [];
+    for (const s of P.sched) {
+      const e = BY_ID[s.event];
+      if (s.day >= until || !e) { keep.push(s); continue; }
+      if (!!e.prison !== inPrison()) { keep.push(s); continue; }
+      if (check(e.cond) && (!e.age || (P.age >= e.age[0] && P.age <= e.age[1] + 3))) out.push({ id: e.id, day: Math.max(P.day, s.day) });
+    }
+    P.sched = keep;
+    return out;
+  }
   function pickYear(n) {
     const out = [];
     // 1) delayed consequences that are due now (they ignore age windows only if the event itself allows it)
@@ -357,5 +369,5 @@ const Interp = (() => {
     return errs;
   }
 
-  return { load, check, run, text, pickYear, choicesOf, choose, stillOk, validate, armyDue, armyMonths, get lib() { return LIB; }, byId: id => BY_ID[id] };
+  return { load, check, run, text, pickYear, takeScheduled, choicesOf, choose, stillOk, validate, armyDue, armyMonths, get lib() { return LIB; }, byId: id => BY_ID[id] };
 })();

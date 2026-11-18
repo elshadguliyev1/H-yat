@@ -131,7 +131,8 @@
     "min_monthly": 280,
     "base_monthly": 200,
     "per_year_pct": 0.012,
-    "military_last_salary_pct": 0.5
+    "military_last_salary_pct": 0.5,
+    "max_monthly": 3500
   },
   "bank": {
     "source": "Sadələşdirilmiş oyun konfiqurasiyası.",

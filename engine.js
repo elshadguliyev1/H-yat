@@ -217,9 +217,28 @@ function feedTick() {
 // ---------- year loop ----------
 // event selection lives in js/interp.js; this re-check is used by the UI right before showing an event
 const eventOk = e => Interp.stillOk(e);
+// ---------- quarters: the button moves time 3 months; the yearly tick (ageUp) runs on the birthday ----------
+const QUARTER_ACTS = 1;
+const quarterStart = q => Cal.addMonths(Cal.addYears(P.birth, P.age), 3 * q);
+const quarterEnd = () => quarterStart((P.q || 0) + 1); // first day of the next quarter
+const dueEvents = () => (P.yearEvents || []).filter(e => e.day < quarterEnd());
+// returns {birthday, msgs}. Money for the finished quarter is booked here; the 4th quarter ends on the birthday.
+function advanceQuarter() {
+  if ((P.q || 0) >= 3) { const msgs = ageUp(); return { birthday: true, msgs }; }
+  moneyTick(false);
+  P.q = (P.q || 0) + 1; P.acts = QUARTER_ACTS;
+  P.day = Math.max(P.day, quarterStart(P.q));
+  const msgs = []; armyTick(msgs);
+  if (P.alive) { P.yearEvents.push(...Interp.takeScheduled(quarterEnd())); P.yearEvents.sort((a, b) => a.day - b.day); }
+  save(); return { birthday: false, msgs };
+}
+// discharge as soon as the service period is over (checked every quarter)
+function armyTick() {
+  if (P.army && !P.army.done && P.army.end <= P.day + 15) { P.army.done = true; P.army.out = P.day; log(`🏠 Hərbi xidmət (${P.army.months} ay) başa çatdı. Evə qayıtdı.`); apply({ fitness: 8, happy: 10, rel: { ana: 8 } }); }
+}
 function ageUp() {
   const msgs = [];
-  P.age++; P.acts = 3; P.yearDone = {};
+  P.age++; P.acts = QUARTER_ACTS; P.q = 0; P.yearDone = {};
   P.day = Math.max(P.day, Cal.addYears(P.birth, P.age));
   for (const p of P.people) if (p.alive) p.age++;
   // natural stat drift
@@ -234,14 +253,14 @@ function ageUp() {
   eduTick(msgs);
   // army
   // discharge when the service period is over (service starts on a birthday: 12 months = one year, 18 months = two)
-  if (P.army && !P.army.done) { if (P.army.end <= P.day + 31) { P.army.done = true; log(`🏠 Hərbi xidmət (${P.army.months} ay) başa çatdı. Evə qayıtdı.`); apply({ fitness: 8, happy: 10, rel: { ana: 8 } }); } }
+  armyTick();
   // prison, licences, investments
   prisonTick();
   expungeTick();
   licenceTick();
   investTick();
   // money: allowance, salary, costs
-  moneyTick(msgs);
+  moneyTick(true);
   // job performance
   if (P.job) jobTick(msgs);
   sportTick(msgs);
@@ -305,10 +324,12 @@ function pensionMonthly() {
   const avg = w.years ? w.salSum / w.years : 0;
   let m = R_.base_monthly + avg * R_.per_year_pct * w.years;
   if (P.flags.military_pension != null) m = Math.max(m, (P.lastMilSal || avg) * R_.military_last_salary_pct);
-  return Math.round(Math.max(R_.min_monthly, m));
+  return Math.round(Math.min(R_.max_monthly || Infinity, Math.max(R_.min_monthly, m)));
 }
 const onPension = () => !P.job && (P.flags.teqaud != null || P.flags.military_pension != null || P.age >= RULES.pension.age);
-function moneyTick() {
+// income and costs are yearly amounts; a quarter of the net is booked every 3 months.
+// yearly=true (on the birthday): also work-years for the pension, asset values and the credit score move.
+function moneyTick(yearly) {
   if (P.age < 16) { P.budget = null; return; }
   const inc = {}, exp = {}, add = (o, k, v) => { v = Math.round(v); if (v) o[k] = (o[k] || 0) + v; };
   if (inPrison()) { P.budget = { age: P.age, inc, exp, net: 0, note: "Həbsdə: gəlir və xərc yoxdur" }; return; }
@@ -316,7 +337,7 @@ function moneyTick() {
   if (P.job && !P.job.susp) {
     const c = CAREERS[P.job.id];
     add(inc, P.job.id === "biznes" ? "Biznes gəliri" : "Maaş", c.unstable ? salaryMonthly() * (P.job.monthsWorked || 8) : salaryMonthly() * 12);
-    P.work = P.work || { years: 0, salSum: 0 }; P.work.years++; P.work.salSum += salaryMonthly();
+    P.work = P.work || { years: 0, salSum: 0 }; if (yearly) { P.work.years++; P.work.salSum += salaryMonthly(); }
     if (c.track === "military") P.lastMilSal = salaryMonthly();
   }
   if (onPension()) add(inc, "Təqaüd", pensionMonthly() * 12);
@@ -346,20 +367,23 @@ function moneyTick() {
   }
   if (P.age >= 55) add(exp, "Dərman və müayinə", (P.age - 50) * 40 + Math.max(0, 70 - P.st.health) * 15);
   for (const a of P.assets) {
-    if (a.type === "maşın") { add(exp, "Maşın (sığorta, yanacaq, təmir)", 400 + a.value * 0.03); a.value = Math.round(a.value * 0.9); }
-    else if (a.type === "ev") { add(exp, "Ev saxlanması", a.value * 0.004 + 300); a.value = Math.round(a.value * (1.02 + R() * 0.05)); }
+    if (a.type === "maşın") add(exp, "Maşın (sığorta, yanacaq, təmir)", 400 + a.value * 0.03);
+    else if (a.type === "ev") add(exp, "Ev saxlanması", a.value * 0.004 + 300);
+    if (!yearly) continue;
+    if (a.type === "maşın") a.value = Math.round(a.value * 0.9);
+    else if (a.type === "ev") a.value = Math.round(a.value * (1.02 + R() * 0.05));
     else if (a.type === "torpaq") a.value = Math.round(a.value * (1.03 + R() * 0.06));
     else if (a.type === "mağaza") a.value = Math.round(a.value * (1.01 + R() * 0.04));
   }
-  for (const l of P.loans || []) { const pay = Math.min(l.left, l.yearly); add(exp, "Kredit ödənişi", pay); l.left -= Math.round(pay * (1 - (l.rate || LOAN.rate) * 0.5)); }
+  for (const l of P.loans || []) { const pay = Math.min(l.left * 4, l.yearly); add(exp, "Kredit ödənişi", pay); l.left -= Math.round(pay / 4 * (1 - (l.rate || LOAN.rate) * 0.5)); }
   const net = Object.values(inc).reduce((x, y) => x + y, 0) - Object.values(exp).reduce((x, y) => x + y, 0);
-  P.money = Math.round((P.money + net) * 100) / 100;
+  P.money = Math.round((P.money + net / 4) * 100) / 100;
   // late payments: fee and a lower credit score
   P.credit = P.credit ?? 60;
-  if ((P.loans || []).length && P.money < 0) { const fee = Math.round((P.loans || []).reduce((x, l) => x + l.yearly, 0) * RULES.bank.late_fee_pct); P.money -= fee; exp["Gecikmə cəriməsi"] = fee; P.credit = clamp(P.credit - 12); }
-  else if ((P.loans || []).length) P.credit = clamp(P.credit + 3);
+  if ((P.loans || []).length && P.money < 0) { const fee = Math.round((P.loans || []).reduce((x, l) => x + l.yearly, 0) * RULES.bank.late_fee_pct / 4); P.money -= fee; exp["Gecikmə cəriməsi"] = fee * 4; P.credit = clamp(P.credit - 3); }
+  else if ((P.loans || []).length && yearly) P.credit = clamp(P.credit + 3);
   if (P.loans && P.loans.some(l => l.left <= 0)) { for (const l of P.loans.filter(x => x.left <= 0)) log(`🏦 Kredit bağlandı: ${l.t}.`); P.loans = P.loans.filter(l => l.left > 0); }
-  P.budget = { age: P.age, inc, exp, net: Math.round(net) };
+  P.budget = { age: P.age, inc, exp, net: Math.round(net), q: Math.round(net / 4) };
   if (P.money < -5000 && !P.flags.borc) P.flags.borc = P.age;
 }
 // people who belong to a period of life leave the active list when that period ends

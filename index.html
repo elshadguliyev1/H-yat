@@ -111,6 +111,7 @@ nav.tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg) 
 .energy { display: flex; gap: 4px; align-items: center; font-size: 12px; color: var(--muted); font-weight: 800 }
 .energy i { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); display: inline-block }
 .energy i.off { background: var(--surface-2); border: 2px solid var(--line) }
+.qinfo { display: grid; line-height: 1.15; min-width: 0 } .qinfo b { font-size: 14px; white-space: nowrap } .qinfo span { font-size: 11.5px; color: var(--muted); white-space: nowrap }
 .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
 .act { display: grid; grid-template-columns: 34px minmax(0,1fr); gap: 8px; align-items: center; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; font-weight: 700; font-size: 13.5px; line-height: 1.25; box-shadow: var(--shadow) }
 .act span.i { font-size: 24px; text-align: center }
@@ -287,25 +288,27 @@ function renderGame() {
       <div class="stat"><span aria-hidden="true">⭐</span><div class="bar"><i style="width:${P.fame}%;background:var(--accent)"></i></div><span class="n">${P.fame}</span></div></div>
     <nav class="tabs"><div class="wrap" role="tablist">${[["life", "Həyat"], ["act", "Fəaliyyət"], ...(isPres() ? [["gov", "🏛️ Ölkə"]] : []), ["soc", "Pıçıltı"], ["ppl", "İnsanlar"], ["me", "Mən"]].map(([id, t]) => `<button role="tab" data-t="${id}" aria-selected="${tab === id}">${t}</button>`).join("")}</div></nav>
     <main class="wrap panel" id="panel"></main>
-    <div class="agebar"><div class="wrap"><div class="energy" title="Bu il qalan fəaliyyət">${[0, 1, 2].map(i => `<i class="${i < P.acts ? "" : "off"}"></i>`).join("")}</div><button class="btn" id="ageBtn">+1 yaş →</button></div></div></div>`;
+    <div class="agebar"><div class="wrap"><div class="qinfo" title="Bu rüb qalan fəaliyyət"><b>${Cal.fmtMonth(P.day)}</b><span>${["I", "II", "III", "IV"][P.q || 0]} rüb · ${P.acts > 0 ? "1 fəaliyyət qalıb" : "fəaliyyət edildi"}</span></div><button class="btn" id="ageBtn">${(P.q || 0) >= 3 ? `🎂 +3 ay → ${P.age + 1} yaş` : "+3 ay →"}</button></div></div></div>`;
   app.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { tab = b.dataset.t; renderGame(); window.scrollTo({ top: 0 }); });
   $("#ageBtn").onclick = nextYear;
   $("#helpBtn").onclick = showLegend;
   app.querySelectorAll(".stat").forEach((el, i) => { el.onclick = () => toast(i < STAT_KEYS.length ? `${STAT_ICONS[STAT_KEYS[i]]} ${STAT_NAMES[STAT_KEYS[i]]}` : "⭐ Şöhrət", 1400); });
   if (tab === "gov" && !isPres()) tab = "life";
   ({ life: panelLife, act: panelAct, gov: panelGov, soc: panelSoc, ppl: panelPpl, me: panelMe })[tab]();
-  if (P.yearEvents && P.yearEvents.length && !$(".modal")) showNextEvent();
+  if (dueEvents().length && !$(".modal")) showNextEvent();
 }
 function panelLife() {
   const html = [...P.log].sort((a, b) => b.age - a.age).slice(0, 40).map(y => `<div class="yr"><h3>${y.age} yaş</h3>${y.items.map(t => `<p>${esc(t)}</p>`).join("")}</div>`).join("");
   $("#panel").innerHTML = html || '<p class="muted">Həyat hələ yazılmayıb.</p>';
 }
+// +3 months: first the events of this quarter, then time moves on (the 4th quarter ends on the birthday)
 function nextYear() {
-  if (P.yearEvents && P.yearEvents.length) { showNextEvent(); return; }
-  ageUp();
+  if (dueEvents().length) { showNextEvent(); return; }
+  const r = advanceQuarter();
   if (!P.alive) { renderEnd(); return; }
   tab = "life"; renderGame(); window.scrollTo({ top: 0 });
-  if (!P.yearEvents.length) toast(`${P.age} yaş! Sakit bir il idi.`);
+  if (!dueEvents().length) toast(r.birthday ? `🎂 ${P.age} yaş! Ad günün mübarək.` : `${Cal.fmtMonth(P.day)}: sakit üç ay.`);
+  else if (r.birthday) toast(`🎂 ${P.age} yaş!`);
 }
 
 // ---------- events ----------
@@ -319,16 +322,16 @@ function sheet(html) {
   return { el: m.firstChild, close };
 }
 function showNextEvent() {
-  const ev = P.yearEvents[0];
+  const ev = dueEvents()[0]; if (!ev) return renderGame();
   const e = Interp.byId(ev.id);
-  if (!e || !eventOk(e)) { P.yearEvents.shift(); save(); return P.yearEvents.length ? showNextEvent() : renderGame(); } // situation changed earlier this year
+  if (!e || !eventOk(e)) { P.yearEvents.splice(P.yearEvents.indexOf(ev), 1); save(); return dueEvents().length ? showNextEvent() : renderGame(); } // situation changed earlier this year
   P.day = Math.max(P.day, ev.day); // the calendar moves to the event's date (never backwards)
   const text = Interp.text(e.t);
   const choices = Interp.choicesOf(e);
   const s = sheet(`<div class="big" aria-hidden="true">${e.icon || "✨"}</div><div class="age-tag">${Cal.fmtMonth(P.day)} · ${P.age} yaş</div><p class="q">${esc(text)}</p><div class="choices">${choices.map((c, i) => `<button data-i="${i}">${esc(Interp.text(c.t))}</button>`).join("")}</div>`);
   s.el.querySelectorAll(".choices button").forEach(b => b.onclick = () => {
     const i = +b.dataset.i, c = choices[i];
-    P.seen[e.id] = P.age; P.yearEvents.shift();
+    P.seen[e.id] = P.age; P.yearEvents.splice(P.yearEvents.indexOf(ev), 1);
     const res = Interp.choose(e, c);
     recordChoice(e.id, i, res.outcome, res.text);
     if (res.text) log(`${e.icon || "•"} ${res.text}`);
@@ -365,13 +368,13 @@ function nameForm(el, done) {
 
 // ---------- legend ----------
 function showLegend() {
-  const rows = [["❤️", "Sağlamlıq", "0-a düşsə, həyat bitə bilər."], ["😊", "Xoşbəxtlik", "Ruh halın: seçimlər, ailə və uğurlar təsir edir."], ["🧠", "Ağıl", "Dərs, imtahan, peşə uğuru."], ["💪", "İdman", "Fiziki forma: idman, polis, ordu."], ["✨", "Görünüş", "Sevgi, səhnə və sosial şəbəkə üçün."], ["⭐", "Şöhrət", "Nə qədər tanınırsan."], ["₼", "Pul", "18 yaşa qədər yalnız ailədən, tapılan puldan və 16 yaşdan yarımştat işdən."], ["👥", "İzləyici", "Pıçıltı sosial şəbəkəsində."], ["<span style='color:var(--accent)'>●</span>", "Fəaliyyət nöqtələri", "Hər il 3 fəaliyyət seçə bilərsən. Bitəndə +1 yaş bas."], ["<span style='color:var(--pink)'>▬</span>", "Çəhrayı zolaq", "İnsanlar bölməsində münasibətin səviyyəsi."], ["<span style='color:var(--gold)'>★</span>", "Ulduzlar", "Mən bölməsində istedadların."]];
+  const rows = [["❤️", "Sağlamlıq", "0-a düşsə, həyat bitə bilər."], ["😊", "Xoşbəxtlik", "Ruh halın: seçimlər, ailə və uğurlar təsir edir."], ["🧠", "Ağıl", "Dərs, imtahan, peşə uğuru."], ["💪", "İdman", "Fiziki forma: idman, polis, ordu."], ["✨", "Görünüş", "Sevgi, səhnə və sosial şəbəkə üçün."], ["⭐", "Şöhrət", "Nə qədər tanınırsan."], ["₼", "Pul", "18 yaşa qədər yalnız ailədən, tapılan puldan və 16 yaşdan yarımştat işdən."], ["👥", "İzləyici", "Pıçıltı sosial şəbəkəsində."], ["<span style='color:var(--accent)'>●</span>", "Fəaliyyət nöqtələri", "Hər 3 ayda 1 fəaliyyət seçə bilərsən. Bitəndə +3 ay bas."], ["<span style='color:var(--pink)'>▬</span>", "Çəhrayı zolaq", "İnsanlar bölməsində münasibətin səviyyəsi."], ["<span style='color:var(--gold)'>★</span>", "Ulduzlar", "Mən bölməsində istedadların."]];
   const s = sheet(`<h3 style="margin-bottom:12px">İkonlar nə deməkdir?</h3><div class="legend">${rows.map(([e, t, d]) => `<div><span class="e">${e}</span><span><b>${t}</b><small>${d}</small></span></div>`).join("")}</div><button class="btn close">Aydındır</button>`);
   s.el.querySelector(".close").onclick = s.close;
 }
 
 // ---------- activities ----------
-function useAct() { if (P.acts <= 0) { toast("Bu il üçün vaxtın bitdi. +1 yaş bas."); return false; } P.acts--; return true; }
+function useAct() { if (P.acts <= 0) { toast("Bu üç ay üçün vaxtın bitdi. +3 ay bas."); return false; } P.acts--; return true; }
 function panelAct() {
   if (inPrison()) {
     $("#panel").innerHTML = `<div class="note">🔒 Həbsdəsən. Davranışın şərti azadlığa təsir edir. Çıxışa təxminən ${Math.max(0, Math.ceil((P.legal.prison.end - P.day) / 365))} il qalıb.</div>
@@ -380,7 +383,7 @@ function panelAct() {
     return;
   }
   const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !(a.id === "post" && !P.soc) && (P.army && !P.army.done ? !!a.army : !a.army));
-  $("#panel").innerHTML = `<p class="small muted" style="margin:0 0 10px">Hər il 3 fəaliyyət seçə bilərsən (aşağıdakı nöqtələr). Sonra <b>+1 yaş</b> bas.</p>
+  $("#panel").innerHTML = `<p class="small muted" style="margin:0 0 10px">Hər 3 ayda bir fəaliyyət seçə bilərsən. Sonra <b>+3 ay</b> bas: maaş və xərclər rüblük hesablanır, yaş ad günündə artır.</p>
     <div class="acts">${list.map(a => `<button class="act" data-id="${a.id}" ${P.acts <= 0 || (a.cost && P.age >= 18 && P.money < a.cost) ? "disabled" : ""}><span class="i" aria-hidden="true">${a.icon}</span><span>${typeof a.t === "function" ? a.t() : a.t}${a.cost ? `<small>${P.age >= 18 ? fmtMoney(a.cost) : "valideynlər ödəyir"}</small>` : ""}</span></button>`).join("")}</div>`;
   const work = P.job && !P.job.susp && P.job.id !== "biznes" && CAREERS[P.job.id].track !== "politics" && !(P.army && !P.army.done);
   const W = [["raise", "💰", "Maaş artımı istə"], ["promo", "📈", "Vəzifə yüksəlişi üçün müraciət et"], ["boss", "🤝", "Rəhbərlə münasibət qur"], ["switch", "🔁", "Başqa iş yerinə keç"], ["own", "🏪", "Öz biznesini qur (5 000 ₼)"]];
@@ -442,7 +445,7 @@ function doAction(a) {
   s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
 }
 function postPicker() {
-  if (P.acts <= 0) return toast("Bu il üçün vaxtın bitdi. +1 yaş bas.");
+  if (P.acts <= 0) return toast("Bu üç ay üçün vaxtın bitdi. +3 ay bas.");
   const types = POST_TYPES.filter(t => P.age >= t.min && (!t.need || t.need()));
   const s = sheet(`<div class="big">📱</div><p class="q">Pıçıltı-da nə paylaşırsan?</p><div class="choices">${types.map(t => `<button data-id="${t.id}">${t.icon} ${t.t}${t.risky ? ' <span class="muted small">· riskli</span>' : ""}</button>`).join("")}</div><button class="btn ghost close">Ləğv et</button>`);
   s.el.querySelector(".close").onclick = s.close;
@@ -565,7 +568,7 @@ function panelGov() {
     <p class="small" style="margin:10px 0 0">💰 Ehtiyat fondu: <b style="color:${C.fund < 0 ? "var(--bad)" : "inherit"}">${C.fund} mlrd ₼</b> · 🛢️ Neft: ${C.oil}$ · 🪖 Hərbi xidmət: ${C.conscript ? C.conscript + " ay" : "könüllü (peşəkar ordu)"}</p></div>
     ${cats.map(cat => `<p class="sec-h">${cat}</p><div class="acts">${govAvailable().filter(a => a.cat === cat).map(a => `<button class="act" data-g="${a.id}" ${C.acts <= 0 || C.fund < a.cost ? "disabled" : ""}><span class="i" aria-hidden="true">${a.icon}</span><span>${a.t}${a.cost ? ` <span class="muted small">· ${a.cost} mlrd ₼</span>` : ""}</span></button>`).join("")}</div>`).join("")}`;
   $("#panel").querySelectorAll("[data-g]").forEach(b => b.onclick = () => {
-    const r = doGov(b.dataset.g); if (!r) return toast("Bu il üçün qərarların bitdi. +1 yaş bas."); save();
+    const r = doGov(b.dataset.g); if (!r) return toast("Bu il üçün qərarların bitdi: hər il 3 qərar."); save();
     const a = GOV_ACTIONS.find(x => x.id === b.dataset.g);
     const s = sheet(`<div class="big">${a.icon}</div><p class="q">${esc(r.text)}</p><div class="fx">${ctryChips(r.changes)}</div><button class="btn close">Yaxşı</button>`);
     s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
@@ -682,10 +685,10 @@ function panelMe() {
     <p class="sec-h">Xarakter (qərarlarından formalaşır)</p><div class="card tal">${Object.entries(TRAITS).map(([k, t]) => `<div><span>${t}</span><span class="tbar" role="meter" aria-label="${t}" aria-valuenow="${P.tr[k]}" aria-valuemin="0" aria-valuemax="100"><i style="width:${P.tr[k]}%"></i></span></div>`).join("")}</div>
     ${P.age >= 8 ? `<p class="sec-h">İstedadlar (müəllimlərin fikrincə)</p><div class="card tal">${[["sport", "⚽ İdman"], ["music", "🎶 Musiqi"], ["acting", "🎭 Aktyorluq"], ["science", "🔬 Elm"], ["social", "🗣️ Ünsiyyət"]].map(([k, t]) => `<div><span>${t}</span><span class="stars" aria-label="${Math.round(P.tal[k] / 20)} ulduz">${stars(P.tal[k])}</span></div>`).join("")}</div>` : ""}
     <p class="sec-h">Əmlak</p><div class="card">${P.assets.length ? P.assets.map(a => `<div>${{ ev: "🏠", "maşın": "🚗", depozit: "🏦", sehm: "📈", kiraye: "🏢", torpaq: "🌾", "mağaza": "🏪" }[a.type] || "📦"} ${esc(a.t)} · <span class="muted">${fmtMoney(a.value)}</span></div>`).join("") : '<span class="muted">Hələ heç nə yoxdur.</span>'}</div>
-    ${P.budget ? `<p class="sec-h">Son ilin büdcəsi (${P.budget.age - 1}–${P.budget.age} yaş)</p><div class="card small">${P.budget.note ? `<div class="muted">${esc(P.budget.note)}</div>` : ""}
-      ${Object.entries(P.budget.inc).map(([k, v]) => `<div style="display:flex;justify-content:space-between"><span>➕ ${esc(k)}</span><b style="color:var(--good)">${fmtMoney(v)}</b></div>`).join("")}
-      ${Object.entries(P.budget.exp).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div style="display:flex;justify-content:space-between"><span>➖ ${esc(k)}</span><b style="color:var(--bad)">${fmtMoney(v)}</b></div>`).join("")}
-      <div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:6px;padding-top:6px"><span>Balans</span><b>${P.budget.net >= 0 ? "+" : ""}${fmtMoney(P.budget.net)}</b></div></div>` : ""}
+    ${P.budget ? `<p class="sec-h">Rüblük büdcə (3 ay)</p><div class="card small">${P.budget.note ? `<div class="muted">${esc(P.budget.note)}</div>` : ""}
+      ${Object.entries(P.budget.inc).map(([k, v]) => `<div style="display:flex;justify-content:space-between"><span>➕ ${esc(k)}</span><b style="color:var(--good)">${fmtMoney(Math.round(v / 4))}</b></div>`).join("")}
+      ${Object.entries(P.budget.exp).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div style="display:flex;justify-content:space-between"><span>➖ ${esc(k)}</span><b style="color:var(--bad)">${fmtMoney(Math.round(v / 4))}</b></div>`).join("")}
+      <div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:6px;padding-top:6px"><span>3 ayın balansı</span><b>${P.budget.net >= 0 ? "+" : ""}${fmtMoney(Math.round(P.budget.net / 4))}</b></div><div class="muted" style="display:flex;justify-content:space-between"><span>İl üzrə</span><span>${P.budget.net >= 0 ? "+" : ""}${fmtMoney(P.budget.net)}</span></div></div>` : ""}
     ${P.age >= 40 ? `<p class="sec-h">Təqaüd</p><div class="card small">${onPension() ? `Hazırda ayda <b>${fmtMoney(pensionMonthly())}</b> təqaüd alırsan.` : `Təxmini təqaüdün (indiki stajla): <b>${fmtMoney(pensionMonthly())}</b>/ay. Təqaüd yaşı: ${RULES.pension.age}.`} <span class="muted">Staj: ${(P.work || {}).years || 0} il.</span></div>` : ""}
     ${(P.loans || []).length ? `<p class="sec-h">Kreditlər · reytinq ${P.credit ?? 60}/100</p><div class="card small">${P.loans.map(l => `<div>🏦 ${esc(l.t)} — qalıq ${fmtMoney(l.left)}, ildə ${fmtMoney(l.yearly)}</div>`).join("")}</div>` : ""}
     ${(P.careerHist || []).length ? `<p class="sec-h">Karyera tarixçəsi</p><div class="card small">${P.careerHist.slice(-10).reverse().map(h => `<div style="padding:3px 0">${h.age} yaş · ${esc(h.text)}${h.sal ? ` <span class="muted">(${fmtMoney(h.sal)})</span>` : ""}</div>`).join("")}</div>` : ""}

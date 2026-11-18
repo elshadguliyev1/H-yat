@@ -24,17 +24,28 @@ function sandbox() {
     Interp.load(LISTS);
     // a bot that plays one year with seeded decisions (so a seed reproduces a whole life)
     globalThis.playYear = function (log) {
-      for (let i = 0; i < 3; i++) {
-        const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !a.special && (!a.cost || P.age < 18 || P.money >= a.cost) && (P.army && !P.army.done ? !!a.army : !a.army));
-        const a = pick(list); if (a) { apply(a.fx ? a.fx() : {}); if (a.cost && P.age >= 18) P.money -= a.cost; if (a.after) a.after(); }
+      // one year = four quarters: one action per quarter, the quarter's events, then +3 months (the 4th ends on the birthday)
+      const a0 = P.age;
+      for (let q = 0; q < 4 && P.age === a0; q++) { // (a dead person still "ages" here, as before, so loops in tests end)
+        for (let i = 0; i < P.acts; i++) {
+          const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !a.special && (!a.cost || P.age < 18 || P.money >= a.cost) && (P.army && !P.army.done ? !!a.army : !a.army));
+          const a = pick(list); if (a) { apply(a.fx ? a.fx() : {}); if (a.cost && P.age >= 18) P.money -= a.cost; if (a.after) a.after(); }
+        }
+        if (q === 0 && P.soc && chance(.5)) { const ts = POST_TYPES.filter(t => P.age >= t.min && (!t.need || t.need())); makePost(pick(ts).id); }
+        if (q === 0 && P.age >= 17 && !P.job && !["uni", "magistr"].includes(P.edu.stage) && !(P.army && !P.army.done) && chance(.5)) { const o = jobOptions(); if (o.length) { const x = pick(o); if (chance(x.odds)) startJob(x.id); } }
+        playDue(log);
+        const before = P.day, m0 = P.money;
+        advanceQuarter();
+        if (P.age < 16 && P.money > m0) throw new Error("16 yaşdan əvvəl avtomatik pul gəldi: " + m0 + " → " + P.money);
+        if (P.day < before) throw new Error("zaman geri getdi (rüb)");
       }
-      if (P.soc && chance(.5)) { const ts = POST_TYPES.filter(t => P.age >= t.min && (!t.need || t.need())); makePost(pick(ts).id); }
-      if (P.age >= 17 && !P.job && !["uni", "magistr"].includes(P.edu.stage) && !(P.army && !P.army.done) && chance(.5)) { const o = jobOptions(); if (o.length) { const x = pick(o); if (chance(x.odds)) startJob(x.id); } }
-      const before = P.day, m0 = P.money, a0 = P.age;
-      ageUp();
-      if (a0 + 1 < 16 && P.money > m0) throw new Error("16 yaşdan əvvəl avtomatik pul gəldi: " + m0 + " → " + P.money);
-      if (P.day < before) throw new Error("zaman geri getdi (ageUp)");
-      for (const ev of P.yearEvents.splice(0)) {
+      playDue(log);
+      for (const k of STAT_KEYS) if (!isFinite(P.st[k])) throw new Error("NaN göstərici " + k);
+      if (!isFinite(P.money)) throw new Error("NaN pul");
+    };
+    function playDue(log) {
+      for (const ev of dueEvents()) {
+        P.yearEvents.splice(P.yearEvents.indexOf(ev), 1);
         const e = Interp.byId(ev.id); if (!e) throw new Error("naməlum hadisə " + ev.id);
         if (!eventOk(e)) continue;
         const d0 = P.day; P.day = Math.max(P.day, ev.day); if (P.day < d0) throw new Error("zaman geri getdi (hadisə)");
@@ -49,9 +60,7 @@ function sandbox() {
         recordChoice(e.id, i, res.outcome, res.text);
         for (const s of [text, res.text, ...ch.map(c => Interp.text(c.t))]) if (/\\{[^}]+\\}|undefined|NaN|(^|\\s)\\?(\\s|$)/.test(s)) throw new Error("pis mətn [" + e.id + "]: " + s);
       }
-      for (const k of STAT_KEYS) if (!isFinite(P.st[k])) throw new Error("NaN göstərici " + k);
-      if (!isFinite(P.money)) throw new Error("NaN pul");
-    };
+    }
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
     globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial; globalThis.hasRecord = hasRecord; globalThis.everConvicted = everConvicted; globalThis.lockReason = lockReason; globalThis.SPORTS = SPORTS; globalThis.RULES = RULES; globalThis.polJoin = polJoin; globalThis.setOffice = setOffice; globalThis.polRun = polRun; globalThis.isPres = isPres; globalThis.govAvailable = govAvailable; globalThis.doGov = doGov; globalThis.CTRY_KEYS = CTRY_KEYS; globalThis.pick = pick;
@@ -115,7 +124,7 @@ test("gecikmiş nəticə: 7 yaşdakı qərar 15–20 il sonra hadisə yaradır",
       if (seen) break;
     }
     const npcAlive = S.Interp.check({ npc_flag_alive: "defended_classmate" });
-    const jailed = !!(S.P.legal && S.P.legal.prison && !S.P.legal.prison.released); // waits until release
+    const jailed = !!(S.P.legal && (S.P.legal.terms || []).some(t => t.start <= due + 400 && (t.out || t.end) >= due)); // it waits until release
     if (seen) fired++; else ok(!npcAlive || !S.P.alive || jailed, "vaxtı çatdı, şərt ödənirdi, amma hadisə gəlmədi (seed " + (5000 + s) + ")");
   }
   ok(fired > tries * 0.7, `yalnız ${fired}/${tries} dəfə aktivləşdi`);
@@ -160,7 +169,7 @@ test("18 yaşa qədər pul: avtomatik xərclik yoxdur, tapılan pul ≤ 30 ₼",
   console.log(`      (150 uşaqdan 15 yaşda ən çox pul: ${S.fmtMoney(maxAt15)})`);
 });
 
-test("hərbi xidmət: 12 ay bir il, 18 ay iki ilə bitir; xidmətdə yalnız hərbi fəaliyyət", () => {
+test("hərbi xidmət: 12 və ya 18 ay (rüb dəqiqliyi ilə); xidmətdə yalnız hərbi fəaliyyət", () => {
   let n12 = 0, n18 = 0;
   for (let s = 1; s <= 200; s++) {
     S.newLife("Əsgər", "k", "Bakı", "polis", 20000 + s);
@@ -172,9 +181,9 @@ test("hərbi xidmət: 12 ay bir il, 18 ay iki ilə bitir; xidmətdə yalnız hə
       if (S.P.army && S.P.army.done) break;
     }
     if (!S.P.army || !S.P.army.done) continue;
-    const years = S.P.age - startAge;
-    if (S.P.army.months === 12) { eq(years, 1, "12 aylıq xidmət " + years + " il çəkdi"); n12++; }
-    if (S.P.army.months === 18) { eq(years, 2, "18 aylıq xidmət " + years + " il çəkdi"); n18++; }
+    const months = Math.round((S.P.army.out - S.P.army.start) / 30.44); // discharge is checked every quarter
+    if (S.P.army.months === 12) { ok(months >= 11 && months <= 15, "12 aylıq xidmət " + months + " ay çəkdi"); n12++; }
+    if (S.P.army.months === 18) { ok(months >= 17 && months <= 21, "18 aylıq xidmət " + months + " ay çəkdi"); n18++; }
   }
   ok(n12 > 0 && n18 > 0, "hər iki müddət sınanmalıdır");
   console.log(`      (12 ay: ${n12} əsgər, 18 ay: ${n18} əsgər)`);
