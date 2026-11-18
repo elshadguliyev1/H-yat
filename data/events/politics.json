@@ -1,0 +1,101 @@
+[
+{"id":"siyaset_devet","cat":"career","tone":"everyday","age":[22,45],"p":0.05,"icon":"🏛️","cond":{"pol":false,"in_prison":false,"any":[{"tal_gt":{"social":65}},{"stat_gt":{"smarts":72}}]},"t":"Köhnə dostun indi {ruling_party} gənclər təşkilatındadır. Çay süfrəsində deyir: “Sənin kimi danışan adamlar lazımdır. Siyasətə gəl.” Ertəsi gün müxalifətdən də zəng gəlir.","ch":[
+ {"t":"İrəli Partiyasına qoşul","fx":{"happy":3},"do":[{"pol_join":"ireli"}],"r":"Partiya biletini sənə təntənə ilə verdilər. Resurs çoxdur, amma sual verənləri sevmirlər."},
+ {"t":"Vətəndaş Birliyinə qoşul (müxalifət)","fx":{"happy":4},"do":[{"pol_join":"birlik"}],"r":"Kiçik ofis, köhnə kompüterlər, böyük ideyalar. Burada hamı bir-birini “yoldaş” deyə çağırır."},
+ {"t":"Mərkəz Alyansına qoşul","fx":{"happy":2},"do":[{"pol_join":"merkez"}],"r":"Mötədillər: hamı ilə danışırlar, heç kimlə dalaşmırlar. Bəlkə də ən uzun yol budur."},
+ {"t":"Bitərəf siyasətçi ol","fx":{"happy":2},"do":[{"pol_join":"bitaraf"}],"r":"Heç kimə borclu deyilsən. Heç kim də sənə kömək etməyəcək."},
+ {"t":"Siyasət mənlik deyil","fx":{"happy":1},"r":"Gülümsəyib mövzunu dəyişdin. Çay soyumuşdu."}]},
+
+{"id":"secki_belediyye","once":false,"cat":"career","tone":"dramatic","age":[21,99],"scheduled_only":true,"force":true,"icon":"🗳️","cond":{"pol":true,"in_prison":false,"any":[{"pol_office":false},{"pol_office":"belediyye"}]},"t":"Bələdiyyə seçkiləri elan olundu. Məhəllədə adın çəkilir: namizəd olursan?","ch":[
+ {"t":"Böyük kampaniya ({camp_b2})","cond":{"money_gte":12000},"do":[{"pol_run":{"office":"belediyye","spend":2}}],"r":"{pol_result}"},
+ {"t":"Orta kampaniya ({camp_b1})","cond":{"money_gte":3000},"do":[{"pol_run":{"office":"belediyye","spend":1}}],"r":"{pol_result}"},
+ {"t":"Qapı-qapı gəz, pulsuz kampaniya","fx":{"health":-2},"do":[{"pol_run":{"office":"belediyye","spend":0}}],"r":"Üç həftə ərzində 900 qapı döydün. {pol_result}"},
+ {"t":"Bu dəfə namizəd olmuram","fx":{"happy":1},"r":"Seçki sənsiz keçdi."}]},
+
+{"id":"secki_meclis","once":false,"cat":"career","tone":"dramatic","age":[25,99],"scheduled_only":true,"force":true,"icon":"🗳️","cond":{"pol":true,"in_prison":false,"any":[{"pol_office":false},{"pol_office":["belediyye","meclis"]}]},"t":"Milli Məclisə seçkilər elan olundu. {party} dairələri bölüşdürür. Sənin adın da siyahıdadır.","ch":[
+ {"t":"Böyük kampaniya ({camp_m2})","cond":{"money_gte":80000},"do":[{"pol_run":{"office":"meclis","spend":2}}],"r":"{pol_result}"},
+ {"t":"Orta kampaniya ({camp_m1})","cond":{"money_gte":20000},"do":[{"pol_run":{"office":"meclis","spend":1}}],"r":"{pol_result}"},
+ {"t":"Könüllülərlə, pulsuz kampaniya","fx":{"health":-3},"do":[{"pol_run":{"office":"meclis","spend":0}}],"r":"Dairədəki hər kəndə özün getdin. {pol_result}"},
+ {"t":"Namizəd olmuram","fx":{"happy":1},"r":"Partiya başqasını irəli sürdü."}]},
+
+{"id":"secki_prezident","once":false,"cat":"career","tone":"rare","age":[35,99],"scheduled_only":true,"force":true,"icon":"🗳️","cond":{"pol":true,"pres":false,"in_prison":false},"t":"Prezident seçkiləri elan olundu. Tərəfdarların toplanıb: “Sən namizəd olmalısan. İndi və ya heç vaxt.”","ch":[
+ {"t":"Böyük kampaniya ({camp_p2})","cond":{"money_gte":600000},"do":[{"pol_run":{"office":"prezident","spend":2}}],"r":"{pol_result}"},
+ {"t":"Orta kampaniya ({camp_p1})","cond":{"money_gte":150000},"do":[{"pol_run":{"office":"prezident","spend":1}}],"r":"{pol_result}"},
+ {"t":"Xalqın ianələri ilə kampaniya","fx":{"health":-4},"do":[{"pol_run":{"office":"prezident","spend":0}}],"r":"Kampaniya avtobusunda 50 şəhər gəzdin. {pol_result}"},
+ {"t":"Hələ vaxtı deyil","fx":{"happy":-1},"r":"Tərəfdarların məyus oldu, amma sən gözləməyi seçdin."}]},
+
+{"id":"pres_yeniden","once":false,"cat":"career","tone":"rare","age":[35,120],"scheduled_only":true,"force":true,"icon":"🗳️","cond":{"pres":true},"t":"Səlahiyyət müddətin bitir. Növbəti prezident seçkisi: xalqın dəstəyi {approval}. Komandan soruşur: yenidən namizəd olursan?","ch":[
+ {"t":"Böyük kampaniya ({camp_p2})","cond":{"money_gte":600000},"do":[{"pol_run":{"office":"prezident","spend":2}}],"r":"{pol_result}"},
+ {"t":"Görülən işlərlə çıx: sadə kampaniya","do":[{"pol_run":{"office":"prezident","spend":0}}],"r":"Yollar, məktəblər, xəstəxanalar: kampaniya əvəzinə hesabat verdin. {pol_result}"},
+ {"t":"Namizəd olmuram, hakimiyyəti təhvil verirəm","fx":{"happy":6},"do":[{"pres_end":"namizədliyini irəli sürmədi"}],"r":"Son çıxışında “Ölkə bir nəfərdən böyükdür” dedin. Hakimiyyətin sülh yolu ilə təhvili qəzetlərin manşetinə çıxdı."}]},
+
+{"id":"pol_komite","once":false,"cat":"career","tone":"everyday","age":[25,99],"scheduled_only":true,"icon":"📋","cond":{"pol_office":"meclis"},"t":"Məclis sədri səni yanına çağırıb: “Sosial siyasət komitəsinə sədr lazımdır. Ciddi işdir, gecələr də işləyəcəksən.”","ch":[
+ {"t":"Razılaş","fx":{"happy":5},"do":[{"pol_office":"komite"}],"r":"Kabinetin qapısında artıq yeni lövhə var. Telefonun susmur."},
+ {"t":"Sıravi deputat qalmaq istəyirəm","do":[{"pol_rep":2}],"r":"Seçiciləri ilə daha çox vaxt keçirmək istədiyini dedin. Sədr çiyinlərini çəkdi."}]},
+
+{"id":"pol_nazir_teklif","once":false,"cat":"career","tone":"dramatic","age":[28,99],"scheduled_only":true,"icon":"📞","cond":{"pol_office":["meclis","komite"]},"t":"Prezident Administrasiyasından zəng: “Sizi nazir müavini vəzifəsinə təqdim edirik. Mandatdan imtina etməli olacaqsınız.”","ch":[
+ {"t":"Qəbul et","fx":{"happy":7},"do":[{"pol_office":"nazir_muavini"},{"pol_cap":3}],"r":"Nazirlikdə ilk iclas. Hamı sənə “cənab müavin” deyir. Bürokratiyanın necə işlədiyini indi görəcəksən."},
+ {"t":"Məclisdə qalıram","do":[{"pol_rep":4}],"r":"Nəzakətlə imtina etdin. Administrasiyada bunu yadda saxlayacaqlar."}]},
+
+{"id":"pol_nazir","cat":"career","tone":"rare","age":[30,99],"scheduled_only":true,"icon":"🏛️","cond":{"pol_office":"nazir_muavini"},"t":"Nazir istefaya göndərildi. Fərman səhər açıqlanacaq və orada sənin adın var: yeni nazir sənsən.","ch":[
+ {"t":"Böyük məsuliyyətdir. Qəbul edirəm.","fx":{"happy":10,"fame":5},"do":[{"pol_office":"nazir"}],"r":"İlk günündən jurnalistlər qapının ağzındadır. Hər imzan xəbərə çevrilir."}]},
+
+{"id":"pol_rusvet","once":false,"cool":3,"cat":"justice","tone":"dramatic","age":[21,90],"w":0.7,"icon":"✉️","cond":{"pol_office":true,"pres":false,"in_prison":false},"t":"Bir podratçı kabinetinə zərf qoyub gedir: “Tenderdə bizi unutmayın.” Zərfdə 50 000 ₼ var.","ch":[
+ {"t":"Götür","fx":{"money":50000},"do":[{"crime":"rusvet_alma"}],"r":"Zərfi siyirməyə qoydun. Bu gecə yuxu gəlmədi. {caught}"},
+ {"t":"Geri qaytar və hüquq mühafizəyə bildir","fx":{"happy":4},"do":[{"pol_rep":7}],"r":"Podratçı saxlanıldı. Mətbuat səni “dəmir deputat” adlandırdı, partiyada isə bəziləri səndən uzaq durmağa başladı."},
+ {"t":"Səs-küysüz qaytar","do":[{"pol_rep":1}],"r":"Zərfi geri göndərdin. Heç kim bilmədi, sən isə bildin."}]},
+
+{"id":"pol_skandal","once":false,"cool":3,"cat":"career","tone":"dramatic","age":[21,99],"w":0.6,"icon":"📰","cond":{"pol_office":true,"pres":false},"t":"Araşdırmaçı jurnalist sənin haqqında yazı hazırlayır: əmlak bəyannaməndə uyğunsuzluq tapıb. Sabah dərc olunacaq.","ch":[
+ {"t":"Açıq izah ver, sənədləri göstər","odds":[{"p":{"of":"pol.rep","div":110},"do":[{"pol_rep":4}],"fx":{"happy":2},"r":"Sənədlər hər şeyi aydınlaşdırdı. Jurnalist özü düzəliş yazdı."},{"p":0.4,"do":[{"pol_rep":-8}],"fx":{"happy":-6},"r":"İzahın yarımçıq qaldı. Şərhlərdə hamı “oğru” yazır."}]},
+ {"t":"Jurnalisti məhkəməyə ver","fx":{"fame":3,"happy":-2},"do":[{"pol_rep":-6}],"r":"Məhkəmə iddiası yazıdan da çox səs-küy saldı. Beynəlxalq təşkilatlar bəyanat verdi."},
+ {"t":"Susmaq","do":[{"pol_rep":-4}],"r":"Yazı çıxdı, bir həftə danışıldı, sonra unuduldu. Amma seçicilər unutmur."}]},
+
+{"id":"pol_qanun","once":false,"cool":2,"cat":"career","tone":"everyday","age":[25,99],"w":0.9,"icon":"⚖️","cond":{"pol_office":["meclis","komite"]},"t":"Məclisdə səsvermə: kənd təsərrüfatı torpaqlarının satışı haqqında qanun. Partiyan “hə” deyir, dairəndəki fermerlər “yox”.","ch":[
+ {"t":"Partiyanın xətti ilə səs ver","do":[{"pol_cap":3},{"pol_rep":-4}],"r":"Qanun keçdi. Partiya rəhbərliyi razıdır. Dairədə isə sənə salam verənlər azalıb."},
+ {"t":"Seçicilərin tərəfini tut","do":[{"pol_rep":5},{"pol_cap":-2}],"r":"Əleyhinə səs verdin. Fermerlər qapına bal göndərdi, partiya isə xəbərdarlıq."},
+ {"t":"Bitərəf qal","do":[{"pol_rep":-1}],"r":"Düyməni basmadın. Hər iki tərəf səndən narazı qaldı."}]},
+
+{"id":"pol_kec","once":false,"cool":4,"cat":"career","tone":"dramatic","age":[25,99],"w":0.5,"icon":"🔀","cond":{"pol_office":["meclis","komite"],"ruling":false},"t":"{ruling_party} nümayəndəsi ilə gizli görüş: “Bizə keç. Nazir müavini vəzifəsi, dairəndə yeni məktəb, yol. Müxalifətdə nə qazanacaqsan?”","ch":[
+ {"t":"Keç","fx":{"happy":2},"do":[{"pol_join":"ireli"},{"pol_rep":-10},{"pol_cap":6}],"r":"Köhnə yoldaşların telefonunu açmır. Yeni partiyada səni soyuq qarşıladılar, amma qapılar açıldı."},
+ {"t":"Rədd et","do":[{"pol_rep":5}],"r":"“Seçicilər məni bu partiyadan seçib.” Görüş 5 dəqiqə çəkdi."}]},
+
+{"id":"pres_zelzele","once":false,"cool":4,"cat":"country","tone":"rare","age":[35,120],"w":0.5,"icon":"🌋","cond":{"pres":true},"t":"Gecə saat üçdə zəlzələ: 6,4 bal. Şimal rayonlarında yüzlərlə ev dağılıb. Qərargah səni gözləyir.","ch":[
+ {"t":"Ehtiyat fondundan böyük yardım (5 mlrd ₼)","do":[{"ctry":{"fund":-5,"approval":9,"stability":4}}],"r":"Səhər artıq zəlzələ zonasında idin. Çadır şəhərcikləri iki günə quruldu, bir ildə yeni evlər tikiləcək."},
+ {"t":"Beynəlxalq yardım istə","do":[{"ctry":{"fund":-1,"foreign":3,"approval":2}}],"r":"Qonşu ölkələrdən xilasedicilər gəldi. Yardım gec, amma bol gəldi."},
+ {"t":"Yerli icra hakimiyyətlərinə tapşır","do":[{"ctry":{"approval":-8,"corruption":3}}],"r":"Yardımın yarısı yolda “itdi”. Zərərçəkənlərin videoları bütün şəbəkələrə yayıldı."}]},
+
+{"id":"pres_neft","once":false,"cool":3,"cat":"country","tone":"dramatic","age":[35,120],"w":0.6,"icon":"🛢️","cond":{"pres":true},"t":"Neftin qiyməti bir ayda yarıya düşdü. Maliyyə naziri: “Büdcədə dəlik açılır. Qərar sizindir.”","ch":[
+ {"t":"Qənaət rejimi","do":[{"ctry":{"fund":4,"approval":-7,"econ":-2}}],"r":"Nazirliklərin büdcəsi kəsildi, yeni layihələr dayandı. İnsanlar dişini sıxdı."},
+ {"t":"Xarici borc götür","do":[{"ctry":{"fund":6,"econ":-3,"foreign":-2}}],"r":"Kredit alındı. Bu ili rahat keçirəcəksən, borcu isə sonrakılar ödəyəcək."},
+ {"t":"Manatı devalvasiya et","do":[{"ctry":{"fund":8,"approval":-12,"econ":2}}],"r":"Səhər qiymətlər dəyişdi. Bazarda adını yaxşı sözlə çəkmirlər, amma büdcə nəfəs aldı."}]},
+
+{"id":"pres_serhed","once":false,"cool":3,"cat":"country","tone":"dramatic","age":[35,120],"w":0.6,"icon":"🪖","cond":{"pres":true},"t":"Kəşfiyyat xəbər verir: qonşu dövlətin qoşunları sərhədə yaxınlaşır. Xəbər agentlikləri həyəcan təbili çalır.","ch":[
+ {"t":"Diplomatik danışıqlar","do":[{"ctry":{"foreign":5,"approval":-2}}],"r":"Üç gün telefon danışıqları. Qoşunlar geri çəkildi, amma müxalifət “zəiflik” deyir."},
+ {"t":"Qoşunları sərhədə yerləşdir (çəkindirmə)","odds":[{"p":{"of":"ctry.army","div":105},"do":[{"ctry":{"approval":8,"stability":4,"loyalty":4,"fund":-1}}],"r":"Ordumuz sərhəddə göründü. Qarşı tərəf geri çəkildi, bir güllə də atılmadı. Ordunun gücü özü cavab oldu."},{"p":0.35,"do":[{"ctry":{"approval":-8,"econ":-4,"fund":-3}}],"r":"Gərginlik aylarla uzandı. İnvestorlar qaçdı, səfərbərlik büdcəni yedi."}]},
+ {"t":"Beynəlxalq təşkilatlara müraciət et","do":[{"ctry":{"foreign":3,"approval":1}}],"r":"Təhlükəsizlik Şurasında iclas çağırıldı. Bəyanatlar oxundu, gərginlik yavaş-yavaş söndü."}]},
+
+{"id":"pres_etiraz","once":false,"cat":"country","tone":"rare","age":[35,120],"scheduled_only":true,"force":true,"icon":"📢","cond":{"pres":true},"t":"Paytaxtın mərkəzi meydanında on minlərlə insan var: “İstefa!” Daxili işlər naziri əmr gözləyir.","ch":[
+ {"t":"Etirazçılarla dialoq, islahat vədi","do":[{"ctry":{"approval":8,"stability":6,"corruption":-3}}],"r":"Meydana özün çıxdın. Fit səsləri arasında danışmağa başladın, axırda alqış da eşidildi."},
+ {"t":"Hökuməti istefaya göndər","do":[{"ctry":{"approval":6,"stability":3}}],"r":"Baş nazir və beş nazir getdi. Meydan yavaş-yavaş boşaldı."},
+ {"t":"Polisə meydanı boşaltmağı əmr et","do":[{"ctry":{"stability":5,"approval":-15,"foreign":-15}}],"r":"Meydan boşaldı. Səhər dünya mətbuatının manşetlərində sənin adın var, xoş sözlərlə yox."},
+ {"t":"İstefa ver","fx":{"happy":-5},"do":[{"pres_end":"istefa verdi"}],"r":"Televiziya ilə qısa müraciət: “Xalqın iradəsinə hörmət edirəm.” Səhər artıq prezident deyildin."}]},
+
+{"id":"pres_generallar","once":false,"cat":"country","tone":"rare","age":[35,120],"scheduled_only":true,"force":true,"icon":"🎖️","cond":{"pres":true},"t":"Baş Qərargahdan məxfi məruzə: bəzi generallar narazıdır. “Yuxarıdakılar ordunu unudub.” Ordunun sədaqəti zəifləyir.","ch":[
+ {"t":"Hərbçilərə təcili təminat paketi (3 mlrd ₼)","do":[{"ctry":{"fund":-3,"loyalty":15}}],"r":"Mənzil, maaş, yeni forma. Kazarmalarda səsini yenə hörmətlə çəkirlər."},
+ {"t":"Baş Qərargah rəisini dəyiş","odds":[{"p":0.6,"do":[{"ctry":{"loyalty":8}}],"r":"Yeni rəis gənc və sənə sadiqdir. Narazı generallar təqaüdə göndərildi."},{"p":0.4,"do":[{"ctry":{"loyalty":-6,"stability":-5}}],"r":"Köhnə rəisin adamları bunu təhqir kimi qəbul etdi. Gərginlik artdı."}]},
+ {"t":"Şayiədir, əhəmiyyət vermə","odds":[{"p":{"of":"ctry.loyalty","div":40},"do":[{"ctry":{"loyalty":-4}}],"r":"Məruzə arxivə getdi. Hələ ki hər şey sakitdir."},{"p":0.35,"fx":{"happy":-25},"do":[{"pres_end":"hərbi çevriliş"}],"r":"Gecə televiziya binası tutuldu. Səhər artıq prezident deyildin. Ailənlə birlikdə ölkəni tərk etdin."}]}]},
+
+{"id":"pres_pandemiya","once":false,"cool":6,"cat":"country","tone":"rare","age":[35,120],"w":0.35,"icon":"🦠","cond":{"pres":true},"t":"Yeni virus sürətlə yayılır. Xəstəxanalar dolur. Səhiyyə naziri: “İki həftə gecikmək min insanın həyatı deməkdir.”","ch":[
+ {"t":"Sərt karantin","do":[{"ctry":{"health":5,"econ":-8,"approval":-3}}],"r":"Şəhərlər boşaldı. İqtisadiyyat dayandı, amma xəstəxanalar dayandı."},
+ {"t":"Yumşaq tədbirlər","do":[{"ctry":{"econ":-2,"health":-6,"approval":-2}}],"r":"Bazarlar açıq qaldı. Statistika isə hər gün daha ağır oldu."},
+ {"t":"Peyvəndə böyük vəsait (4 mlrd ₼)","do":[{"ctry":{"fund":-4,"health":6,"approval":4,"foreign":2}}],"r":"Peyvəndlər ilk gələn ölkələrdən biri olduq. Növbələr uzun idi, amma ümidli."}]},
+
+{"id":"pres_qohum","once":false,"cool":3,"cat":"country","tone":"dramatic","age":[35,120],"w":0.5,"icon":"👪","cond":{"pres":true,"has_any":["qardaş","bacı","uşaq"]},"t":"Ailə məclisində yaxın qohumun yanına gəlib: “Böyük dövlət tenderi var. Sən bir söz desən, bizim şirkətə verərlər. Ailədir də…”","ch":[
+ {"t":"Kömək et, ailədir","fx":{"money":200000},"do":[{"ctry":{"corruption":6,"approval":-2}}],"r":"Tender “öz adamlara” getdi. Ailə məclislərində sənə daha çox hörmət edirlər, qəzetlərdə isə sorğular başladı."},
+ {"t":"Rədd et","fx":{"happy":-3,"rel":{"qardaş":-8,"bacı":-8,"uşaq":-5}},"do":[{"ctry":{"corruption":-1}}],"r":"“Mən hamının prezidentiyəm.” Bir neçə ay səninlə danışmadılar."}]},
+
+{"id":"kecmis_prezident","cat":"career","tone":"everyday","age":[40,120],"icon":"📖","cond":{"ex_pres":true,"pres":false,"in_prison":false},"t":"Nəşriyyat xatirələrini yazmağı təklif edir. Fondlar məsləhətçi olmağa çağırır. Keçmiş prezidentin həyatı sakit görünür, amma telefon yenə susmur.","ch":[
+ {"t":"Xatirələrini yaz","fx":{"money":250000,"fame":3,"happy":6},"r":"Kitab bir ayda üç dəfə təkrar çap olundu. Hər səhifədə bir qərar, hər qərarda bir şübhə."},
+ {"t":"Xeyriyyə fondu qur","fx":{"happy":10,"money":-50000},"r":"Fond regionlarda məktəblərə kitabxana açır. Uşaqlar səni “prezident baba” çağırır."},
+ {"t":"Bağda dincəl","fx":{"happy":5,"health":3},"r":"Səhərlər qəzet, axşamlar nəvələr. İllər sonra ilk dəfə gündəlik planın yoxdur."}]}
+]

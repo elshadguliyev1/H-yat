@@ -15,7 +15,7 @@ function commitCrime(type) {
   if (caught) { L.case = { type, day: P.day, age: P.age }; endJobIfLaw(); log(`🚨 Cinayət işi açıldı: ${C.t}.`); }
   return { caught, title: C.t };
 }
-function endJobIfLaw() { if (P.job && ["law", "military", "aviation", "rescue", "education", "medicine"].includes(CAREERS[P.job.id].track)) { const t = jobTitle(); endJob("cinayət işi"); log(`📄 ${t} vəzifəsindən uzaqlaşdırıldı.`); } }
+function endJobIfLaw() { if (P.job && ["law", "military", "aviation", "rescue", "education", "medicine", "politics"].includes(CAREERS[P.job.id].track)) { const t = jobTitle(); endJob("cinayət işi"); log(`📄 ${t} vəzifəsindən uzaqlaşdırıldı.`); } }
 
 // the trial: lawyer quality, plea, prior record and evidence decide. Returns a human-readable verdict.
 function trial(lawyer, plea) {

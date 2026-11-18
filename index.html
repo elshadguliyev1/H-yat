@@ -97,6 +97,9 @@ h1, h2, h3 { font-family: var(--f-display); font-weight: 800; margin: 0; letter-
 nav.tabs { position: sticky; top: 0; z-index: 4; background: var(--bg); padding-top: env(safe-area-inset-top); border-bottom: 1px solid var(--line) }
 nav.tabs .wrap { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding-block: 6px }
 nav.tabs button { flex: 1 0 auto; border: 0; background: none; padding: 8px 10px; border-radius: 12px; color: var(--muted); font-weight: 800; font-size: 13.5px; white-space: nowrap }
+.ctry-row .bar { height: 9px; border-radius: 9px; background: var(--line); overflow: hidden } .ctry-row .bar i { display: block; height: 100%; border-radius: 9px }
+.ctry-row { display: grid; grid-template-columns: 11em 1fr 2.2em; gap: 8px; align-items: center; margin: 6px 0; font-size: 13.5px }
+.ctry-row span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis } .ctry-row b { text-align: right; font-variant-numeric: tabular-nums }
 nav.tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg) }
 .panel { padding-top: 12px }
 .yr { margin-bottom: 14px }
@@ -182,6 +185,7 @@ nav.tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg) 
 <script src="js/career.js"></script>
 <script src="js/justice.js"></script>
 <script src="js/sport.js"></script>
+<script src="js/politics.js"></script>
 <script src="js/interp.js"></script>
 <script>
 "use strict";
@@ -281,14 +285,15 @@ function renderGame() {
       <button class="help" id="helpBtn" aria-label="İkonların izahı">?</button></header>
     <div class="wrap stats">${STAT_KEYS.map(k => `<div class="stat"><span aria-hidden="true">${STAT_ICONS[k]}</span><div class="bar" role="meter" aria-label="${STAT_NAMES[k]}" aria-valuenow="${P.st[k]}" aria-valuemin="0" aria-valuemax="100"><i style="width:${P.st[k]}%;background:${STAT_COLORS[k]}"></i></div><span class="n">${P.st[k]}</span></div>`).join("")}
       <div class="stat"><span aria-hidden="true">⭐</span><div class="bar"><i style="width:${P.fame}%;background:var(--accent)"></i></div><span class="n">${P.fame}</span></div></div>
-    <nav class="tabs"><div class="wrap" role="tablist">${[["life", "Həyat"], ["act", "Fəaliyyət"], ["soc", "Pıçıltı"], ["ppl", "İnsanlar"], ["me", "Mən"]].map(([id, t]) => `<button role="tab" data-t="${id}" aria-selected="${tab === id}">${t}</button>`).join("")}</div></nav>
+    <nav class="tabs"><div class="wrap" role="tablist">${[["life", "Həyat"], ["act", "Fəaliyyət"], ...(isPres() ? [["gov", "🏛️ Ölkə"]] : []), ["soc", "Pıçıltı"], ["ppl", "İnsanlar"], ["me", "Mən"]].map(([id, t]) => `<button role="tab" data-t="${id}" aria-selected="${tab === id}">${t}</button>`).join("")}</div></nav>
     <main class="wrap panel" id="panel"></main>
     <div class="agebar"><div class="wrap"><div class="energy" title="Bu il qalan fəaliyyət">${[0, 1, 2].map(i => `<i class="${i < P.acts ? "" : "off"}"></i>`).join("")}</div><button class="btn" id="ageBtn">+1 yaş →</button></div></div></div>`;
   app.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { tab = b.dataset.t; renderGame(); window.scrollTo({ top: 0 }); });
   $("#ageBtn").onclick = nextYear;
   $("#helpBtn").onclick = showLegend;
   app.querySelectorAll(".stat").forEach((el, i) => { el.onclick = () => toast(i < STAT_KEYS.length ? `${STAT_ICONS[STAT_KEYS[i]]} ${STAT_NAMES[STAT_KEYS[i]]}` : "⭐ Şöhrət", 1400); });
-  ({ life: panelLife, act: panelAct, soc: panelSoc, ppl: panelPpl, me: panelMe })[tab]();
+  if (tab === "gov" && !isPres()) tab = "life";
+  ({ life: panelLife, act: panelAct, gov: panelGov, soc: panelSoc, ppl: panelPpl, me: panelMe })[tab]();
   if (P.yearEvents && P.yearEvents.length && !$(".modal")) showNextEvent();
 }
 function panelLife() {
@@ -377,7 +382,7 @@ function panelAct() {
   const list = ACTIONS.filter(a => P.age >= a.min && (!a.max || P.age <= a.max) && (!a.if || a.if()) && !(a.id === "post" && !P.soc) && (P.army && !P.army.done ? !!a.army : !a.army));
   $("#panel").innerHTML = `<p class="small muted" style="margin:0 0 10px">Hər il 3 fəaliyyət seçə bilərsən (aşağıdakı nöqtələr). Sonra <b>+1 yaş</b> bas.</p>
     <div class="acts">${list.map(a => `<button class="act" data-id="${a.id}" ${P.acts <= 0 || (a.cost && P.age >= 18 && P.money < a.cost) ? "disabled" : ""}><span class="i" aria-hidden="true">${a.icon}</span><span>${typeof a.t === "function" ? a.t() : a.t}${a.cost ? `<small>${P.age >= 18 ? fmtMoney(a.cost) : "valideynlər ödəyir"}</small>` : ""}</span></button>`).join("")}</div>`;
-  const work = P.job && !P.job.susp && P.job.id !== "biznes" && !(P.army && !P.army.done);
+  const work = P.job && !P.job.susp && P.job.id !== "biznes" && CAREERS[P.job.id].track !== "politics" && !(P.army && !P.army.done);
   const W = [["raise", "💰", "Maaş artımı istə"], ["promo", "📈", "Vəzifə yüksəlişi üçün müraciət et"], ["boss", "🤝", "Rəhbərlə münasibət qur"], ["switch", "🔁", "Başqa iş yerinə keç"], ["own", "🏪", "Öz biznesini qur (5 000 ₼)"]];
   const extra = [];
   if (P.age >= 18 && P.money >= 500 && !(P.army && !P.army.done)) extra.push(["invest", "📊", "İnvestisiya et"]);
@@ -424,6 +429,7 @@ function doAction(a) {
   if (a.special === "bank") return bankSheet();
   if (a.special === "side") return sidePicker();
   if (a.special === "sport") return sportPicker();
+  if (a.special === "party") return partyPicker();
   if (a.special === "love") return findLove();
   if (!useAct()) return;
   const changes = apply(a.fx ? a.fx() : {});
@@ -538,6 +544,33 @@ function sidePicker() {
     s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
   });
 }
+function partyPicker() {
+  const s = sheet(`<div class="big">🏛️</div><p class="q">Siyasətə hansı yolla girirsən?</p><div class="choices">${Object.entries(PARTIES).map(([id, p]) => `<button data-p="${id}">${esc(p.t)} <span class="muted small">· ${esc(p.d)}</span></button>`).join("")}</div><button class="btn ghost close">Bağla</button>`);
+  s.el.querySelector(".close").onclick = s.close;
+  s.el.querySelectorAll("[data-p]").forEach(b => b.onclick = () => {
+    if (!useAct()) return;
+    polJoin(b.dataset.p); save();
+    const t = b.dataset.p === "bitaraf" ? "Seçki komissiyasında bitərəf namizəd kimi qeydiyyatdan keçdin. Növbəti seçkiləri gözləyirsən." : `${PARTIES[b.dataset.p].t} ofisində sənə üzvlük vəsiqəsi verdilər. İlk tapşırıq: seçicilərlə görüşlər. Seçkilər elan olunanda xəbər gələcək.`;
+    s.el.innerHTML = `<div class="big">🏛️</div><p class="q">${esc(t)}</p><button class="btn close">Yaxşı</button>`;
+    s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
+  });
+}
+// ---------- the country (president only) ----------
+function ctryChips(ch) { return ch.filter(([, d]) => d).map(([k, d]) => k === "fund" ? `<span class="${d > 0 ? "up" : "dn"}">💰 ${d > 0 ? "+" : ""}${d} mlrd ₼</span>` : `<span class="${(d > 0) !== (k === "corruption") ? "up" : "dn"}">${CTRY_KEYS[k][1]} ${CTRY_KEYS[k][0]} ${d > 0 ? "+" : ""}${d}</span>`).join(""); }
+function panelGov() {
+  const C = P.ctry, until = Cal.fmt(P.pres.until), cats = [...new Set(GOV_ACTIONS.map(a => a.cat))];
+  $("#panel").innerHTML = `<div class="card"><h3 style="margin:0 0 4px">Ölkə idarəsi</h3><p class="muted small" style="margin:0 0 10px">${P.pres.term}-ci müddət · ${until} tarixinə qədər · bu il qalan qərar: <b>${C.acts}</b></p>
+    ${Object.entries(CTRY_KEYS).map(([k, [t, i]]) => { const v = C[k], good = k === "corruption" ? 100 - v : v, col = good >= 60 ? "var(--good)" : good >= 35 ? "#d39b2a" : "var(--bad)";
+      return `<div class="ctry-row"><span>${i} ${t}</span><div class="bar" role="meter" aria-label="${t}" aria-valuenow="${v}" aria-valuemin="0" aria-valuemax="100"><i style="width:${v}%;background:${col}"></i></div><b>${v}</b></div>`; }).join("")}
+    <p class="small" style="margin:10px 0 0">💰 Ehtiyat fondu: <b style="color:${C.fund < 0 ? "var(--bad)" : "inherit"}">${C.fund} mlrd ₼</b> · 🛢️ Neft: ${C.oil}$ · 🪖 Hərbi xidmət: ${C.conscript ? C.conscript + " ay" : "könüllü (peşəkar ordu)"}</p></div>
+    ${cats.map(cat => `<p class="sec-h">${cat}</p><div class="acts">${govAvailable().filter(a => a.cat === cat).map(a => `<button class="act" data-g="${a.id}" ${C.acts <= 0 || C.fund < a.cost ? "disabled" : ""}><span class="i" aria-hidden="true">${a.icon}</span><span>${a.t}${a.cost ? ` <span class="muted small">· ${a.cost} mlrd ₼</span>` : ""}</span></button>`).join("")}</div>`).join("")}`;
+  $("#panel").querySelectorAll("[data-g]").forEach(b => b.onclick = () => {
+    const r = doGov(b.dataset.g); if (!r) return toast("Bu il üçün qərarların bitdi. +1 yaş bas."); save();
+    const a = GOV_ACTIONS.find(x => x.id === b.dataset.g);
+    const s = sheet(`<div class="big">${a.icon}</div><p class="q">${esc(r.text)}</p><div class="fx">${ctryChips(r.changes)}</div><button class="btn close">Yaxşı</button>`);
+    s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
+  });
+}
 function sportPicker() {
   const list = sportsFor(P.g);
   const s = sheet(`<div class="big">🏅</div><p class="q">Hansı idman bölməsinə yazılırsan?</p><div class="choices">${list.map(id => `<button data-s="${id}">${SPORTS[id].icon} ${SPORTS[id].t}</button>`).join("")}</div><button class="btn ghost close">Bağla</button>`);
@@ -636,6 +669,7 @@ function panelMe() {
       ${job ? `<dt>İş</dt><dd>${job.icon} ${esc(jobTitle())}${P.job.susp ? " (dayandırılıb)" : ""}</dd><dt>İş yeri</dt><dd>${esc(P.job.employer || "—")}</dd><dt>Maaş</dt><dd>${fmtMoney(salaryMonthly())}/ay</dd>
         <dt>Staj</dt><dd>${P.job.years} il (bu vəzifədə ${P.job.lvYears || 0})</dd><dt>İş göstəricisi</dt><dd>${P.job.perf}/100</dd><dt>Rəhbərlə münasibət</dt><dd>${P.job.boss ?? "—"}/100</dd>
         <dt>Şirkətin vəziyyəti</dt><dd>${P.job.company == null ? "—" : P.job.company >= 70 ? "güclü" : P.job.company >= 40 ? "normal" : P.job.company >= 20 ? "çətin" : "böhran"}</dd>` : ""}
+      ${P.pol ? `<dt>Siyasət</dt><dd>${esc(PARTIES[P.pol.party].t)}${P.pol.office ? " · <b>" + esc(OFFICES[P.pol.office].t) + "</b>" : ""} · nüfuz ${P.pol.rep}/100${(P.pol.ran || []).length ? `<br><small>Seçkilər: ${P.pol.ran.slice(-5).map(x => `${x.age} yaş, ${OFFICES[x.office].t.toLowerCase().replace("üzvü", "").replace("millət vəkili", "Məclis").trim()}: ${x.pct}% ${x.win ? "✅" : "❌"}`).join("; ")}</small>` : ""}${P.pres && P.pres.ended ? `<br><small>Prezident olub: ${P.pres.years} il (${esc(P.pres.reason)})</small>` : ""}</dd>` : ""}
       ${P.sport ? `<dt>İdman</dt><dd>${SPORTS[P.sport.id].icon} ${SPORTS[P.sport.id].t} · ${P.sport.start} yaşdan${P.sport.active ? ` · səviyyə ${sportLevel()}/100${P.sport.inj ? " · 🩹 zədəli" : ""}` : ` · ${P.sport.ended} yaşda bitirdi (${esc(P.sport.reason || "")})`}${P.sport.medals.length ? `<br><small>Medallar: ${["🥇", "🥈", "🥉"].map((m, i) => { const n = P.sport.medals.filter(x => x.place === i).length; return n ? m + "×" + n : ""; }).filter(Boolean).join(" ")} · ən yaxşı nəticə: ${P.sport.best >= 0 ? SPORT_COMP[P.sport.best][0] : "—"}</small>` : ""}</dd>` : ""}
       ${P.lic && (P.lic.cpl || P.lic.atpl || P.lic.surucu) ? `<dt>Lisenziyalar</dt><dd>${[P.lic.surucu ? "Sürücülük" : "", P.lic.ppl ? "PPL" : "", P.lic.cpl ? "CPL" : "", P.lic.atpl ? "ATPL" : ""].filter(Boolean).join(" · ")}</dd>` : ""}
       ${P.hours ? `<dt>Uçuş saatı</dt><dd>${P.hours.toLocaleString("az")}</dd>` : ""}
@@ -681,6 +715,7 @@ function renderEnd() {
       <div style="margin-top:6px"><b>${E.total > 0 ? `Cəmi ${fmtMoney(E.total)}` : "Borclar əmlakdan çox idi: vərəsələrə heç nə qalmadı"}</b></div>
       ${E.total > 0 ? (E.heirs.length ? `<div>Vərəsələr: ${E.heirs.map(h => `${esc(h.name)} (${esc(h.role)})`).join(", ")} — hər birinə təxminən ${fmtMoney(E.share)}.</div>` : "<div>Vərəsə qalmadı: əmlak dövlətə keçdi.</div>") : ""}
       ${P.assets.filter(a => a.type === "biznes").map(a => `<div>🏢 ${esc(a.t)} artıq ailədə davam edir.</div>`).join("")}</div>`; })()}
+    ${P.flags.prezident != null && P.ctry ? `<div class="card small" style="text-align:left;margin-bottom:12px"><h3 style="font-size:16px;margin-bottom:6px">🏛️ Prezidentlik</h3><div>${P.pres.ended ? `${P.pres.years} il ölkəni idarə etdi, ${P.pres.term} müddət. Sonu: ${esc(P.pres.reason || "")}.` : "Vəzifədə dünyasını dəyişdi. Ölkə matəm elan etdi."}</div><div class="muted">Son göstəricilər: dəstək ${P.ctry.approval}%, iqtisadiyyat ${P.ctry.econ}, ordu ${P.ctry.army}, korrupsiya ${P.ctry.corruption}, ehtiyat fondu ${P.ctry.fund} mlrd ₼.</div></div>` : ""}
     ${(P.careerHist || []).length ? `<div class="card small" style="text-align:left;margin-bottom:12px"><h3 style="font-size:16px;margin-bottom:6px">Karyera yolu</h3>${P.careerHist.filter(h => h.kind !== "end").slice(-8).map(h => `<div>${h.age} yaş · ${esc(h.text)}</div>`).join("")}</div>` : ""}
     <button class="btn" id="again" style="width:100%">Yeni həyat başlat 🌱</button>
     <button class="btn ghost" id="story" style="width:100%;margin-top:8px">Həyat hekayəsinə bax</button></section>`;
@@ -690,7 +725,7 @@ function renderEnd() {
 
 // ---------- boot ----------
 // ---------- boot: content library, rules, database ----------
-const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json"];
+const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json"];
 (async function boot() {
   app.innerHTML = '<p class="wrap muted" style="padding-top:40vh;text-align:center">Yüklənir…</p>';
   try {

@@ -7,7 +7,7 @@
 const fs = require("fs"), path = require("path"), vm = require("vm");
 const ROOT = path.join(__dirname, "..");
 const read = f => fs.readFileSync(path.join(ROOT, f), "utf8");
-const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json"];
+const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json"];
 
 // strict JSON check first (the browser uses JSON.parse; the sandbox below would forgive trailing commas)
 for (const f of ["data/rules.json", "data/careers.json", ...EVENT_FILES]) { try { JSON.parse(read(f)); } catch (e) { console.log("✗ JSON xətası: " + f + " — " + e.message); process.exit(1); } }
@@ -17,7 +17,7 @@ function sandbox() {
   const ctx = { console, Math, Date, JSON, Object, Array, String, Number, Intl, Set, Map, Promise, isFinite,
     localStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } } };
   vm.createContext(ctx);
-  vm.runInContext(read("js/core.js") + "\n" + read("engine.js") + "\n" + read("js/career.js") + "\n" + read("js/justice.js") + "\n" + read("js/sport.js") + "\n" + read("js/interp.js") + `
+  vm.runInContext(read("js/core.js") + "\n" + read("engine.js") + "\n" + read("js/career.js") + "\n" + read("js/justice.js") + "\n" + read("js/sport.js") + "\n" + read("js/politics.js") + "\n" + read("js/interp.js") + `
     RULES = ${read("data/rules.json")};
     loadCareers(${read("data/careers.json")});
     globalThis.LISTS = [${EVENT_FILES.map(read).join(",")}];
@@ -54,7 +54,7 @@ function sandbox() {
     };
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
-    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial; globalThis.hasRecord = hasRecord; globalThis.everConvicted = everConvicted; globalThis.lockReason = lockReason; globalThis.SPORTS = SPORTS;
+    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial; globalThis.hasRecord = hasRecord; globalThis.everConvicted = everConvicted; globalThis.lockReason = lockReason; globalThis.SPORTS = SPORTS; globalThis.RULES = RULES; globalThis.polJoin = polJoin; globalThis.setOffice = setOffice; globalThis.polRun = polRun; globalThis.isPres = isPres; globalThis.govAvailable = govAvailable; globalThis.doGov = doGov; globalThis.CTRY_KEYS = CTRY_KEYS; globalThis.pick = pick;
     globalThis.playLife = function (name, g, dream, seed, maxAge, log) { newLife(name, g, "Bakı", dream, seed); while (P.alive && P.age < (maxAge || 130)) playYear(log); return P; };
   `, ctx);
   return ctx;
@@ -290,6 +290,39 @@ test("idman: futboldan başqa növlər, cinsə uyğun bölmələr, medallar, zə
   ok(joined > 60, "bölməyə yazılan az: " + joined); ok(Object.keys(kinds).length >= 5, "növ az: " + Object.keys(kinds).join(","));
   ok(medals > 50 && pros >= 3, `medal ${medals}, peşəkar ${pros}`);
   console.log(`      (300 həyatdan ${joined} idmana yazıldı: ${Object.entries(kinds).map(([k, v]) => S.SPORTS[k].t + " " + v).join(", ")}; medal ${medals}, beynəlxalq ${intl}, olimpiya ${oly}; peşəkar ${pros}, sonra məşqçi ${coaches}, zədə ilə bitən ${injuredOut})`);
+});
+
+test("siyasət: seçkilər qaydalara uyğundur, prezident ölkəni idarə edir, müddət bitir, göstəricilər hüdudda qalır", () => {
+  const R = S.RULES.politics; let presidents = 0, ended = {}, years = 0, ran = 0;
+  for (let s = 1; s <= 40; s++) {
+    S.newLife("Siyasi", s % 2 ? "k" : "q", "Bakı", "biznes", 80000 + s); while (S.P.age < 37 && S.P.alive) S.playYear(); if (!S.P.alive) continue;
+    S.P.yearEvents = []; S.P.legal = { record: [], case: null, prison: null, history: [] }; S.P.edu.degree = S.P.edu.degree || "muellim";
+    S.polJoin("ireli"); S.setOffice("nazir_muavini", "test"); S.P.pol.cap = 30; S.P.pol.rep = 75; S.P.fame = 60; S.P.money = 1e6;
+    // a municipal run cannot demote a deputy minister
+    const ctx0 = { vars: {} }; S.polRun("belediyye", 0, ctx0); ok(S.P.pol.office === "nazir_muavini", "bələdiyyə seçkisi vəzifəni aşağı saldı");
+    for (let t = 0; t < 6 && !S.isPres(); t++) { const ctx = { vars: {} }; S.polRun("prezident", 2, ctx); ran++; ok(ctx.vars.pol_result, "nəticə mətni yoxdur"); }
+    if (!S.isPres()) continue; presidents++;
+    ok(S.P.job && S.P.job.id === "prezident", "prezident işi başlamadı");
+    const start = S.P.age;
+    for (let y = 0; y < 20 && S.P.alive && S.isPres(); y++) {
+      for (let k = 0; k < 3; k++) { const av = S.govAvailable().filter(a => S.P.ctry.fund >= a.cost); if (av.length) S.doGov(S.pick(av).id); }
+      S.playYear();
+      for (const k of Object.keys(S.CTRY_KEYS)) ok(S.P.ctry[k] >= 0 && S.P.ctry[k] <= 100, k + " hüduddan çıxdı: " + S.P.ctry[k]);
+      ok(isFinite(S.P.ctry.fund), "fond");
+      ok(S.P.pres.term <= R.max_terms, "müddət limiti aşıldı");
+    }
+    if (S.P.alive && S.P.pres.ended) { const why = S.P.pres.reason; ended[why] = (ended[why] || 0) + 1; ok(!S.P.job || S.P.job.id !== "prezident", "vəzifə bitdi, iş qaldı"); ok(!S.P.pol.office, "ofis qaldı"); ok(S.P.flags.exPrezident != null, "keçmiş prezident qeyd olunmadı"); }
+    years += S.P.age - start; ok(S.P.age - start <= R.cycle.prezident * R.max_terms + 2, "prezidentlik çox uzun: " + (S.P.age - start));
+  }
+  ok(presidents >= 5, "prezident seçilən az: " + presidents);
+  // a convicted person cannot register
+  S.newLife("Məhkum", "k", "Bakı", "biznes", 81000); while (S.P.age < 30) S.playYear(); S.polJoin("birlik"); S.P.legal.record.push({ day: S.P.day, age: S.P.age, type: "ogurluq", verdict: "cərimə", years: 0 });
+  const c2 = { vars: {} }; S.polRun("meclis", 0, c2); ok(!S.P.pol.office && /qəbul etmədi/.test(c2.vars.pol_result), "məhkum namizəd oldu");
+  // in Monte-Carlo lives: no one runs below the minimum age; nobody keeps an office in prison
+  for (let i = 0; i < 60; i++) { const P = S.playLife("Sim", i % 2 ? "q" : "k", "polis", 120000 + i, 90);
+    if (P.pol) for (const r of P.pol.ran || []) ok(r.age >= R.min_age[r.office], `${r.office} üçün ${r.age} yaş`);
+    ok(!(P.pol && P.pol.office && P.legal && P.legal.prison && !P.legal.prison.released), "həbsdə vəzifə"); }
+  console.log(`      (40 siyasətçidən ${presidents} prezident seçildi, ${ran} prezident seçkisi; orta prezidentlik ${(years / Math.max(1, presidents)).toFixed(1)} il; sonu: ${Object.entries(ended).map(([k, v]) => k + " " + v).join(", ")})`);
 });
 
 test("erkən ölüm mümkündür, amma nadirdir; keçmiş futbolçuya məşqçilik açıqdır", () => {

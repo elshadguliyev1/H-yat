@@ -68,6 +68,15 @@ const Interp = (() => {
     sport_best_gte: v => !!P.sport && P.sport.best >= v,
     sport_level_gte: v => sportActive() && sportLevel() >= v,
     sport_ever: v => !!P.sport === v,
+    pol: v => !!P.pol === v,
+    pol_party: v => !!P.pol && [].concat(v).includes(P.pol.party),
+    pol_office: v => !!P.pol && (v === true ? !!P.pol.office : v === false ? !P.pol.office : [].concat(v).includes(P.pol.office)),
+    pol_rep_gte: v => !!P.pol && P.pol.rep >= v,
+    ruling: v => !!P.pol && (P.pol.party === rulingParty()) === v,
+    pres: v => isPres() === v,
+    ex_pres: v => (P.flags.exPrezident != null) === v,
+    ctry_gt: o => isPres() && Object.entries(o).every(([k, v]) => P.ctry[k] > v),
+    ctry_lt: o => isPres() && Object.entries(o).every(([k, v]) => P.ctry[k] < v),
     any: list => list.some(c => check(c)),
     not: c => !check(c)
   };
@@ -103,6 +112,14 @@ const Interp = (() => {
     promote_role(o, ctx) { const p = person(o.from); if (!p) return; p.role = o.to; p.rel = clamp(p.rel + (o.rel || 0)); ctx.vars.new = p.name; },
     start_job(o) { startJob(o.id, o.lv || 0, o.note); },
     sport_join(id) { sportJoin(id); },
+    pol_join(party) { polJoin(party); },
+    pol_run(o, ctx) { polRun(o.office, o.spend || 0, ctx); },
+    pol_office(o) { setOffice(o, "təyinat"); },
+    pol_leave(reason) { leaveOffice(reason); },
+    pol_rep(n) { if (P.pol) P.pol.rep = clamp(P.pol.rep + n); },
+    pol_cap(n) { if (P.pol) P.pol.cap += n; },
+    ctry(o) { if (isPres()) ctryApply(o); },
+    pres_end(reason) { presEnd(reason); },
     sport_end(reason) { sportEnd(reason); },
     sport_skill(n) { if (P.sport) P.sport.skill = clamp(P.sport.skill + n); },
     end_job(o) { endJob(o.reason || "bitdi"); },
@@ -166,6 +183,14 @@ const Interp = (() => {
   const COUNTRIES = ["Türkiyənin", "Rusiyanın", "Portuqaliyanın", "Belçikanın", "Almaniyanın", "İngiltərənin"];
   const TV = {
     sick_parent: () => person("ata") && person("ata").age > 62 ? "Atan" : "Anan",
+    party: () => P.pol ? PARTIES[P.pol.party].t : "partiya",
+    office: () => P.pol && P.pol.office ? OFFICES[P.pol.office].t : "",
+    ruling_party: () => PARTIES[rulingParty()].t,
+    camp_b1: () => fmtMoney(RULES.politics.campaign.belediyye[1]), camp_b2: () => fmtMoney(RULES.politics.campaign.belediyye[2]),
+    camp_m1: () => fmtMoney(RULES.politics.campaign.meclis[1]), camp_m2: () => fmtMoney(RULES.politics.campaign.meclis[2]),
+    camp_p1: () => fmtMoney(RULES.politics.campaign.prezident[1]), camp_p2: () => fmtMoney(RULES.politics.campaign.prezident[2]),
+    pres_term: () => P.pres ? String(P.pres.term) : "1",
+    approval: () => P.ctry ? P.ctry.approval + "%" : "",
     sport: () => sportName(),
     sport_l: () => sportName().toLowerCase(),
     sport_icon: () => P.sport ? SPORTS[P.sport.id].icon : "🏅",
@@ -208,7 +233,7 @@ const Interp = (() => {
     let s = String(t ?? "").replace(/\{(\w+)\}/g, (m, k) => ctx && ctx.vars && ctx.vars[k] != null ? ctx.vars[k] : TV[k] ? TV[k]() : m);
     return fill(s);
   }
-  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", "sal_new", "kid_m", "kid_b", "biz_value", "kid_m_gen", "kid_m_dat", "yoldas_dat", "kid_m_word", "kid_partner", "grand_name", "grand_word", "grand_parent", "granny_word", "wcost_full", "wcost_part", "wcost_toy", "crime", "caught", "verdict", ...Object.keys(TV)]);
+  const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "pol_result", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", "sal_new", "kid_m", "kid_b", "biz_value", "kid_m_gen", "kid_m_dat", "yoldas_dat", "kid_m_word", "kid_partner", "grand_name", "grand_word", "grand_parent", "granny_word", "wcost_full", "wcost_part", "wcost_toy", "crime", "caught", "verdict", ...Object.keys(TV)]);
 
   // ---------------- dynamic choice lists ----------------
   const GEN = {
@@ -242,7 +267,7 @@ const Interp = (() => {
     }
     for (const s of later) { s.day = Cal.addYears(P.day, 1); P.sched.push(s); }
     P.sched.sort((a, b) => a.day - b.day);
-    const pool = LIB.filter(e => !e.scheduled_only && ok(e));
+    const pool = LIB.filter(e => !e.scheduled_only && ok(e) && (e.p == null || R() < e.p)); // p: chance per year for rare offers
     // 2) forced milestones, 3) weighted random by priority
     for (const e of pool) if (e.force && !out.includes(e.id)) out.push(e.id);
     let rest = pool.filter(e => !e.force && !out.includes(e.id));
@@ -264,7 +289,7 @@ const Interp = (() => {
   function prob(p) {
     if (num(p)) return p;
     if (p && p.of === "job.lv") return (P.job ? P.job.lv : 0) / (p.div || 1) + (p.add || 0);
-    if (p && p.of) { const [grp, key] = p.of.split("."); const base = grp === "st" ? P.st[key] : grp === "tal" ? P.tal[key] : grp === "tr" ? (P.tr[key] || 50) : 0; return base / (p.div || 100) + (p.add || 0); }
+    if (p && p.of) { const [grp, key] = p.of.split("."); const base = grp === "st" ? P.st[key] : grp === "tal" ? P.tal[key] : grp === "tr" ? (P.tr[key] || 50) : grp === "ctry" ? (P.ctry ? P.ctry[key] : 0) : grp === "pol" ? (P.pol ? P.pol[key] : 0) : 0; return base / (p.div || 100) + (p.add || 0); }
     return 0.5;
   }
   // apply a choice: returns {text, changes}
@@ -288,7 +313,7 @@ const Interp = (() => {
   }
 
   // ---------------- validation ----------------
-  const EVENT_KEYS = new Set(["prison", "id", "cat", "tone", "age", "age_min", "age_max", "icon", "visual", "t", "title", "description", "location", "w", "weight", "priority", "force", "once", "repeatable", "cool", "scheduled_only", "cond", "conditions", "ch", "choices", "choices_gen", "g", "note"]);
+  const EVENT_KEYS = new Set(["prison", "p", "id", "cat", "tone", "age", "age_min", "age_max", "icon", "visual", "t", "title", "description", "location", "w", "weight", "priority", "force", "once", "repeatable", "cool", "scheduled_only", "cond", "conditions", "ch", "choices", "choices_gen", "g", "note"]);
   const CHOICE_KEYS = new Set(["t", "cond", "fx", "do", "r", "odds", "trait", "id", "text", "result_text", "effects"]);
   const FX_KEYS = new Set([...STAT_KEYS, "money", "fame", "followers", "rel", "tal", "flag", "unflag", "perf"]);
   function validate(lists) {

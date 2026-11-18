@@ -150,5 +150,55 @@
   "inheritance": {
     "source": "Sadələşdirilmiş oyun konfiqurasiyası: birinci növbə vərəsələr (həyat yoldaşı, övladlar, valideynlər) bərabər pay alır; yoxdursa ikinci növbə (qardaş-bacı, nənə-baba).",
     "verified": false
+  },
+  "politics": {
+    "_doc": "Uydurma ölkə üçün sadələşdirilmiş oyun konfiqurasiyası: real konstitusiya və ya seçki qanunu deyil.",
+    "verified": false,
+    "min_age": {
+      "belediyye": 21,
+      "meclis": 25,
+      "prezident": 35
+    },
+    "cycle": {
+      "belediyye": 5,
+      "meclis": 5,
+      "prezident": 7
+    },
+    "offset": {
+      "belediyye": 4,
+      "meclis": 0,
+      "prezident": 3
+    },
+    "threshold": {
+      "belediyye": 35,
+      "meclis": 40
+    },
+    "max_terms": 2,
+    "president_needs_degree": true,
+    "campaign": {
+      "belediyye": [
+        0,
+        3000,
+        12000
+      ],
+      "meclis": [
+        0,
+        20000,
+        80000
+      ],
+      "prezident": [
+        0,
+        150000,
+        600000
+      ]
+    },
+    "party_strength": {
+      "ireli": 46,
+      "birlik": 22,
+      "merkez": 14,
+      "yasil": 7,
+      "bitaraf": 0
+    },
+    "max_age_president": 75
   }
 }

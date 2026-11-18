@@ -66,6 +66,10 @@ function endJob(reason) {
   const c = CAREERS[P.job.id];
   careerLog(`İşdən ayrıldı (${reason})`, "end");
   P.jobs.push({ id: P.job.id, title: jobTitle(), from: P.job.since, to: P.age, reason, employer: P.job.employer });
+  if (c.track === "politics" && P.pol && P.pol.office) { // the office ends with the job, whatever ended it
+    if (P.job.id === "prezident" && P.pres && !P.pres.ended) { P.pres.ended = P.day; P.pres.reason = reason; P.pres.years = Math.round((P.day - P.pres.start) / 365.25); P.flags.exPrezident = P.age; }
+    P.pol.hist.push({ age: P.age, t: c.lv[P.job.lv] + " vəzifəsini tərk etdi: " + reason }); P.pol.office = null;
+  }
   if (P.job.id === "futbolcu") P.flags.exFutbolcu = P.flags.exFutbolcu || P.age;
   P.job = null;
   return c;
@@ -113,6 +117,7 @@ function jobTick() {
   const j = P.job, c = CAREERS[j.id];
   if (j.susp) return;
   j.years++; j.lvYears = (j.lvYears || 0) + 1;
+  if (c.track === "politics") return; // offices change only through elections and appointments (js/politics.js)
   const key = c.key === "health" ? P.st.health : P.st[c.key];
   j.perf = clamp(Math.round(j.perf * 0.5 + (key * 0.5 + (j.boss - 50) * 0.2 + rnd(0, 40)) * 0.5));
   j.boss = clamp(j.boss + rnd(-4, 3) + (j.perf > 70 ? 2 : j.perf < 35 ? -3 : 0));

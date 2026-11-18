@@ -1317,5 +1317,83 @@
     ],
     "work": "Əlavə məşq et",
     "_doc": "Növ P.sport.id-dədir. Yüksəliş yarış nəticələri ilə (sportTick)."
+  },
+  "siyasetci": {
+    "t": "Siyasətçi",
+    "icon": "🏛️",
+    "track": "politics",
+    "lv": [
+      "Bələdiyyə üzvü",
+      "Millət vəkili",
+      "Komitə sədri",
+      "Nazir müavini",
+      "Nazir"
+    ],
+    "sal": [
+      [
+        400,
+        700
+      ],
+      [
+        2500,
+        3200
+      ],
+      [
+        3200,
+        4200
+      ],
+      [
+        4000,
+        5500
+      ],
+      [
+        6000,
+        8000
+      ]
+    ],
+    "minYears": [
+      99,
+      99,
+      99,
+      99
+    ],
+    "key": "smarts",
+    "fame": 1,
+    "retire": 90,
+    "paths": [],
+    "employers": [
+      "Bələdiyyə",
+      "Milli Məclis",
+      "Milli Məclis",
+      "Nazirlik",
+      "Nazirlik"
+    ],
+    "work": "Seçicilərlə görüş",
+    "_doc": "Yalnız seçki və təyinatla (js/politics.js)."
+  },
+  "prezident": {
+    "t": "Prezident",
+    "icon": "🏛️",
+    "track": "politics",
+    "lv": [
+      "Prezident"
+    ],
+    "sal": [
+      [
+        15000,
+        15000
+      ]
+    ],
+    "minYears": [
+      99
+    ],
+    "key": "smarts",
+    "fame": 10,
+    "retire": 200,
+    "paths": [],
+    "employers": [
+      "Prezident Administrasiyası"
+    ],
+    "work": "Ölkəni idarə et"
   }
 }

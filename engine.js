@@ -245,6 +245,7 @@ function ageUp() {
   // job performance
   if (P.job) jobTick(msgs);
   sportTick(msgs);
+  polTick(msgs);
   // family members aging / death
   peopleTick(msgs);
   // fame slowly fades without activity
@@ -594,7 +595,10 @@ const ACTIONS = [
   { id: "gorunus", t: "Özünə qulluq et", icon: "💅", min: 13, cost: 50, fx: () => ({ looks: rnd(2, 4), happy: 2 }), r: () => pick(["Bərbərə getdin, yeni görkəm!", "Yeni paltar aldın.", "Dəri baxımı etdin, parıldayırsan."]) },
   { id: "hekim", t: "Həkimə get", icon: "🏥", min: 5, max: 45, cost: 60, fx: () => ({ health: rnd(5, 12) }), r: () => P.st.health < 40 ? "Həkim müalicə yazdı, xeyli yaxşılaşdın." : "Müayinə oldun, hər şey qaydasındadır." },
   { id: "post", t: "Pıçıltı-da paylaş", icon: "📱", min: 12, special: "post" },
-  { id: "is", t: "İş axtar", icon: "🔎", min: 16, special: "job" },
+  { id: "is", t: "İş axtar", icon: "🔎", min: 16, special: "job", if: () => !isPres() },
+  { id: "partiya", t: "Siyasətə qoşul", icon: "🏛️", min: 18, special: "party", if: () => !P.pol && !inPrison() },
+  { id: "pol_gorus", t: "Seçicilərlə görüş", icon: "🤝", min: 18, if: () => !!P.pol && !isPres() && !inPrison() && !(P.army && !P.army.done), fx: () => ({ happy: rnd(-1, 3) }), r: () => pick(["Rayon mədəniyyət evində 200 nəfər. Biri yol, biri su, biri iş istədi. Hamısını dəftərə yazdın.", "Kənd meydanında çay içə-içə danışdınız. Qocalardan biri dedi: “Səndən əvvəlkilər də belə deyirdi.”", "Gənclərlə görüşdə suallar sərt idi, amma axırda əl sıxdılar."]), after: () => { P.pol.rep = clamp(P.pol.rep + Math.round((rnd(1, 4) + (P.tal.social > 60 ? 1 : 0)) * (1 - P.pol.rep / 110))); } },
+  { id: "pol_cixis", t: "Partiya tədbirində çıxış et", icon: "🎤", min: 18, if: () => !!P.pol && P.pol.party !== "bitaraf" && !isPres() && !inPrison() && !(P.army && !P.army.done), fx: () => ({ fame: chance(0.3) ? 1 : 0 }), r: () => P.tal.social > 60 ? "Çıxışın üç dəfə alqışla kəsildi. Partiya sədri sonra əlini çiyninə qoydu." : "Çıxış uzun alındı, zalda kimsə əsnədi. Amma vacib adamlar səni gördü.", after: () => { P.pol.cap += 1; P.pol.rep = clamp(P.pol.rep + (P.tal.social > 60 ? 2 : 0)); } },
   { id: "sevgi", t: "Sevgili axtar", icon: "💘", min: 16, special: "love", if: () => !person("sevgili") && !person("həyat yoldaşı") },
   { id: "sevgili", t: "Sevgilinlə görüş", icon: "🌹", min: 16, if: () => !!person("sevgili"), cost: 40, fx: () => ({ happy: rnd(5, 9) }), r: () => `${who("sevgili")} ilə bulvarda gəzdiniz.`, after: () => relAdd("sevgili", 9) },
   { id: "yoldas", t: "Həyat yoldaşınla vaxt keçir", icon: "💑", min: 18, if: () => !!person("həyat yoldaşı"), fx: () => ({ happy: rnd(4, 8) }), r: () => `${who("həyat yoldaşı")} ilə restorana getdiniz.`, after: () => relAdd("həyat yoldaşı", 9) },
