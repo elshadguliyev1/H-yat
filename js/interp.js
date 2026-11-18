@@ -77,6 +77,10 @@ const Interp = (() => {
     ex_pres: v => (P.flags.exPrezident != null) === v,
     ctry_gt: o => isPres() && Object.entries(o).every(([k, v]) => P.ctry[k] > v),
     ctry_lt: o => isPres() && Object.entries(o).every(([k, v]) => P.ctry[k] < v),
+    means_gte: v => familyMeans() >= v,
+    means_lt: v => familyMeans() < v,
+    owns: v => owns(v),
+    owns_not: v => !owns(v),
     any: list => list.some(c => check(c)),
     not: c => !check(c)
   };
@@ -112,6 +116,7 @@ const Interp = (() => {
     promote_role(o, ctx) { const p = person(o.from); if (!p) return; p.role = o.to; p.rel = clamp(p.rel + (o.rel || 0)); ctx.vars.new = p.name; },
     start_job(o) { startJob(o.id, o.lv || 0, o.note); },
     sport_join(id) { sportJoin(id); },
+    own(k) { (P.owned = P.owned || {})[k] = { age: P.age, day: P.day }; },
     pol_join(party) { polJoin(party); },
     pol_run(o, ctx) { polRun(o.office, o.spend || 0, ctx); },
     pol_office(o) { setOffice(o, "təyinat"); },

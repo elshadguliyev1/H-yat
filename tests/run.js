@@ -17,7 +17,7 @@ function sandbox() {
   const ctx = { console, Math, Date, JSON, Object, Array, String, Number, Intl, Set, Map, Promise, isFinite,
     localStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } } };
   vm.createContext(ctx);
-  vm.runInContext(read("js/core.js") + "\n" + read("engine.js") + "\n" + read("js/career.js") + "\n" + read("js/justice.js") + "\n" + read("js/sport.js") + "\n" + read("js/politics.js") + "\n" + read("js/interp.js") + `
+  vm.runInContext(read("js/core.js") + "\n" + read("engine.js") + "\n" + read("js/career.js") + "\n" + read("js/justice.js") + "\n" + read("js/sport.js") + "\n" + read("js/politics.js") + "\n" + read("js/items.js") + "\n" + read("js/interp.js") + `
     RULES = ${read("data/rules.json")};
     loadCareers(${read("data/careers.json")});
     globalThis.LISTS = [${EVENT_FILES.map(read).join(",")}];
@@ -63,7 +63,7 @@ function sandbox() {
     }
     Object.defineProperty(globalThis, "P", { get: () => P, set: v => { P = v; } });
     Object.defineProperty(globalThis, "RULES", { get: () => RULES });
-    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial; globalThis.hasRecord = hasRecord; globalThis.everConvicted = everConvicted; globalThis.lockReason = lockReason; globalThis.SPORTS = SPORTS; globalThis.RULES = RULES; globalThis.polJoin = polJoin; globalThis.setOffice = setOffice; globalThis.polRun = polRun; globalThis.isPres = isPres; globalThis.govAvailable = govAvailable; globalThis.doGov = doGov; globalThis.CTRY_KEYS = CTRY_KEYS; globalThis.pick = pick;
+    globalThis.Interp = Interp; globalThis.Cal = Cal; globalThis.person = person; globalThis.fmtMoney = fmtMoney; globalThis.ACTIONS = ACTIONS; globalThis.startJob = startJob; globalThis.interactionsFor = interactionsFor; globalThis.pensionMonthly = pensionMonthly; globalThis.bankOffer = bankOffer; globalThis.estate = estate; globalThis.onPension = onPension; globalThis.addPerson = addPerson; globalThis.people = people; globalThis.inPrison = inPrison; globalThis.jobOptions = jobOptions; globalThis.askRaise = askRaise; globalThis.askPromotion = askPromotion; globalThis.CAREERS = CAREERS; globalThis.deathRisk = deathRisk; globalThis.commitCrime = commitCrime; globalThis.trial = trial; globalThis.hasRecord = hasRecord; globalThis.everConvicted = everConvicted; globalThis.lockReason = lockReason; globalThis.SPORTS = SPORTS; globalThis.RULES = RULES; globalThis.polJoin = polJoin; globalThis.setOffice = setOffice; globalThis.polRun = polRun; globalThis.isPres = isPres; globalThis.govAvailable = govAvailable; globalThis.doGov = doGov; globalThis.CTRY_KEYS = CTRY_KEYS; globalThis.pick = pick; globalThis.itemsFor = itemsFor; globalThis.ITEMS = ITEMS; globalThis.askParents = askParents; globalThis.familyMeans = familyMeans; globalThis.owns = owns; globalThis.itemsTick = itemsTick;
     globalThis.playLife = function (name, g, dream, seed, maxAge, log) { newLife(name, g, "Bakı", dream, seed); while (P.alive && P.age < (maxAge || 130)) playYear(log); return P; };
   `, ctx);
   return ctx;
@@ -332,6 +332,37 @@ test("siyasət: seçkilər qaydalara uyğundur, prezident ölkəni idarə edir, 
     if (P.pol) for (const r of P.pol.ran || []) ok(r.age >= R.min_age[r.office], `${r.office} üçün ${r.age} yaş`);
     ok(!(P.pol && P.pol.office && P.legal && P.legal.prison && !P.legal.prison.released), "həbsdə vəzifə"); }
   console.log(`      (40 siyasətçidən ${presidents} prezident seçildi, ${ran} prezident seçkisi; orta prezidentlik ${(years / Math.max(1, presidents)).toFixed(1)} il; sonu: ${Object.entries(ended).map(([k, v]) => k + " " + v).join(", ")})`);
+});
+
+test("əşyalar: yaşa və cinsə uyğun, valideyn imkanına görə hədiyyə, telefon/kompüter/geyim nəticələri, köhnəlmə", () => {
+  // gender and age filters
+  S.newLife("Qız", "q", "Bakı", "hekim", 90001); while (S.P.age < 6) S.playYear();
+  let ids = S.itemsFor().map(i => i.id); ok(ids.includes("gelincik") && !ids.includes("oyuncaq_masin") && !ids.includes("moto"), "qız 6 yaş: " + ids);
+  S.newLife("Oğlan", "k", "Bakı", "hekim", 90002); while (S.P.age < 15) S.playYear();
+  ids = S.itemsFor().map(i => i.id); ok(!ids.includes("makiyaj") && !ids.includes("gelincik") && ids.includes("skuter") && !ids.includes("moto"), "oğlan 15 yaş: " + ids);
+  // rich parents say yes more often than poor parents
+  let rich = 0, poor = 0;
+  for (let s = 0; s < 200; s++) {
+    S.newLife("U", "k", "Bakı", "hekim", 91000 + s); while (S.P.age < 10) S.playYear();
+    const m = S.familyMeans(), it = S.ITEMS.find(i => i.id === "konsol"); const before = !!(S.P.owned && S.P.owned.konsol);
+    const r = S.askParents(it); if (m >= 4 && r.ok) rich++; if (m <= 1 && r.ok) poor++;
+    ok(!before, "konsol əvvəlcədən var");
+  }
+  ok(rich > poor, `varlı ailə ${rich}, kasıb ailə ${poor}`);
+  // phone: the 12-year-old phone event depends on the family; a phone wears out
+  let withPhone = 0, noPhoneSoc = 0, worn = 0, shabby = 0;
+  for (let s = 0; s < 80; s++) {
+    S.newLife("T", s % 2 ? "q" : "k", "Bakı", "hekim", 92000 + s); while (S.P.age < 14) S.playYear();
+    if (S.owns("telefon")) withPhone++; else if (S.P.soc) noPhoneSoc++;
+    while (S.P.age < 20 && S.P.alive) { const had = S.owns("telefon"), lk = S.P.st.looks; S.playYear(); if (had && !S.owns("telefon")) worn++; }
+    S.P.owned = {}; const lk = S.P.st.looks; S.itemsTick([]); if (S.P.age <= 22 && S.P.st.looks < lk) shabby++;
+  }
+  ok(withPhone > 30, "telefonu olan az: " + withPhone); ok(worn > 0, "telefon heç köhnəlmədi"); ok(shabby > 40, "köhnə paltarın nəticəsi yoxdur: " + shabby);
+  // coding without a computer is slower
+  S.newLife("K", "k", "Bakı", "proqramci", 93000); while (S.P.age < 14) S.playYear(); S.P.owned = {}; S.P.flags.kodSaat = 0;
+  const kod = S.ACTIONS.find(a => a.id === "kod"); kod.after(); const slow = S.P.flags.kodSaat; S.P.owned.komputer = { age: 14 }; kod.after();
+  ok(slow === 0.5 && S.P.flags.kodSaat === 1.5, "kompüter fərqi yoxdur: " + slow + " / " + S.P.flags.kodSaat);
+  console.log(`      (hədiyyə: varlı ailə ${rich}, kasıb ailə ${poor} dəfə "hə" dedi; 14 yaşda telefonu olan ${withPhone}/80, köhnələn telefon ${worn})`);
 });
 
 test("erkən ölüm mümkündür, amma nadirdir; keçmiş futbolçuya məşqçilik açıqdır", () => {

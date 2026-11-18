@@ -70,9 +70,9 @@
 {"id":"pisik_oldu","cat":"family","tone":"dramatic","age":[9,18],"icon":"🐾","cond":{"flag_since_gte":{"pisik":4}},"t":"Pişiyin Mestan qocalıb, çox xəstədir.","ch":[
  {"t":"Baytara apar","fx":{"happy":-6,"rel":{"ana":3}},"r":"Anan baytarın pulunu ödədi. Baytar əlindən gələni etdi. Mestan sakitcə yuxuya getdi. Onu həyətdə basdırdın."},
  {"t":"Yanında otur","fx":{"happy":-8},"r":"Son gecəsini qucağında keçirdi.","trait":{"empathy":2}}]},
-{"id":"telefon","cat":"social","tone":"everyday","age":[12,13],"force":true,"icon":"📱","t":"Valideynlərin sənə ilk smartfonunu aldı! Bütün sinif “Pıçıltı” sosial şəbəkəsindədir.","ch":[
- {"t":"Pıçıltı-da hesab aç","fx":{"happy":8},"do":[{"open_social":true}],"r":"Hesabın hazırdır: {handle}. Artıq paylaşım edə bilərsən (Fəaliyyət → Pıçıltı)."},
- {"t":"Sosial şəbəkə mənlik deyil","fx":{"smarts":2},"do":[{"social_quiet":true}],"r":"Hesabı sonra açdın, amma demək olar ki, girmirsən."}]},
+{"id":"telefon","cat":"social","tone":"everyday","age":[12,13],"force":true,"icon":"📱","cond":{"means_gte":2,"owns_not":"telefon"},"t":"Valideynlərin sənə ilk smartfonunu aldı! Bütün sinif “Pıçıltı” sosial şəbəkəsindədir.","ch":[
+ {"t":"Pıçıltı-da hesab aç","fx":{"happy":8},"do":[{"own":"telefon"},{"open_social":true}],"r":"Hesabın hazırdır: {handle}. Artıq paylaşım edə bilərsən (Fəaliyyət → Pıçıltı)."},
+ {"t":"Sosial şəbəkə mənlik deyil","fx":{"smarts":2},"do":[{"own":"telefon"},{"social_quiet":true}],"r":"Hesabı sonra açdın, amma demək olar ki, girmirsən."}]},
 {"id":"ilk_sevgi","cat":"love","tone":"everyday","age":[13,16],"icon":"💌","cond":{"has_not":["sevgili"]},"t":"Paralel sinifdən biri ilə gözlər tez-tez toqquşur…","ch":[
  {"t":"Məktub yaz","odds":[{"p":{"of":"st.looks","div":200,"add":0.3},"fx":{"happy":12},"do":[{"add_person":{"role":"sevgili","g":"other","age":"self"}}],"r":"Cavab gəldi: “Mən də…” 🥰 {new} ilə teneffüslərdə birlikdəsiniz."},{"p":0.5,"fx":{"happy":-10},"r":"Məktubu bütün sinfə göstərdi. Bir həftə məktəbə getmək istəmədin."}],"trait":{"courage":2}},
  {"t":"Heç nə etmə","fx":{"happy":-2},"r":"Bu, sənin sirrin olaraq qaldı."}]},
@@ -100,5 +100,9 @@
 {"id":"mezun_gecesi","cat":"school","tone":"everyday","age":[17,17],"force":true,"icon":"🎉","cond":{"stage":"mezun"},"t":"Buraxılış gecəsi! Hamı ən gözəl paltarındadır.","ch":[
  {"t":"Səhərə qədər rəqs et","fx":{"happy":10,"looks":1},"r":"Dəniz kənarında günəşin doğuşunu qarşıladınız 🌅"},
  {"t":"Erkən evə get","fx":{"happy":2},"r":"Fotolar çəkdirdin və evə qayıtdın."}]},
-{"id":"imtahan","cat":"school","tone":"dramatic","age":[17,21],"force":true,"once":false,"icon":"📝","cond":{"stage":"mezun","no_flag":"imtahanVerdi"},"t":"Qəbul imtahanı vaxtıdır! Orta qiymətin {gpa}. Hansı ixtisasa sənəd verirsən? (Xəyalın: {xəyal})","choices_gen":"faculties"}
+{"id":"imtahan","cat":"school","tone":"dramatic","age":[17,21],"force":true,"once":false,"icon":"📝","cond":{"stage":"mezun","no_flag":"imtahanVerdi"},"t":"Qəbul imtahanı vaxtıdır! Orta qiymətin {gpa}. Hansı ixtisasa sənəd verirsən? (Xəyalın: {xəyal})","choices_gen":"faculties"},
+{"id":"telefon_yox","cat":"social","tone":"dramatic","age":[12,14],"force":true,"icon":"📵","cond":{"means_lt":2,"owns_not":"telefon"},"t":"Sinifdə hamının telefonu var. Hamı Pıçıltı-dakı videolardan danışır, sən isə susursan. Evdə telefon söhbəti açanda anan gözlərini yayındırdı.","ch":[
+ {"t":"Cib pulunu yığ, yayda bazarda işlə","fx":{"happy":-2,"fitness":1},"do":[{"own":"telefon"}],"r":"Yay boyu bazarda qutu daşıdın. Payızda köhnə, amma öz telefonunu aldın. Ekranı çatlaqdır, amma sənindir."},
+ {"t":"Nənəndən xahiş et","cond":{"has_any":["nənə","baba"]},"fx":{"happy":6,"rel":{"nənə":6,"baba":6}},"do":[{"own":"telefon"}],"r":"Nənən təqaüdündən yığdığı pulu dəsmala büküb verdi: “Kimsəyə demə.” Telefonu alanda əlləri titrəyirdi."},
+ {"t":"Telefonsuz da yaşamaq olar","fx":{"smarts":3,"happy":-4},"r":"Teneffüslərdə kitab oxuyursan. Bəziləri səni qəribə sayır, sən isə bir az fərqli böyüyürsən."}]}
 ]

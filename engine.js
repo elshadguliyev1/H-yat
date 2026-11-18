@@ -265,6 +265,7 @@ function ageUp() {
   if (P.job) jobTick(msgs);
   sportTick(msgs);
   polTick(msgs);
+  itemsTick(msgs);
   // family members aging / death
   peopleTick(msgs);
   // fame slowly fades without activity
@@ -615,7 +616,7 @@ const ACTIONS = [
   { id: "dost", t: "Dostlarla vaxt keçir", icon: "🧑‍🤝‍🧑", min: 6, max: 25, fx: () => ({ happy: rnd(4, 8) }), r: () => person("dost") ? `${who("dost")} ilə gəzdiniz, çox güldünüz.` : "Həyətdə uşaqlarla oynadın.", after: () => { relAdd("dost", 8); if (!person("dost") && chance(0.6)) { const d = addPerson("dost", P.g, P.age + rnd(-1, 1)); log(`🤝 Yeni dost tapdı: ${d.name}.`); } } },
   { id: "aile", t: "Ailə ilə vaxt keçir", icon: "🏡", min: 5, max: 25, fx: () => ({ happy: 3 }), r: () => pick(["Ailəlikcə çay süfrəsi arxasında oturdunuz.", "Nənəgilə qonaq getdiniz.", "Atanla nərd oynadın.", "Anana mətbəxdə kömək etdin."]), after: () => { relAdd("ana", 6); relAdd("ata", 6); relAdd("qardaş", 4); relAdd("bacı", 4); relAdd("həyat yoldaşı", 8); relAdd("uşaq", 8); } },
   { id: "aktyor", t: "Teatr dərnəyinə get", icon: "🎭", min: 8, max: 25, fx: () => ({ happy: 2, looks: 1 }), r: () => P.tal.acting > 65 ? "Rejissor deyir ki, səhnədə doğulmusan!" : "Rol məşq etdin, sözləri unutdun 😅", after: () => { P.tal.acting = clamp(P.tal.acting + 2); } },
-  { id: "kod", t: "Proqramlaşdırma öyrən", icon: "⌨️", min: 11, max: 40, fx: () => ({ smarts: rnd(2, 4) }), r: () => pick(["İlk oyununu yazdın!", "Bir saytı sıfırdan qurdun.", "Kod işləmədi, 3 saat xəta axtardın 😵"]), after: () => { P.flags.kodSaat = (P.flags.kodSaat || 0) + 1; if (P.flags.kodSaat >= 4 && P.st.smarts > 55) P.flags.kodYazir = P.age; } },
+  { id: "kod", t: "Proqramlaşdırma öyrən", icon: "⌨️", min: 11, max: 40, fx: () => ({ smarts: owns("komputer") ? rnd(2, 4) : rnd(0, 2) }), r: () => owns("komputer") ? pick(["İlk oyununu yazdın!", "Bir saytı sıfırdan qurdun.", "Kod işləmədi, 3 saat xəta axtardın 😵"]) : pick(["Kompüter klubunda bir saat. Növbəti adam arxanda gözləyirdi.", "Telefonda kod yazmağa çalışdın. Barmaqların yoruldu.", "Məktəbin kompüter otağı bağlı idi. Dəftərə kod yazdın."]), after: () => { P.flags.kodSaat = (P.flags.kodSaat || 0) + (owns("komputer") ? 1 : 0.5); if (P.flags.kodSaat >= 4 && P.st.smarts > 55) P.flags.kodYazir = P.age; } },
   { id: "gorunus", t: "Özünə qulluq et", icon: "💅", min: 13, cost: 50, fx: () => ({ looks: rnd(2, 4), happy: 2 }), r: () => pick(["Bərbərə getdin, yeni görkəm!", "Yeni paltar aldın.", "Dəri baxımı etdin, parıldayırsan."]) },
   { id: "hekim", t: "Həkimə get", icon: "🏥", min: 5, max: 45, cost: 60, fx: () => ({ health: rnd(5, 12) }), r: () => P.st.health < 40 ? "Həkim müalicə yazdı, xeyli yaxşılaşdın." : "Müayinə oldun, hər şey qaydasındadır." },
   { id: "post", t: "Pıçıltı-da paylaş", icon: "📱", min: 12, special: "post" },
@@ -629,6 +630,8 @@ const ACTIONS = [
   { id: "isde", t: () => CAREERS[P.job.id].work || "İşdə çox çalış", icon: "⏱️", min: 16, if: () => !!P.job && !P.job.susp, fx: () => ({ happy: -2, health: -1 }),
     r: () => ({ futbolcu: "Hamı gedəndən sonra da meydanda qaldın, cərimə zərbələri vurdun. Məşqçi gördü.", mugenni: "Səhərə qədər studiyada yeni mahnı yazdın.", hekim: "İki növbə ardıcıl. Yorğunsan, amma xəstələr səni tanıyır." }[P.job.id] || "Gec saatlara qədər işlədin. Rəhbər bunu gördü."), after: () => { P.job.perf = clamp(P.job.perf + rnd(8, 15)); P.job.boss = clamp((P.job.boss || 50) + 2); } },
   { id: "seyahet", t: "Səyahətə çıx", icon: "✈️", min: 18, cost: 1500, fx: () => ({ happy: rnd(8, 14) }), r: () => { const c = pick(["Türkiyəyə", "Gürcüstana", "Dubaya", "İtaliyaya", "Misirə", "Fransaya", "Qəbələyə", "Şəkiyə"]); P.stats.countries++; return `${c} səyahət etdin, möhtəşəm idi!`; } },
+  { id: "istek", t: "Valideyndən hədiyyə istə", icon: "🎁", min: 4, max: 17, special: "wish", if: () => !inPrison() },
+  { id: "al_kicik", t: "Öz pulunla al", icon: "🛍️", min: 12, max: 17, special: "shop_small", if: () => P.money >= 15 },
   { id: "al", t: "Alış-veriş: əşya, maşın, ev", icon: "🔑", min: 18, special: "shop" },
   { id: "bank", t: "Banka get", icon: "🏦", min: 18, special: "bank" },
   { id: "elave", t: "Əlavə qazanc", icon: "💼", min: 16, special: "side", if: () => SIDE_JOBS.some(s => s.if()) },
@@ -663,8 +666,6 @@ const ACTIONS = [
 ];
 // shop: home items marked home:true remove rent; kind drives yearly effects (moneyTick)
 const SHOP = [
-  { id: "i1", cat: "esya", kind: "esya", t: "Smartfon", price: 800, happy: 4 }, { id: "i2", cat: "esya", kind: "esya", t: "Noutbuk", price: 1500, happy: 4, smarts: 2 },
-  { id: "i3", cat: "esya", kind: "esya", t: "Yeni mebel dəsti", price: 4000, happy: 6 }, { id: "i4", cat: "esya", kind: "esya", t: "Qızıl bilərzik (hədiyyə)", price: 2500, happy: 5, rel: "həyat yoldaşı" },
   { id: "m1", cat: "masin", kind: "masin", type: "maşın", t: "İşlənmiş Lada (07)", price: 4500 }, { id: "m5", cat: "masin", kind: "masin", type: "maşın", t: "İşlənmiş Opel Astra", price: 12000 },
   { id: "m2", cat: "masin", kind: "masin", type: "maşın", t: "Toyota Corolla", price: 28000 }, { id: "m6", cat: "masin", kind: "masin", type: "maşın", t: "Hyundai Tucson", price: 42000 },
   { id: "m3", cat: "masin", kind: "masin", type: "maşın", t: "Mercedes E-klass", price: 75000 }, { id: "m4", cat: "masin", kind: "masin", type: "maşın", t: "Porsche 911", price: 260000 },
@@ -758,6 +759,7 @@ function migrateLife(L) {
     L.v = 7;
   }
   if (L.v < 8) L.v = 8;
+  if (!L.owned) { L.owned = {}; if (L.soc) L.owned.telefon = { age: L.age, day: L.day }; if (L.flags && L.flags.kodYazir != null) L.owned.komputer = { age: L.age, day: L.day }; if (L.age >= 12) L.owned.geyim = { age: L.age, day: L.day }; }
   return L;
 }
 // record a decision (event_history)

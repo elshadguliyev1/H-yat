@@ -187,6 +187,7 @@ nav.tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg) 
 <script src="js/justice.js"></script>
 <script src="js/sport.js"></script>
 <script src="js/politics.js"></script>
+<script src="js/items.js"></script>
 <script src="js/interp.js"></script>
 <script>
 "use strict";
@@ -433,6 +434,8 @@ function doAction(a) {
   if (a.special === "side") return sidePicker();
   if (a.special === "sport") return sportPicker();
   if (a.special === "party") return partyPicker();
+  if (a.special === "wish") return itemPicker(true);
+  if (a.special === "shop_small") return itemPicker(false);
   if (a.special === "love") return findLove();
   if (!useAct()) return;
   const changes = apply(a.fx ? a.fx() : {});
@@ -445,6 +448,7 @@ function doAction(a) {
   s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
 }
 function postPicker() {
+  if (!owns("telefon")) return toast("Telefonun yoxdur: paylaşım etmək olmur. Əvvəlcə telefon al (Fəaliyyət → alış-veriş).");
   if (P.acts <= 0) return toast("Bu üç ay üçün vaxtın bitdi. +3 ay bas.");
   const types = POST_TYPES.filter(t => P.age >= t.min && (!t.need || t.need()));
   const s = sheet(`<div class="big">📱</div><p class="q">Pıçıltı-da nə paylaşırsan?</p><div class="choices">${types.map(t => `<button data-id="${t.id}">${t.icon} ${t.t}${t.risky ? ' <span class="muted small">· riskli</span>' : ""}</button>`).join("")}</div><button class="btn ghost close">Ləğv et</button>`);
@@ -497,6 +501,16 @@ function shopPicker() {
   s.el.querySelector(".close").onclick = s.close;
   const draw = () => {
     s.el.querySelectorAll("#shopCats button").forEach(b => b.setAttribute("aria-pressed", b.dataset.c === shopCat));
+    if (shopCat === "esya") {
+      s.el.querySelector("#shopList").innerHTML = itemsFor().map(it => `<button data-item="${it.id}" ${P.money >= it.price ? "" : "disabled style='opacity:.45'"}>${it.icon} ${esc(it.t)} · ${fmtMoney(it.price)}${it.need ? ' <span class="muted small">· vacib</span>' : ""}</button>`).join("");
+      s.el.querySelectorAll("[data-item]").forEach(b => b.onclick = () => {
+        const it = ITEMS.find(x => x.id === b.dataset.item); if (P.money < it.price || !useAct()) return;
+        const ch = buyOwn(it); save();
+        s.el.innerHTML = `<div class="big">${it.icon}</div><p class="q">${esc(it.t)} artıq sənindir.</p><div class="fx">${fxChips(ch)}</div><button class="btn close">Yaxşı</button>`;
+        s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
+      });
+      return;
+    }
     s.el.querySelector("#shopList").innerHTML = SHOP.filter(it => it.cat === shopCat).map(it => {
       const cash = P.money >= it.price, creditable = it.cat !== "esya" && it.price >= 5000 && loanOk && P.money >= it.price * LOAN.down;
       const credit = creditable && loanAffordable(it), yearly = annuity(it.price * (1 - LOAN.down), LOAN.rate, LOAN.years[it.cat] || 10);
@@ -544,6 +558,23 @@ function sidePicker() {
     const j = SIDE_JOBS.find(x => x.id === b.dataset.s), m = rnd(j.money[0], j.money[1]); P.money += m;
     const ch = [["money", m], ...apply(j.fx)]; log(`${j.icon} ${j.r} (+${fmtMoney(m)})`); save();
     s.el.innerHTML = `<div class="big">${j.icon}</div><p class="q">${esc(j.r)}</p><div class="fx">${fxChips(ch)}</div><button class="btn close">Yaxşı</button>`;
+    s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
+  });
+}
+// children ask for gifts; teenagers can also spend their own money
+function itemPicker(wish) {
+  const list = itemsFor().filter(it => wish ? true : it.price <= Math.max(P.money, 0) * 3);
+  const s = sheet(`<div class="big">${wish ? "🎁" : "🛍️"}</div><p class="q">${wish ? "Valideynlərindən nə istəyirsən?" : `Öz pulunla nə alırsan? Pulun: ${fmtMoney(P.money)}`}</p>
+    <div class="choices">${list.map(it => `<button data-i="${it.id}" ${!wish && P.money < it.price ? "disabled style='opacity:.45'" : ""}>${it.icon} ${esc(it.t)} <span class="muted small">· ${fmtMoney(it.price)}${it.need ? " · vacib" : ""}</span></button>`).join("") || "<p class='muted'>Hazırda istədiyin bir şey yoxdur.</p>"}</div>
+    <button class="btn ghost close">Bağla</button>`);
+  s.el.querySelector(".close").onclick = s.close;
+  s.el.querySelectorAll("[data-i]").forEach(b => b.onclick = () => {
+    const it = ITEMS.find(x => x.id === b.dataset.i); if (!useAct()) return;
+    let text, ch;
+    if (wish) { const r = askParents(it); text = r.text; ch = r.changes; }
+    else { ch = buyOwn(it); if (!ch) return toast("Pulun çatmır"); text = `${it.t} aldın. Öz pulunla aldığın ilk şeylərdən biri: bunun dadı başqadır.`; }
+    save();
+    s.el.innerHTML = `<div class="big">${it.icon}</div><p class="q">${esc(text)}</p><div class="fx">${fxChips(ch)}</div><button class="btn close">Yaxşı</button>`;
     s.el.querySelector(".close").onclick = () => { s.close(); renderGame(); };
   });
 }
@@ -673,6 +704,7 @@ function panelMe() {
         <dt>Staj</dt><dd>${P.job.years} il (bu vəzifədə ${P.job.lvYears || 0})</dd><dt>İş göstəricisi</dt><dd>${P.job.perf}/100</dd><dt>Rəhbərlə münasibət</dt><dd>${P.job.boss ?? "—"}/100</dd>
         <dt>Şirkətin vəziyyəti</dt><dd>${P.job.company == null ? "—" : P.job.company >= 70 ? "güclü" : P.job.company >= 40 ? "normal" : P.job.company >= 20 ? "çətin" : "böhran"}</dd>` : ""}
       ${P.pol ? `<dt>Siyasət</dt><dd>${esc(PARTIES[P.pol.party].t)}${P.pol.office ? " · <b>" + esc(OFFICES[P.pol.office].t) + "</b>" : ""} · nüfuz ${P.pol.rep}/100${(P.pol.ran || []).length ? `<br><small>Seçkilər: ${P.pol.ran.slice(-5).map(x => `${x.age} yaş, ${OFFICES[x.office].t.toLowerCase().replace("üzvü", "").replace("millət vəkili", "Məclis").trim()}: ${x.pct}% ${x.win ? "✅" : "❌"}`).join("; ")}</small>` : ""}${P.pres && P.pres.ended ? `<br><small>Prezident olub: ${P.pres.years} il (${esc(P.pres.reason)})</small>` : ""}</dd>` : ""}
+      ${P.age >= 3 ? `<dt>Əşyaların</dt><dd>${Object.keys(P.owned || {}).map(k => { const it = ITEMS.find(x => x.own === k); return it ? `${it.icon} ${esc(it.t)}` : ""; }).filter(Boolean).join(" · ") || "—"}${ITEMS.filter(it => it.need && P.age >= it.age[0] && !owns(it.own)).map(it => `<br><small style="color:var(--bad)">${it.icon} ${esc(it.need)}</small>`).join("")}</dd>` : ""}
       ${P.sport ? `<dt>İdman</dt><dd>${SPORTS[P.sport.id].icon} ${SPORTS[P.sport.id].t} · ${P.sport.start} yaşdan${P.sport.active ? ` · səviyyə ${sportLevel()}/100${P.sport.inj ? " · 🩹 zədəli" : ""}` : ` · ${P.sport.ended} yaşda bitirdi (${esc(P.sport.reason || "")})`}${P.sport.medals.length ? `<br><small>Medallar: ${["🥇", "🥈", "🥉"].map((m, i) => { const n = P.sport.medals.filter(x => x.place === i).length; return n ? m + "×" + n : ""; }).filter(Boolean).join(" ")} · ən yaxşı nəticə: ${P.sport.best >= 0 ? SPORT_COMP[P.sport.best][0] : "—"}</small>` : ""}</dd>` : ""}
       ${P.lic && (P.lic.cpl || P.lic.atpl || P.lic.surucu) ? `<dt>Lisenziyalar</dt><dd>${[P.lic.surucu ? "Sürücülük" : "", P.lic.ppl ? "PPL" : "", P.lic.cpl ? "CPL" : "", P.lic.atpl ? "ATPL" : ""].filter(Boolean).join(" · ")}</dd>` : ""}
       ${P.hours ? `<dt>Uçuş saatı</dt><dd>${P.hours.toLocaleString("az")}</dd>` : ""}
