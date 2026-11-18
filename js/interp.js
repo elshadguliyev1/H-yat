@@ -86,6 +86,9 @@ const Interp = (() => {
     preg_known: v => pregnant() && P.preg.known === v,
     dekret: v => (!!P.dekret && !P.dekret.back) === v,
     dekret_long: v => !!P.dekret && (P.dekret.months > 12) === v,
+    mem: v => [].concat(v).some(t => (P.mem || []).some(m => m.tag === t)),
+    mem_not: v => ![].concat(v).some(t => (P.mem || []).some(m => m.tag === t)),
+    npc_flag_unset: v => !(P.npcFlags && P.npcFlags[v]),
     any: list => list.some(c => check(c)),
     not: c => !check(c)
   };
@@ -121,6 +124,10 @@ const Interp = (() => {
     promote_role(o, ctx) { const p = person(o.from); if (!p) return; p.role = o.to; p.rel = clamp(p.rel + (o.rel || 0)); ctx.vars.new = p.name; },
     start_job(o) { startJob(o.id, o.lv || 0, o.note); },
     sport_join(id) { sportJoin(id); },
+    remember(o) { (P.mem = P.mem || []).push({ tag: o.tag, age: P.age, day: P.day, feel: o.feel || 0, t: o.t || "" }); },
+    npc_rel(o) { for (const [f, d] of Object.entries(o)) { const id = P.npcFlags && P.npcFlags[f]; const p = id && P.people.find(x => x.id === id); if (p) p.rel = clamp(p.rel + d); } },
+    npc_flag_die(f) { const id = P.npcFlags && P.npcFlags[f]; const p = id && P.people.find(x => x.id === id && x.alive); if (p) { p.alive = false; p.died = P.age; log(`🕯️ ${p.name} dünyasını dəyişdi.`); } },
+    npc_role(o) { const id = P.npcFlags && P.npcFlags[o.flag]; const p = id && P.people.find(x => x.id === id); if (p) p.role = o.role; },
     preg_reveal(v, ctx) { if (P.preg) { P.preg.known = true; ctx.vars.baby_reveal = P.preg.twins ? "“İki ürək döyüntüsü eşidirəm… Əkizlərdir!” Otaqda bir anlıq sükut, sonra gülüş." : P.preg.g === "k" ? "“Oğlandır!” Atası artıq futbol formasından danışır." : "“Qızdır!” Nənə dərhal qızıl sırğa üçün pul yığmağa başladı."; } },
     preg_early(v) { if (pregnant()) { P.preg.due = Math.min(P.preg.due, P.day + 20); P.preg.early = true; for (const s of P.sched) if (s.event === "dogum") s.day = P.preg.due; } },
     preg_start(v, ctx) { ctx.vars.preg_ok = pregStart() ? "1" : ""; },
@@ -211,6 +218,7 @@ const Interp = (() => {
     baby_word: () => babyWord(),
     dekret_months: () => P.dekret ? String(P.dekret.months) : "",
     elci_trait: () => pick(["Gülərüzlüdür, zarafatları da yerindədir. Söhbət özü axıb gedir.", "Çox ciddidir. Bütün söhbət boyu işindən danışdı. Bəlkə də sadəcə həyəcanlıdır?", "Nəzakətlidir, amma bir sözü yadında qaldı: “Evlənəndən sonra işləməyə ehtiyac olmayacaq.”"]),
+    npc_moved: () => npcMovedTo(),
     sport: () => sportName(),
     sport_l: () => sportName().toLowerCase(),
     sport_icon: () => P.sport ? SPORTS[P.sport.id].icon : "🏅",
@@ -249,8 +257,19 @@ const Interp = (() => {
     handle: () => P.soc ? P.soc.handle : "",
     npc_old_friend: () => { const id = P.npcFlags && P.npcFlags.defended_classmate; const p = id && P.people.find(x => x.id === id); return p ? p.name : "köhnə sinif yoldaşın"; }
   };
+  // {npc_<flag>}: the name of a story NPC; {mem_age_<tag>}: how old you were when that memory was made
+  function dynVar(k) {
+    if (k.startsWith("npc_")) { // {npc_flag}, or with a case ending: {npc_flag_acc} (Əlini), {npc_flag_gen} (Əlinin), {npc_flag_dat} (Əliyə)
+      const cs = /_(acc|gen|dat)$/.exec(k), f = cs ? k.slice(4, -4) : k.slice(4);
+      const id = P.npcFlags && P.npcFlags[f]; const p = id && P.people.find(x => x.id === id);
+      if (!p) return cs ? { acc: "onu", gen: "onun", dat: "ona" }[cs[1]] : "o";
+      return cs ? { acc, gen, dat }[cs[1]](p.name) : p.name;
+    }
+    if (k.startsWith("mem_age_")) { const t = k.slice(8), m = (P.mem || []).find(x => x.tag === t || x.tag.startsWith(t + "_")); return m ? String(m.age) : "uşaq"; }
+    return null;
+  }
   function text(t, ctx) {
-    let s = String(t ?? "").replace(/\{(\w+)\}/g, (m, k) => ctx && ctx.vars && ctx.vars[k] != null ? ctx.vars[k] : TV[k] ? TV[k]() : m);
+    let s = String(t ?? "").replace(/\{(\w+)\}/g, (m, k) => ctx && ctx.vars && ctx.vars[k] != null ? ctx.vars[k] : TV[k] ? TV[k]() : dynVar(k) ?? m);
     return fill(s);
   }
   const KNOWN_PLACEHOLDERS = new Set(["ad", "ana", "ata", "dost", "sevgili", "yoldaş", "şəhər", "müəllim", "məşqçi", "müdir", "rəqib", "xəyal", "iş", "new", "child", "pol_result", "baby_reveal", "birth_result", "amount", "asset", "months", "exam", "city", "city_from", "dead", "nene", "baba", "sal_new", "kid_m", "kid_b", "biz_value", "kid_m_gen", "kid_m_dat", "yoldas_dat", "kid_m_word", "kid_partner", "grand_name", "grand_word", "grand_parent", "granny_word", "wcost_full", "wcost_part", "wcost_toy", "crime", "caught", "verdict", ...Object.keys(TV)]);
@@ -283,12 +302,16 @@ const Interp = (() => {
   // re-check right before showing (an earlier event this year may have changed things)
   function stillOk(e) { try { return check(e.cond); } catch (err) { return false; } }
   // delayed consequences that fall due during the coming quarter (between birthdays)
+  // a heavy stretch (3+ serious events this or last year): story steps that are not urgent wait half a year
+  const heavyNow = () => { const T = P.toneLog || {}; return (T[P.age] || 0) >= 3 || (T[P.age - 1] || 0) >= 3; };
+  const canWait = (e, s) => !e.force && e.tone && e.tone !== "everyday" && !(s.waited >= 2);
   function takeScheduled(until) {
     const out = [], keep = [];
     for (const s of P.sched) {
       const e = BY_ID[s.event];
       if (s.day >= until || !e) { keep.push(s); continue; }
       if (!!e.prison !== inPrison()) { keep.push(s); continue; }
+      if (heavyNow() && canWait(e, s)) { s.day = Cal.addMonths(P.day, 6); s.waited = (s.waited || 0) + 1; keep.push(s); continue; }
       if (check(e.cond) && (!e.age || (P.age >= e.age[0] && P.age <= e.age[1] + 3))) out.push({ id: e.id, day: Math.max(P.day, s.day) });
     }
     P.sched = keep;
@@ -301,6 +324,7 @@ const Interp = (() => {
     while (P.sched.length && P.sched[0].day <= P.day) {
       const s = P.sched.shift(); const e = BY_ID[s.event];
       if (e && !!e.prison !== inPrison()) { later.push(s); continue; } // waits until the person is out (or in)
+      if (e && heavyNow() && canWait(e, s)) { s.waited = (s.waited || 0) + 1; later.push(s); continue; }
       if (e && check(e.cond) && (!e.age || (P.age >= e.age[0] && P.age <= e.age[1] + 3))) out.push(e.id);
     }
     for (const s of later) { s.day = Cal.addYears(P.day, 1); P.sched.push(s); }
@@ -371,7 +395,7 @@ const Interp = (() => {
   function validate(lists) {
     const errs = [], ids = new Set(), all = [].concat(...lists).map(normalize);
     const known = new Set(all.map(e => e.id));
-    const placeholders = t => [...String(t || "").matchAll(/\{(\w+)\}/g)].map(m => m[1]).filter(k => !KNOWN_PLACEHOLDERS.has(k) && !["qardas", "baci", "usaq"].includes(k));
+    const placeholders = t => [...String(t || "").matchAll(/\{(\w+)\}/g)].map(m => m[1]).filter(k => !k.startsWith("npc_") && !k.startsWith("mem_age_") && !KNOWN_PLACEHOLDERS.has(k) && !["qardas", "baci", "usaq"].includes(k));
     const vCond = (c, where) => { if (!c) return; for (const [k, v] of Object.entries(c)) { if (!C[k]) errs.push(`${where}: naməlum şərt "${k}"`); if (k === "any") v.forEach((x, i) => vCond(x, where + ".any" + i)); if (k === "not") vCond(v, where + ".not"); } };
     const vFx = (fx, where) => { if (!fx) return; for (const k of Object.keys(fx)) if (!FX_KEYS.has(k)) errs.push(`${where}: naməlum effekt "${k}"`); };
     const vDo = (list, where) => { for (const step of list || []) for (const [k, v] of Object.entries(step)) { if (!A[k]) errs.push(`${where}: naməlum əməliyyat "${k}"`); if (k === "schedule" && !known.has(v.event)) errs.push(`${where}: planlanan hadisə tapılmadı "${v.event}"`); if (k === "start_job" && !CAREERS[v.id]) errs.push(`${where}: naməlum peşə "${v.id}"`); } };

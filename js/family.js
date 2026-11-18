@@ -55,3 +55,20 @@ function dekretEnd() {
   P.job.lvYears = Math.max(0, (P.job.lvYears || 0) - Math.round(d.months / 12)); // the promotion clock was paused
   log(`▶️ Analıq məzuniyyətindən işə qayıtdı: ${jobTitle()}.`);
 }
+
+// ---------- NPCs live their own lives (yearly): friends and siblings marry, move away, fall ill ----------
+// Close ones turn into scenes for the player; distant ones are only a line in the life log.
+function npcLifeTick(msgs) {
+  const sch = (ev, p, flag) => { (P.npcFlags = P.npcFlags || {})[flag] = p.id; if (!P.sched.some(s => s.event === ev)) { P.sched.push({ event: ev, day: Cal.addMonths(P.day, rnd(1, 10)) }); P.sched.sort((a, b) => a.day - b.day); } };
+  for (const p of P.people.filter(x => x.alive && ["dost", "qardaş", "bacı", "keçmiş sevgili"].includes(x.role) && x.age >= 20)) {
+    if (!p.married && p.age >= 22 && p.age <= 40 && chance(0.06)) {
+      p.married = P.age;
+      if (p.rel >= 40 && !inPrison()) sch("npc_toy", p, "toy"); else { msgs.push(`💍 ${p.name} evləndi. Səni toya çağırmadılar.`); log(`💍 ${p.name} evləndi.`); }
+    } else if (!p.moved && p.age >= 22 && chance(0.015)) {
+      p.moved = pick(["Almaniyaya", "Kanadaya", "Dubaya", "Moskvaya", "İstanbula", "rayona"]);
+      if (p.rel >= 45 && !inPrison()) sch("npc_kocur", p, "kocur"); else { msgs.push(`🧳 ${p.name} ${p.moved} köçdü.`); log(`🧳 ${p.name} ${p.moved} köçdü.`); }
+    } else if (p.age >= 35 && chance(0.02) && p.rel >= 35) sch("npc_xeste", p, "xeste");
+    if (p.moved) p.rel = clamp(p.rel - rnd(0, 2)); // distance cools friendships
+  }
+}
+const npcMovedTo = () => { const id = P.npcFlags && P.npcFlags.kocur; const p = id && P.people.find(x => x.id === id); return p && p.moved ? p.moved : "uzağa"; };

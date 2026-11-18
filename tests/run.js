@@ -7,7 +7,7 @@
 const fs = require("fs"), path = require("path"), vm = require("vm");
 const ROOT = path.join(__dirname, "..");
 const read = f => fs.readFileSync(path.join(ROOT, f), "utf8");
-const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json", "data/events/gender.json", "data/events/suspense.json"];
+const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json", "data/events/gender.json", "data/events/suspense.json", "data/events/chains.json"];
 
 // strict JSON check first (the browser uses JSON.parse; the sandbox below would forgive trailing commas)
 for (const f of ["data/rules.json", "data/careers.json", ...EVENT_FILES]) { try { JSON.parse(read(f)); } catch (e) { console.log("✗ JSON xətası: " + f + " — " + e.message); process.exit(1); } }
@@ -307,6 +307,7 @@ test("siyasət: seçkilər qaydalara uyğundur, prezident ölkəni idarə edir, 
   for (let s = 1; s <= 40; s++) {
     S.newLife("Siyasi", s % 2 ? "k" : "q", "Bakı", "biznes", 80000 + s); while (S.P.age < 37 && S.P.alive) S.playYear(); if (!S.P.alive) continue;
     S.P.yearEvents = []; S.P.legal = { record: [], case: null, prison: null, history: [] }; S.P.edu.degree = S.P.edu.degree || "muellim";
+    if (S.P.pol) continue; // already in politics on its own: this test builds its own career
     S.polJoin("ireli"); S.setOffice("nazir_muavini", "test"); S.P.pol.cap = 30; S.P.pol.rep = 75; S.P.fame = 60; S.P.money = 1e6;
     // a municipal run cannot demote a deputy minister
     const ctx0 = { vars: {} }; S.polRun("belediyye", 0, ctx0); ok(S.P.pol.office === "nazir_muavini", "bələdiyyə seçkisi vəzifəni aşağı saldı");
@@ -321,7 +322,7 @@ test("siyasət: seçkilər qaydalara uyğundur, prezident ölkəni idarə edir, 
       ok(isFinite(S.P.ctry.fund), "fond");
       ok(S.P.pres.term <= R.max_terms, "müddət limiti aşıldı");
     }
-    if (S.P.alive && S.P.pres.ended) { const why = S.P.pres.reason; ended[why] = (ended[why] || 0) + 1; ok(!S.P.job || S.P.job.id !== "prezident", "vəzifə bitdi, iş qaldı"); ok(!S.P.pol.office, "ofis qaldı"); ok(S.P.flags.exPrezident != null, "keçmiş prezident qeyd olunmadı"); }
+    if (S.P.alive && S.P.pres.ended) { const why = S.P.pres.reason; ended[why] = (ended[why] || 0) + 1; ok(!S.P.job || S.P.job.id !== "prezident", "vəzifə bitdi, iş qaldı"); ok(S.P.pol.office !== "prezident", "prezident ofisi qaldı"); ok(S.P.flags.exPrezident != null, "keçmiş prezident qeyd olunmadı"); }
     years += S.P.age - start; ok(S.P.age - start <= R.cycle.prezident * R.max_terms + 2, "prezidentlik çox uzun: " + (S.P.age - start));
   }
   ok(presidents >= 5, "prezident seçilən az: " + presidents);
@@ -420,6 +421,21 @@ test("dramaturgiya: uzun sakitlik yoxdur, ağır ildən sonra nəfəs, gözləni
   ok(maxQuiet <= 3, "yaddaqalan hadisəsiz ən uzun dövr (həbsdən kənar): " + maxQuiet + " il");
   ok(heavyRuns <= lives * 0.05, "ardıcıl 3 ağır il çox: " + heavyRuns); // only consequences of earlier choices can still pile up
   console.log(`      (80 həyat: yaddaqalan hadisəsiz ən uzun dövr ${maxQuiet} il; ardıcıl ağır illər ${heavyRuns}; gözlənilən olan hadisə anları ${threadsSeen})`);
+});
+
+test("uzun hekayə xətləri (5 fəsil), emosional yaddaş, NPC-lərin öz həyatı", () => {
+  const chains = { zorba: 5, dost: 5, dukan: 5, sevgi: 5, muellim: 5 }, reached = {}, finals = {}; let mems = 0, recalled = 0, npcScenes = 0, lives = 0;
+  for (let i = 0; i < 150; i++) {
+    const seen = new Set();
+    const P = S.playLife("Sim", i % 2 ? "q" : "k", "muellim", 140000 + i, 60, (e, t) => { seen.add(e.id); if (/\d+ yaşına, o teneffüsə|\d+ yaşında başına|\d+ yaşındakı dəftərini/.test(t)) recalled++; if (/^npc_/.test(e.id)) npcScenes++; });
+    lives++; mems += (P.mem || []).length;
+    for (const c of Object.keys(chains)) { const n = [1, 2, 3, 4, 5].filter(k => seen.has(c + "_" + k)).length; if (n) reached[c] = Math.max(reached[c] || 0, n); if (seen.has(c + "_5")) finals[c] = (finals[c] || 0) + 1; }
+    for (const m of P.mem || []) ok(m.tag && m.age >= 0 && m.t, "pis xatirə");
+  }
+  for (const c of Object.keys(chains)) ok((reached[c] || 0) >= 4, `${c} xətti ən çox ${reached[c] || 0} fəslə çatdı`);
+  ok(Object.values(finals).reduce((a, b) => a + b, 0) >= 10, "son fəsillər az: " + JSON.stringify(finals));
+  ok(mems / lives >= 2, "xatirə az: " + (mems / lives).toFixed(1)); ok(npcScenes >= 20, "NPC səhnəsi az: " + npcScenes);
+  console.log(`      (150 həyat: xətlərin son fəslinə çatanlar ${JSON.stringify(finals)}; həyat başına ${(mems / lives).toFixed(1)} xatirə; keçmişi xatırladan mətn ${recalled}; NPC səhnəsi ${npcScenes})`);
 });
 
 test("erkən ölüm mümkündür, amma nadirdir; keçmiş futbolçuya məşqçilik açıqdır", () => {

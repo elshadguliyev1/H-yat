@@ -14,7 +14,7 @@
  {"t":"Doğuş otağına gir, əlini tut","cond":{"preg_self":false},"fx":{"rel":{"həyat yoldaşı":6}},"do":[{"birth":true}],"r":"Onun əli əlində idi, ikiniz də ağlayırdınız. Sonra o səs gəldi. Həkim: “{birth_result}” Körpəni qucağına verəndə əllərin titrəyirdi."},
  {"t":"Dəhlizdə gözlə, dua et","cond":{"preg_self":false},"do":[{"birth":true}],"r":"Dörd saat dəhlizdə var-gəl etdin. Qapı açıldı, tibb bacısı gülümsədi: “Təbrik edirəm! {birth_result}”"}]},
 
-{"id":"dekret_secim","once":false,"cat":"career","tone":"dramatic","age":[16,60],"scheduled_only":true,"force":true,"icon":"👶","cond":{"job":true},"t":"Körpə iki həftəlikdir. İş yerindən zəng: “Təbrik edirik! Bəs nə vaxt qayıdırsınız? Layihəni kimə verək?”","ch":[
+{"id":"dekret_secim","once":false,"cat":"career","tone":"dramatic","age":[16,60],"scheduled_only":true,"force":true,"icon":"👶","cond":{"job":true,"job_not":["prezident","siyasetci"]},"t":"Körpə iki həftəlikdir. İş yerindən zəng: “Təbrik edirik! Bəs nə vaxt qayıdırsınız? Layihəni kimə verək?”","ch":[
  {"t":"4 aydan sonra (ödənişli məzuniyyət)","do":[{"dekret":4}],"r":"Dörd ay. Sonra körpəni nənəyə və ya bağçaya verməli olacaqsan. Hələ ki, hər gün onun yeni bir hərəkətini kəşf edirsən."},
  {"t":"1,5 il uşaqla qal","do":[{"dekret":18}],"r":"İş gözləyə bilər, ilk addımlar gözləməz. Amma bir il yarımdan sonra masan səni gözləyəcəkmi?"},
  {"t":"3 il uşaqla qal","do":[{"dekret":36}],"r":"Üç il. Qanun yerini saxlamalıdır, amma ofisdə hər şey dəyişəcək. Qorxu var, sevinc daha böyükdür."},

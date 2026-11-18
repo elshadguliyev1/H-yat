@@ -280,6 +280,7 @@ function ageUp() {
   itemsTick(msgs);
   // family members aging / death
   peopleTick(msgs);
+  npcLifeTick(msgs);
   // fame slowly fades without activity
   if (P.fame > 0 && (!P.job || !CAREERS[P.job.id].fame)) P.fame = clamp(P.fame - 1);
   if (P.job && CAREERS[P.job.id].fame) P.fame = clamp(P.fame + Math.round(CAREERS[P.job.id].fame * (P.job.lv + 1) / 4));
@@ -295,6 +296,7 @@ function ageUp() {
   const next = Cal.addYears(P.birth, P.age + 1) - 1;
   const days = ids.map(() => rnd(P.day, next)).sort((a, b) => a - b);
   P.yearEvents = ids.map((id, i) => ({ id, day: days[i] }));
+  if (P.alive) { P.yearEvents.push(...Interp.takeScheduled(quarterEnd())); P.yearEvents.sort((a, b) => a.day - b.day); } // story steps due in the first quarter
   save();
   return msgs;
 }

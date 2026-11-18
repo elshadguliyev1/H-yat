@@ -709,6 +709,7 @@ function panelMe() {
         <dt>Staj</dt><dd>${P.job.years} il (bu vəzifədə ${P.job.lvYears || 0})</dd><dt>İş göstəricisi</dt><dd>${P.job.perf}/100</dd><dt>Rəhbərlə münasibət</dt><dd>${P.job.boss ?? "—"}/100</dd>
         <dt>Şirkətin vəziyyəti</dt><dd>${P.job.company == null ? "—" : P.job.company >= 70 ? "güclü" : P.job.company >= 40 ? "normal" : P.job.company >= 20 ? "çətin" : "böhran"}</dd>` : ""}
       ${P.pol ? `<dt>Siyasət</dt><dd>${esc(PARTIES[P.pol.party].t)}${P.pol.office ? " · <b>" + esc(OFFICES[P.pol.office].t) + "</b>" : ""} · nüfuz ${P.pol.rep}/100${(P.pol.ran || []).length ? `<br><small>Seçkilər: ${P.pol.ran.slice(-5).map(x => `${x.age} yaş, ${OFFICES[x.office].t.toLowerCase().replace("üzvü", "").replace("millət vəkili", "Məclis").trim()}: ${x.pct}% ${x.win ? "✅" : "❌"}`).join("; ")}</small>` : ""}${P.pres && P.pres.ended ? `<br><small>Prezident olub: ${P.pres.years} il (${esc(P.pres.reason)})</small>` : ""}</dd>` : ""}
+      ${(P.mem || []).length ? `<dt>Xatirələr</dt><dd>${P.mem.slice(-8).reverse().map(m => `<div>${m.feel > 0 ? "🌤️" : m.feel < 0 ? "🌧️" : "☁️"} <small>${m.age} yaş:</small> ${esc(m.t)}</div>`).join("")}</dd>` : ""}
       ${P.age >= 3 ? `<dt>Əşyaların</dt><dd>${Object.keys(P.owned || {}).map(k => { const it = ITEMS.find(x => x.own === k); return it ? `${it.icon} ${esc(it.t)}` : ""; }).filter(Boolean).join(" · ") || "—"}${ITEMS.filter(it => it.need && P.age >= it.age[0] && !owns(it.own)).map(it => `<br><small style="color:var(--bad)">${it.icon} ${esc(it.need)}</small>`).join("")}</dd>` : ""}
       ${P.sport ? `<dt>İdman</dt><dd>${SPORTS[P.sport.id].icon} ${SPORTS[P.sport.id].t} · ${P.sport.start} yaşdan${P.sport.active ? ` · səviyyə ${sportLevel()}/100${P.sport.inj ? " · 🩹 zədəli" : ""}` : ` · ${P.sport.ended} yaşda bitirdi (${esc(P.sport.reason || "")})`}${P.sport.medals.length ? `<br><small>Medallar: ${["🥇", "🥈", "🥉"].map((m, i) => { const n = P.sport.medals.filter(x => x.place === i).length; return n ? m + "×" + n : ""; }).filter(Boolean).join(" ")} · ən yaxşı nəticə: ${P.sport.best >= 0 ? SPORT_COMP[P.sport.best][0] : "—"}</small>` : ""}</dd>` : ""}
       ${P.lic && (P.lic.cpl || P.lic.atpl || P.lic.surucu) ? `<dt>Lisenziyalar</dt><dd>${[P.lic.surucu ? "Sürücülük" : "", P.lic.ppl ? "PPL" : "", P.lic.cpl ? "CPL" : "", P.lic.atpl ? "ATPL" : ""].filter(Boolean).join(" · ")}</dd>` : ""}
@@ -765,7 +766,7 @@ function renderEnd() {
 
 // ---------- boot ----------
 // ---------- boot: content library, rules, database ----------
-const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json", "data/events/gender.json", "data/events/suspense.json"];
+const EVENT_FILES = ["data/events/core_5_17.json", "data/events/core_18_plus.json", "data/events/pack_v1.json", "data/events/arcs_5_18.json", "data/events/paths.json", "data/events/politics.json", "data/events/gender.json", "data/events/suspense.json", "data/events/chains.json"];
 (async function boot() {
   app.innerHTML = '<p class="wrap muted" style="padding-top:40vh;text-align:center">Yüklənir…</p>';
   try {
