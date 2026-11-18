@@ -54,6 +54,13 @@ Vəziyyət: son işlək versiya `fddf1f6`, 18/18 test keçir. Aşağıdakılar h
    - Konkret nümunə: qız həyatında “Yumruq at”, “Dava et” kimi seçimlər olmamalıdır. Məsələn `crime_dava` (toyda dava) və `sinif_dava` hadisələri qız üçün başqa reaksiyalarla (sözlə cavab, böyüklərə demək, araya girmək və s.) ayrıca versiyada olmalıdır. Bütün hadisələrdə fiziki zorakılıq seçimləri yoxlanmalıdır.
    - Hadisələrdə `gender` şərti və fərqli versiyalar; test: hər cins üçün xüsusi hadisələrin payı.
 
+14. **Yaşa və cinsə görə çoxlu alış-veriş variantı (təkcə ev və maşın yox):**
+   - **Uşaq (valideyndən istəmək və ya cib pulu ilə):** oyuncaqlar, top, gəlincik, velosiped, kitab, oyun konsolu.
+   - **Yeniyetmə:** telefon, kompüter, paltar, idman ayaqqabısı; qız üçün makiyaj vasitələri, aksesuarlar; oğlan üçün skuter və ya motosiklet (yaş həddi ilə).
+   - **Gənc və yetkin:** moto, skuter, velosiped, texnika, mebel, zərgərlik və s.
+   - **Vacib alışlar:** telefon, kompüter, məktəb ləvazimatı, qış paltarı kimi əşyalar alınmasa, nəticəsi olmalıdır. Məsələn, telefon yoxdursa Pıçıltı yoxdur, kompüter yoxdursa proqramlaşdırma çətindir.
+   - **Pulun dəyəri:** maaş 3 aylıq dövrlərlə gəlməlidir (11-ci bəndlə bağlı), pul indiki kimi illik birdən çox tez artmamalıdır. Kiçik alışlar gündəlik büdcəni real hiss etdirməlidir.
+
 ## B. KRİTİK: dramaturgiya (növbəti işin əsası)
 
 **Niyə hazırkı mühərrik maraqlı hekayə yaratmır (qısa diaqnoz):**
